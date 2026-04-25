@@ -4,7 +4,7 @@
   import DataGrid from '$lib/components/DataGrid.svelte';
 
   onMount(() => {
-    bookStore.loadBooks();
+    bookStore.loadMockData();
   });
 </script>
 
