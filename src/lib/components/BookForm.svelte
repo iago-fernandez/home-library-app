@@ -1,13 +1,11 @@
 <script lang="ts">
-    import { createEventDispatcher } from 'svelte';
     import type { CreateBookPayload } from '$lib/types/book';
+    import AutoExpandTextarea from './AutoExpandTextarea.svelte';
 
-    const dispatch = createEventDispatcher<{
-        submit: CreateBookPayload;
-        cancel: void;
-    }>();
+    export let onCancel: () => void;
+    export let onSubmit: (payload: CreateBookPayload) => void;
 
-    let formData: CreateBookPayload = {
+    let formData: Partial<CreateBookPayload> = {
         title: '',
         authors: [],
         publisher: '',
@@ -21,7 +19,7 @@
 
     function handleSubmit() {
         formData.authors = authorsInput.split(',').map(a => a.trim()).filter(a => a.length > 0);
-        dispatch('submit', formData);
+        onSubmit(formData as CreateBookPayload);
     }
 </script>
 
@@ -29,7 +27,7 @@
     <div class="form-header">
         <h3>Add New Book</h3>
         <div class="header-actions">
-            <button type="button" class="btn-cancel" on:click={() => dispatch('cancel')}>Cancel</button>
+            <button type="button" class="btn-cancel" on:click={onCancel}>Cancel</button>
             <button type="submit" class="btn-submit">Save</button>
         </div>
     </div>
@@ -40,12 +38,12 @@
 
             <div class="input-row">
                 <label for="title">Title</label>
-                <textarea id="title" bind:value={formData.title} required rows="2"></textarea>
+                <AutoExpandTextarea id="title" bind:value={formData.title} required={true} />
             </div>
 
             <div class="input-row">
                 <label for="authors">Authors</label>
-                <textarea id="authors" bind:value={authorsInput} required rows="2"></textarea>
+                <AutoExpandTextarea id="authors" bind:value={authorsInput} required={true} />
             </div>
         </fieldset>
 
@@ -171,7 +169,7 @@
         color: #333;
     }
 
-    input, textarea {
+    input {
         width: 100%;
         padding: 8px;
         border: 1px solid #ccc;
@@ -181,12 +179,7 @@
         box-sizing: border-box;
     }
 
-    textarea {
-        resize: vertical;
-        min-height: 60px;
-    }
-
-    input:focus, textarea:focus {
+    input:focus {
         outline: none;
         border-color: #0066cc;
     }

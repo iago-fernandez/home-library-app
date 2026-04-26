@@ -19,9 +19,9 @@
     activePanel = 'actions';
   }
 
-  async function handleFormSubmit(event: CustomEvent<CreateBookPayload>) {
+  async function handleFormSubmit(payload: CreateBookPayload) {
     try {
-      await bookStore.addBook(event.detail);
+      await bookStore.addBook(payload);
       activePanel = 'actions';
     } catch (error) {
       console.error(error);
@@ -58,7 +58,7 @@
           <button class="action-btn">Settings</button>
         </div>
       {:else if activePanel === 'addBook'}
-        <BookForm on:cancel={handleFormCancel} on:submit={handleFormSubmit} />
+        <BookForm onCancel={handleFormCancel} onSubmit={handleFormSubmit} />
       {/if}
     </aside>
   </main>
