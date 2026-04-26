@@ -2,10 +2,31 @@
   import { onMount } from 'svelte';
   import { bookStore } from '$lib/store';
   import DataGrid from '$lib/components/DataGrid.svelte';
+  import BookForm from '$lib/components/BookForm.svelte';
+  import type { CreateBookPayload } from '$lib/types/book';
+
+  let activePanel: 'actions' | 'addBook' = 'actions';
 
   onMount(() => {
     bookStore.loadMockData();
   });
+
+  function handleAddBookClick() {
+    activePanel = 'addBook';
+  }
+
+  function handleFormCancel() {
+    activePanel = 'actions';
+  }
+
+  async function handleFormSubmit(event: CustomEvent<CreateBookPayload>) {
+    try {
+      await bookStore.addBook(event.detail);
+      activePanel = 'actions';
+    } catch (error) {
+      console.error(error);
+    }
+  }
 </script>
 
 <div class="app-container">
@@ -24,17 +45,21 @@
       <DataGrid />
     </section>
 
-    <aside class="action-panel">
-      <div class="action-group">
-        <button class="action-btn">Add Book</button>
-        <button class="action-btn">Edit Book</button>
-        <button class="action-btn">Remove Book</button>
-      </div>
+    <aside class="side-panel" class:wide-panel={activePanel === 'addBook'}>
+      {#if activePanel === 'actions'}
+        <div class="action-group">
+          <button class="action-btn" on:click={handleAddBookClick}>Add Book</button>
+          <button class="action-btn">Edit Book</button>
+          <button class="action-btn">Remove Book</button>
+        </div>
 
-      <div class="action-group">
-        <button class="action-btn">Filter Books</button>
-        <button class="action-btn">Settings</button>
-      </div>
+        <div class="action-group">
+          <button class="action-btn">Filter Books</button>
+          <button class="action-btn">Settings</button>
+        </div>
+      {:else if activePanel === 'addBook'}
+        <BookForm on:cancel={handleFormCancel} on:submit={handleFormSubmit} />
+      {/if}
     </aside>
   </main>
 </div>
@@ -86,7 +111,7 @@
     overflow-y: hidden;
   }
 
-  .action-panel {
+  .side-panel {
     width: 220px;
     background-color: #f0f0f0;
     border-left: 1px solid #ccc;
@@ -94,6 +119,11 @@
     display: flex;
     flex-direction: column;
     gap: 24px;
+    transition: width 0.2s ease-in-out;
+  }
+
+  .side-panel.wide-panel {
+    width: 380px;
   }
 
   .action-group {
