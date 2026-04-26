@@ -1,9 +1,10 @@
 <script lang="ts">
   import { onMount } from 'svelte';
   import { bookStore } from '$lib/store';
+  import DataGrid from '$lib/components/DataGrid.svelte';
 
   onMount(() => {
-    bookStore.loadBooks();
+    bookStore.loadMockData();
   });
 </script>
 
@@ -20,10 +21,7 @@
 
   <main class="workspace">
     <section class="center-stage">
-      <div class="table-placeholder">
-        <h2>Inventory Loaded</h2>
-        <p>Total Records: {$bookStore.length}</p>
-      </div>
+      <DataGrid />
     </section>
 
     <aside class="action-panel">
@@ -84,8 +82,8 @@
   .center-stage {
     flex: 1;
     background-color: #ffffff;
-    padding: 16px;
-    overflow-y: auto;
+    padding: 8px;
+    overflow-y: hidden;
   }
 
   .action-panel {
