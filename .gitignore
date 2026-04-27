@@ -4,7 +4,7 @@ node_modules
 /.svelte-kit
 /package
 
-# Vite Artifacts
+# Vite artifacts
 vite.config.js.timestamp-*
 vite.config.ts.timestamp-*
 
@@ -12,12 +12,12 @@ vite.config.ts.timestamp-*
 src-tauri/target/
 src-tauri/gen/
 
-# Environment Variables
+# Environment variables
 .env
 .env.*
 !.env.example
 
-# Operating System and IDE
+# Operating system and IDE
 .DS_Store
 Thumbs.db
 .idea/
