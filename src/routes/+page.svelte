@@ -6,7 +6,10 @@
   import type { CreateBookPayload } from '$lib/types/book';
   import { Plus, Pencil, Trash2, Filter, Settings } from 'lucide-svelte';
 
-  let activePanel: 'actions' | 'addBook' = 'actions';
+  let activePanel: 'actions' | 'addBook' | 'editBook' = 'actions';
+  const selectedId = bookStore.selectedId;
+
+  $: selectedBook = $bookStore.find(b => b.id === $selectedId);
 
   onMount(() => {
     bookStore.loadBooks();
@@ -16,13 +19,33 @@
     activePanel = 'addBook';
   }
 
+  function handleEditBookClick() {
+    if ($selectedId) {
+      activePanel = 'editBook';
+    }
+  }
+
+  async function handleDeleteBookClick() {
+    if ($selectedId && confirm('Are you sure you want to delete this record?')) {
+      try {
+        await bookStore.deleteBook($selectedId);
+      } catch (error) {
+        console.error(error);
+      }
+    }
+  }
+
   function handleFormCancel() {
     activePanel = 'actions';
   }
 
   async function handleFormSubmit(payload: CreateBookPayload) {
     try {
-      await bookStore.addBook(payload);
+      if (activePanel === 'editBook' && $selectedId) {
+        await bookStore.updateBook($selectedId, payload);
+      } else {
+        await bookStore.addBook(payload);
+      }
       activePanel = 'actions';
     } catch (error) {
       console.error(error);
@@ -46,16 +69,16 @@
       <DataGrid />
     </section>
 
-    <aside class="side-panel" class:wide-panel={activePanel === 'addBook'} class:toolbar-mode={activePanel === 'actions'}>
+    <aside class="side-panel" class:wide-panel={activePanel === 'addBook' || activePanel === 'editBook'} class:toolbar-mode={activePanel === 'actions'}>
       {#if activePanel === 'actions'}
         <div class="toolbar">
           <button class="icon-btn" title="Add Book" on:click={handleAddBookClick}>
             <Plus size={20} strokeWidth={1.5} />
           </button>
-          <button class="icon-btn" title="Edit Selected Book">
+          <button class="icon-btn" title="Edit Selected Book" disabled={!$selectedId} on:click={handleEditBookClick}>
             <Pencil size={20} strokeWidth={1.5} />
           </button>
-          <button class="icon-btn" title="Remove Selected Book">
+          <button class="icon-btn" title="Remove Selected Book" disabled={!$selectedId} on:click={handleDeleteBookClick}>
             <Trash2 size={20} strokeWidth={1.5} />
           </button>
 
@@ -68,9 +91,9 @@
             <Settings size={20} strokeWidth={1.5} />
           </button>
         </div>
-      {:else if activePanel === 'addBook'}
+      {:else if activePanel === 'addBook' || activePanel === 'editBook'}
         <div class="panel-content">
-          <BookForm onCancel={handleFormCancel} onSubmit={handleFormSubmit} />
+          <BookForm initialData={activePanel === 'editBook' ? selectedBook : null} onCancel={handleFormCancel} onSubmit={handleFormSubmit} />
         </div>
       {/if}
     </aside>
@@ -172,10 +195,15 @@
     transition: all 0.1s;
   }
 
-  .icon-btn:hover {
+  .icon-btn:hover:not(:disabled) {
     background-color: #e0e0e0;
     border-color: #ccc;
     color: #1a1a1a;
+  }
+
+  .icon-btn:disabled {
+    opacity: 0.3;
+    cursor: not-allowed;
   }
 
   .toolbar-divider {
