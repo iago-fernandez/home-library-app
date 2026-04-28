@@ -1,7 +1,8 @@
 <script lang="ts">
-    import type { CreateBookPayload } from '$lib/types/book';
+    import type { CreateBookPayload, Book } from '$lib/types/book';
     import AutoExpandTextarea from './AutoExpandTextarea.svelte';
 
+    export let initialData: Book | null = null;
     export let onCancel: () => void;
     export let onSubmit: (payload: CreateBookPayload) => void;
 
@@ -16,6 +17,30 @@
     };
 
     let authorsInput = '';
+
+    $: if (initialData) {
+        formData = {
+            title: initialData.title || '',
+            authors: initialData.authors || [],
+            publisher: initialData.publisher || '',
+            publish_date: initialData.publish_date || '',
+            isbn_13: initialData.isbn_13 || '',
+            location_room: initialData.location_room || '',
+            location_bookcase: initialData.location_bookcase || '',
+        };
+        authorsInput = (initialData.authors || []).join(', ');
+    } else {
+        formData = {
+            title: '',
+            authors: [],
+            publisher: '',
+            publish_date: '',
+            isbn_13: '',
+            location_room: '',
+            location_bookcase: '',
+        };
+        authorsInput = '';
+    }
 
     function handleSubmit() {
         formData.authors = authorsInput.split(',').map(a => a.trim()).filter(a => a.length > 0);

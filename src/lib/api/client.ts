@@ -23,5 +23,23 @@ export const apiClient = {
             console.error(error);
             throw error;
         }
+    },
+
+    async updateBook(id: string, payload: CreateBookPayload): Promise<Book> {
+        try {
+            return await invoke<Book>('update_book', { id, payload });
+        } catch (error) {
+            console.error(error);
+            throw error;
+        }
+    },
+
+    async deleteBook(id: string): Promise<void> {
+        try {
+            await invoke('delete_book', { id });
+        } catch (error) {
+            console.error(error);
+            throw error;
+        }
     }
 };

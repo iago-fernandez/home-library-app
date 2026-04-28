@@ -3,6 +3,7 @@
     import { createVirtualizer } from '@tanstack/svelte-virtual';
 
     const totalBooks = bookStore.total;
+    const selectedId = bookStore.selectedId;
 
     let scrollContainer: HTMLDivElement;
 
@@ -33,7 +34,23 @@
             bookStore.loadBooks();
         }
     }
+
+    function handleRowClick(id: string) {
+        if ($selectedId === id) {
+            bookStore.selectedId.set(null);
+        } else {
+            bookStore.selectedId.set(id);
+        }
+    }
+
+    function handleKeyDown(event: KeyboardEvent) {
+        if (event.key === 'Escape') {
+            bookStore.selectedId.set(null);
+        }
+    }
 </script>
+
+<svelte:window on:keydown={handleKeyDown} />
 
 <div class="table-wrapper">
     <div class="grid-header">
@@ -51,9 +68,13 @@
             {#each virtualItems as virtualRow (virtualRow.index)}
                 {@const book = $bookStore[virtualRow.index]}
                 {#if book}
+                    <!-- svelte-ignore a11y-click-events-have-key-events -->
+                    <!-- svelte-ignore a11y-no-static-element-interactions -->
                     <div
                             class="grid-row"
+                            class:selected={$selectedId === book.id}
                             style="transform: translateY({virtualRow.start}px); height: {virtualRow.size}px;"
+                            on:click={() => handleRowClick(book.id)}
                     >
                         <div class="cell">{book.title}</div>
                         <div class="cell">{book.authors.join(', ')}</div>
@@ -114,10 +135,17 @@
         color: #1a1a1a;
         background-color: #ffffff;
         box-sizing: border-box;
+        cursor: pointer;
+        user-select: none;
     }
 
     .grid-row:hover {
         background-color: #f9f9f9;
+    }
+
+    .grid-row.selected {
+        background-color: #e6f7ff;
+        border-bottom: 1px solid #91d5ff;
     }
 
     .cell {
