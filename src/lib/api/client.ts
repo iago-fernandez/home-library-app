@@ -1,10 +1,15 @@
 import { invoke } from '@tauri-apps/api/core';
 import type { Book, CreateBookPayload } from '../types/book';
 
+export interface PaginatedResponse {
+    data: Book[];
+    total: number;
+}
+
 export const apiClient = {
-    async getBooks(limit: number, offset: number): Promise<Book[]> {
+    async getBooks(limit: number, offset: number): Promise<PaginatedResponse> {
         try {
-            return await invoke<Book[]>('get_books', { limit, offset });
+            return await invoke<PaginatedResponse>('get_books', { limit, offset });
         } catch (error) {
             console.error(error);
             throw error;
