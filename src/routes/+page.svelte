@@ -9,7 +9,7 @@
   let activePanel: 'actions' | 'addBook' = 'actions';
 
   onMount(() => {
-    bookStore.loadMockData();
+    bookStore.loadBooks();
   });
 
   function handleAddBookClick() {

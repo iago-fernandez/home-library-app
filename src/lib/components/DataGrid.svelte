@@ -1,92 +1,127 @@
 <script lang="ts">
     import { bookStore } from '$lib/store';
+    import { createVirtualizer } from '@tanstack/svelte-virtual';
+
+    let scrollContainer: HTMLDivElement;
+
+    let options = {
+        count: 0,
+        getScrollElement: () => scrollContainer,
+        estimateSize: () => 36,
+        overscan: 10,
+    };
+
+    const virtualizer = createVirtualizer(options);
+
+    $: {
+        options = {
+            count: $bookStore.length,
+            getScrollElement: () => scrollContainer,
+            estimateSize: () => 36,
+            overscan: 10,
+        };
+        $virtualizer.setOptions(options);
+    }
+
+    $: virtualItems = $virtualizer.getVirtualItems();
+
+    $: {
+        const lastItem = virtualItems[virtualItems.length - 1];
+        if (lastItem && lastItem.index >= $bookStore.length - 2) {
+            bookStore.loadBooks();
+        }
+    }
 </script>
 
-<div class="grid-container">
-    <table class="data-table">
-        <thead>
-        <tr>
-            <th>Title</th>
-            <th>Author</th>
-            <th>Publisher</th>
-            <th>Year</th>
-            <th>ISBN</th>
-            <th>Room</th>
-            <th>Bookcase</th>
-        </tr>
-        </thead>
-        <tbody>
-        {#each $bookStore as book (book.id)}
-            <tr>
-                <td class="cell-title">{book.title}</td>
-                <td>{book.authors.join(', ')}</td>
-                <td>{book.publisher || ''}</td>
-                <td>{book.publish_date || ''}</td>
-                <td>{book.isbn_13 || book.isbn_10 || ''}</td>
-                <td>{book.location_room || ''}</td>
-                <td>{book.location_bookcase || ''}</td>
-            </tr>
-        {/each}
-        {#if $bookStore.length === 0}
-            <tr>
-                <td colspan="7" class="empty-state">No records found in the database.</td>
-            </tr>
-        {/if}
-        </tbody>
-    </table>
+<div class="table-wrapper">
+    <div class="grid-header">
+        <div class="cell">Title</div>
+        <div class="cell">Authors</div>
+        <div class="cell">Publisher</div>
+        <div class="cell">Date</div>
+        <div class="cell">ISBN</div>
+        <div class="cell">Room</div>
+        <div class="cell">Bookcase</div>
+    </div>
+
+    <div bind:this={scrollContainer} class="scroll-container">
+        <div class="virtual-inner" style="height: {$virtualizer.getTotalSize()}px;">
+            {#each virtualItems as virtualRow (virtualRow.index)}
+                {@const book = $bookStore[virtualRow.index]}
+                <div
+                        class="grid-row"
+                        style="transform: translateY({virtualRow.start}px); height: {virtualRow.size}px;"
+                >
+                    <div class="cell">{book.title}</div>
+                    <div class="cell">{book.authors.join(', ')}</div>
+                    <div class="cell">{book.publisher || ''}</div>
+                    <div class="cell">{book.publish_date || ''}</div>
+                    <div class="cell">{book.isbn_13 || ''}</div>
+                    <div class="cell">{book.location_room || ''}</div>
+                    <div class="cell">{book.location_bookcase || ''}</div>
+                </div>
+            {/each}
+        </div>
+    </div>
 </div>
 
 <style>
-    .grid-container {
+    .table-wrapper {
+        display: flex;
+        flex-direction: column;
         height: 100%;
-        overflow: auto;
         background-color: #ffffff;
-        border: 1px solid #ccc;
+        border: 1px solid #e0e0e0;
+        border-radius: 4px;
+        overflow: hidden;
     }
 
-    .data-table {
-        width: 100%;
-        border-collapse: collapse;
-        text-align: left;
-        font-size: 13px;
-    }
-
-    th {
-        position: sticky;
-        top: 0;
-        background-color: #f0f0f0;
+    .grid-header {
+        display: grid;
+        grid-template-columns: 2fr 2fr 1.5fr 1fr 1.5fr 1fr 1fr;
+        background-color: #f5f5f5;
         border-bottom: 1px solid #ccc;
-        border-right: 1px solid #ccc;
-        padding: 6px 12px;
         font-weight: 600;
-        z-index: 1;
-        user-select: none;
+        font-size: 13px;
+        color: #333;
     }
 
-    td {
-        padding: 6px 12px;
-        border-bottom: 1px solid #eee;
-        border-right: 1px solid #eee;
+    .scroll-container {
+        flex: 1;
+        overflow-y: auto;
+        position: relative;
+        overflow-anchor: none;
+    }
+
+    .virtual-inner {
+        width: 100%;
+        position: relative;
+    }
+
+    .grid-row {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        display: grid;
+        grid-template-columns: 2fr 2fr 1.5fr 1fr 1.5fr 1fr 1fr;
+        border-bottom: 1px solid #f0f0f0;
+        font-size: 13px;
+        color: #1a1a1a;
+        background-color: #ffffff;
+        box-sizing: border-box;
+    }
+
+    .grid-row:hover {
+        background-color: #f9f9f9;
+    }
+
+    .cell {
+        padding: 8px 12px;
         white-space: nowrap;
         overflow: hidden;
         text-overflow: ellipsis;
-        max-width: 150px;
-    }
-
-    .cell-title {
-        max-width: 250px;
-        font-weight: 500;
-    }
-
-    tr:hover td {
-        background-color: #f5f8ff;
-        cursor: pointer;
-    }
-
-    .empty-state {
-        text-align: center;
-        padding: 24px;
-        color: #666;
-        font-style: italic;
+        display: flex;
+        align-items: center;
     }
 </style>
