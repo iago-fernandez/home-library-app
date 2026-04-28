@@ -14,6 +14,12 @@ pub struct Book {
     pub location_bookcase: Option<String>,
 }
 
+#[derive(Debug, Serialize, Deserialize)]
+pub struct PaginatedBooks {
+    pub data: Vec<Book>,
+    pub total: i64,
+}
+
 #[derive(Debug, Deserialize, Serialize)]
 pub struct CreateBookPayload {
     pub title: String,
@@ -26,7 +32,7 @@ pub struct CreateBookPayload {
 }
 
 #[tauri::command]
-async fn get_books(limit: i64, offset: i64, client: State<'_, Client>) -> Result<Vec<Book>, String> {
+async fn get_books(limit: i64, offset: i64, client: State<'_, Client>) -> Result<PaginatedBooks, String> {
     let api_url = std::env::var("API_URL").map_err(|_| "API_URL environment variable is missing".to_string())?;
     let endpoint = format!("{}/books?limit={}&offset={}", api_url, limit, offset);
 
@@ -37,8 +43,8 @@ async fn get_books(limit: i64, offset: i64, client: State<'_, Client>) -> Result
         .map_err(|e| e.to_string())?;
 
     if response.status().is_success() {
-        let books = response.json::<Vec<Book>>().await.map_err(|e| e.to_string())?;
-        Ok(books)
+        let paginated_data = response.json::<PaginatedBooks>().await.map_err(|e| e.to_string())?;
+        Ok(paginated_data)
     } else {
         let status = response.status();
         let error_body = response.text().await.unwrap_or_default();

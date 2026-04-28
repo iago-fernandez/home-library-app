@@ -2,23 +2,25 @@
     import { bookStore } from '$lib/store';
     import { createVirtualizer } from '@tanstack/svelte-virtual';
 
+    const totalBooks = bookStore.total;
+
     let scrollContainer: HTMLDivElement;
 
     let options = {
         count: 0,
         getScrollElement: () => scrollContainer,
         estimateSize: () => 36,
-        overscan: 10,
+        overscan: 15,
     };
 
     const virtualizer = createVirtualizer(options);
 
     $: {
         options = {
-            count: $bookStore.length,
+            count: $totalBooks,
             getScrollElement: () => scrollContainer,
             estimateSize: () => 36,
-            overscan: 10,
+            overscan: 15,
         };
         $virtualizer.setOptions(options);
     }
@@ -27,7 +29,7 @@
 
     $: {
         const lastItem = virtualItems[virtualItems.length - 1];
-        if (lastItem && lastItem.index >= $bookStore.length - 2) {
+        if (lastItem && lastItem.index >= $bookStore.length - 10) {
             bookStore.loadBooks();
         }
     }
@@ -48,18 +50,20 @@
         <div class="virtual-inner" style="height: {$virtualizer.getTotalSize()}px;">
             {#each virtualItems as virtualRow (virtualRow.index)}
                 {@const book = $bookStore[virtualRow.index]}
-                <div
-                        class="grid-row"
-                        style="transform: translateY({virtualRow.start}px); height: {virtualRow.size}px;"
-                >
-                    <div class="cell">{book.title}</div>
-                    <div class="cell">{book.authors.join(', ')}</div>
-                    <div class="cell">{book.publisher || ''}</div>
-                    <div class="cell">{book.publish_date || ''}</div>
-                    <div class="cell">{book.isbn_13 || ''}</div>
-                    <div class="cell">{book.location_room || ''}</div>
-                    <div class="cell">{book.location_bookcase || ''}</div>
-                </div>
+                {#if book}
+                    <div
+                            class="grid-row"
+                            style="transform: translateY({virtualRow.start}px); height: {virtualRow.size}px;"
+                    >
+                        <div class="cell">{book.title}</div>
+                        <div class="cell">{book.authors.join(', ')}</div>
+                        <div class="cell">{book.publisher || ''}</div>
+                        <div class="cell">{book.publish_date || ''}</div>
+                        <div class="cell">{book.isbn_13 || ''}</div>
+                        <div class="cell">{book.location_room || ''}</div>
+                        <div class="cell">{book.location_bookcase || ''}</div>
+                    </div>
+                {/if}
             {/each}
         </div>
     </div>
