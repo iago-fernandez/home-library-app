@@ -15,6 +15,7 @@
   "dependencies": {
     "@tanstack/svelte-virtual": "^3.13.24",
     "@tauri-apps/api": "^2.2.0",
+    "@tauri-apps/plugin-http": "^2.5.8",
     "@tauri-apps/plugin-opener": "^2.2.5",
     "lucide-svelte": "^0.477.0"
   },

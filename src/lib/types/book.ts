@@ -59,3 +59,17 @@ export interface Book {
 }
 
 export type CreateBookPayload = Omit<Book, 'id' | 'catalog_number' | 'created_at' | 'updated_at'>;
+
+export interface PaginatedResponse {
+    data: Book[];
+    total: number;
+}
+
+export interface BookMetadataResponse {
+    isbn: string | null;
+    title: string | null;
+    authors: string[] | null;
+    publish_date: string | null;
+    page_count: number | null;
+    cover_url: string | null;
+}
