@@ -7,9 +7,15 @@ export interface PaginatedResponse {
 }
 
 export const apiClient = {
-    async getBooks(limit: number, offset: number): Promise<PaginatedResponse> {
+    async getBooks(limit: number, offset: number, sortBy?: string, sortOrder?: string, search?: string): Promise<PaginatedResponse> {
         try {
-            return await invoke<PaginatedResponse>('get_books', { limit, offset });
+            return await invoke<PaginatedResponse>('get_books', {
+                limit,
+                offset,
+                sortBy: sortBy || null,
+                sortOrder: sortOrder || null,
+                search: search || null
+            });
         } catch (error) {
             console.error(error);
             throw error;
