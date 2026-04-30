@@ -5,12 +5,14 @@
     import { tick } from 'svelte';
 
     const totalBooks = bookStore.total;
-    const selectedId = bookStore.selectedId;
+    const selectedIds = bookStore.selectedIds;
     const sortConfig = bookStore.sortConfig;
     const orderConfig = bookStore.orderConfig;
     const localSearchActive = bookStore.localSearchActive;
+    const multiSelectMode = bookStore.multiSelectMode;
 
     let scrollContainer: HTMLDivElement;
+    let lastSelectedIndex = -1;
 
     let options = {
         count: 0,
@@ -22,7 +24,6 @@
     const virtualizer = createVirtualizer(options);
 
     $: {
-        // RESTORED: Bind strictly to the total database count to calculate full height immediately
         options = {
             count: $totalBooks,
             getScrollElement: () => scrollContainer,
@@ -36,7 +37,6 @@
 
     $: {
         const lastItem = virtualItems[virtualItems.length - 1];
-        // Trigger next page load if we render an index close to our loaded array limit
         if (lastItem && lastItem.index >= $bookStore.length - 10 && $bookStore.length < $totalBooks) {
             bookStore.loadBooks();
         }
@@ -146,15 +146,53 @@
         if (currentMatchIndex >= 0 && currentMatchIndex < matchIndices.length) {
             const index = matchIndices[currentMatchIndex];
             $virtualizer.scrollToIndex(index, { align: 'center' });
+            bookStore.selectedIds.set([$bookStore[index].id]);
             bookStore.selectedId.set($bookStore[index].id);
         }
     }
 
-    function handleRowClick(id: string) {
-        if ($selectedId === id) {
-            bookStore.selectedId.set(null);
+    function handleRowClick(event: MouseEvent | KeyboardEvent, id: string, index: number) {
+        const isCtrl = $multiSelectMode || event.ctrlKey || event.metaKey;
+        const isShift = event.shiftKey;
+
+        let newSelection = [...$selectedIds];
+
+        if (isShift && lastSelectedIndex !== -1) {
+            if (event instanceof MouseEvent) event.preventDefault();
+
+            const start = Math.min(lastSelectedIndex, index);
+            const end = Math.max(lastSelectedIndex, index);
+            const rangeIds = $bookStore.slice(start, end + 1).map(b => b.id);
+
+            if (isCtrl) {
+                const idSet = new Set([...newSelection, ...rangeIds]);
+                newSelection = Array.from(idSet);
+            } else {
+                newSelection = rangeIds;
+            }
+        } else if (isCtrl) {
+            if (newSelection.includes(id)) {
+                newSelection = newSelection.filter(i => i !== id);
+            } else {
+                newSelection.push(id);
+            }
+            lastSelectedIndex = index;
         } else {
-            bookStore.selectedId.set(id);
+            if (newSelection.length === 1 && newSelection[0] === id) {
+                newSelection = [];
+                lastSelectedIndex = -1;
+            } else {
+                newSelection = [id];
+                lastSelectedIndex = index;
+            }
+        }
+
+        bookStore.selectedIds.set(newSelection);
+
+        if (newSelection.length === 1) {
+            bookStore.selectedId.set(newSelection[0]);
+        } else {
+            bookStore.selectedId.set(null);
         }
     }
 
@@ -168,8 +206,19 @@
         if (event.key === 'Escape') {
             if ($localSearchActive) {
                 toggleLocalSearch();
+            } else if ($multiSelectMode) {
+                bookStore.toggleMultiSelectMode();
             } else {
+                bookStore.clearSelection();
                 bookStore.selectedId.set(null);
+                lastSelectedIndex = -1;
+            }
+        }
+
+        if (event.key === 'Delete' && $selectedIds.length > 0) {
+            event.preventDefault();
+            if (confirm(`Are you sure you want to delete ${$selectedIds.length} records?`)) {
+                bookStore.deleteBooksBatch($selectedIds);
             }
         }
     }
@@ -181,7 +230,7 @@
 
 <svelte:window on:keydown={handleGlobalKeydown} />
 
-<div class="table-wrapper">
+<div class="table-wrapper" class:multi-select-active={$multiSelectMode}>
     {#if $localSearchActive}
         <div class="local-search-bar">
             <Search size={16} color="#666" />
@@ -271,12 +320,12 @@
                 {#if book}
                     <div
                             class="grid-row"
-                            class:selected={$selectedId === book.id}
+                            class:selected={$selectedIds.includes(book.id)}
                             style="transform: translateY({virtualRow.start}px); height: {virtualRow.size}px;"
                             role="button"
                             tabindex="0"
-                            on:click={() => handleRowClick(book.id)}
-                            on:keydown={(e) => e.key === 'Enter' && handleRowClick(book.id)}
+                            on:click={(e) => handleRowClick(e, book.id, virtualRow.index)}
+                            on:keydown={(e) => e.key === 'Enter' && handleRowClick(e, book.id, virtualRow.index)}
                     >
                         <div class="cell">{book.title}</div>
                         <div class="cell">{book.authors.join(', ')}</div>
@@ -287,7 +336,6 @@
                         <div class="cell">{book.location_bookcase || ''}</div>
                     </div>
                 {:else}
-                    <!-- Fallback skeleton row to maintain perfect layout while data is fetching -->
                     <div class="grid-row skeleton" style="transform: translateY({virtualRow.start}px); height: {virtualRow.size}px;">
                         <div class="cell"><div class="skeleton-line"></div></div>
                         <div class="cell"><div class="skeleton-line"></div></div>
@@ -312,6 +360,11 @@
         border: 1px solid #e0e0e0;
         border-radius: 4px;
         overflow: hidden;
+        transition: border-color 0.2s;
+    }
+
+    .table-wrapper.multi-select-active {
+        border: 2px solid #0066cc;
     }
 
     .local-search-bar {

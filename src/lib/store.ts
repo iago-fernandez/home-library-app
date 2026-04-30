@@ -13,6 +13,7 @@ function createBookStore() {
     const filterQuery = writable<string | undefined>(undefined);
 
     const localSearchActive = writable<boolean>(false);
+    const multiSelectMode = writable<boolean>(false);
 
     let currentOffset = 0;
     const LIMIT = 100;
@@ -34,8 +35,18 @@ function createBookStore() {
         orderConfig: { subscribe: orderParam.subscribe },
         filterConfig: { subscribe: filterQuery.subscribe },
         localSearchActive,
+        multiSelectMode,
 
         toggleLocalSearch: () => localSearchActive.update(v => !v),
+
+        toggleMultiSelectMode: () => {
+            multiSelectMode.update(active => {
+                if (active) {
+                    selectedIdsList.set([]);
+                }
+                return !active;
+            });
+        },
 
         loadBooks: async () => {
             if (isFetching || !hasMore) return;
