@@ -1,45 +1,75 @@
-import { invoke } from '@tauri-apps/api/core';
-import type { Book, CreateBookPayload } from '../types/book';
+import { fetch } from '@tauri-apps/plugin-http';
+import type { Book, CreateBookPayload, PaginatedResponse, BookMetadataResponse } from '../types/book';
 
-export interface PaginatedResponse {
-    data: Book[];
-    total: number;
-}
+const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001';
 
 export const apiClient = {
-    async getBooks(limit: number, offset: number): Promise<PaginatedResponse> {
-        try {
-            return await invoke<PaginatedResponse>('get_books', { limit, offset });
-        } catch (error) {
-            console.error(error);
-            throw error;
-        }
+    async getBooks(
+        limit = 50,
+        offset = 0,
+        sortBy?: string,
+        sortOrder?: 'asc' | 'desc',
+        queryJson?: string
+    ): Promise<PaginatedResponse> {
+        const url = new URL(`${API_BASE_URL}/books`);
+        url.searchParams.append('limit', limit.toString());
+        url.searchParams.append('offset', offset.toString());
+
+        if (sortBy) url.searchParams.append('sort_by', sortBy);
+        if (sortOrder) url.searchParams.append('sort_order', sortOrder);
+        if (queryJson) url.searchParams.append('query', queryJson);
+
+        const response = await fetch(url.toString(), {
+            method: 'GET',
+        });
+
+        if (!response.ok) throw new Error('Failed to fetch books');
+        return response.json();
     },
 
     async createBook(payload: CreateBookPayload): Promise<Book> {
-        try {
-            return await invoke<Book>('create_book', { payload });
-        } catch (error) {
-            console.error(error);
-            throw error;
-        }
+        const response = await fetch(`${API_BASE_URL}/books`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload)
+        });
+        if (!response.ok) throw new Error('Failed to create book');
+        return response.json();
     },
 
     async updateBook(id: string, payload: CreateBookPayload): Promise<Book> {
-        try {
-            return await invoke<Book>('update_book', { id, payload });
-        } catch (error) {
-            console.error(error);
-            throw error;
-        }
+        const response = await fetch(`${API_BASE_URL}/books/${id}`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload)
+        });
+        if (!response.ok) throw new Error('Failed to update book');
+        return response.json();
     },
 
     async deleteBook(id: string): Promise<void> {
-        try {
-            await invoke('delete_book', { id });
-        } catch (error) {
-            console.error(error);
-            throw error;
-        }
+        const response = await fetch(`${API_BASE_URL}/books/${id}`, {
+            method: 'DELETE',
+        });
+        if (!response.ok) throw new Error('Failed to delete book');
+    },
+
+    async lookupIsbn(isbn: string): Promise<BookMetadataResponse> {
+        const response = await fetch(`${API_BASE_URL}/books/lookup/${isbn}`, {
+            method: 'GET',
+        });
+        if (!response.ok) throw new Error('Failed to lookup ISBN');
+        return response.json();
+    },
+
+    async searchMetadata(query: string): Promise<BookMetadataResponse[]> {
+        const url = new URL(`${API_BASE_URL}/books/search-metadata`);
+        url.searchParams.append('q', query);
+
+        const response = await fetch(url.toString(), {
+            method: 'GET',
+        });
+        if (!response.ok) throw new Error('Failed to search metadata');
+        return response.json();
     }
 };

@@ -1,4 +1,4 @@
-import { writable } from 'svelte/store';
+import { writable, get } from 'svelte/store';
 import type { Book, CreateBookPayload } from './types/book';
 import { apiClient } from './api/client';
 
@@ -6,6 +6,12 @@ function createBookStore() {
     const { subscribe, set, update } = writable<Book[]>([]);
     const totalBooks = writable<number>(0);
     const selectedBookId = writable<string | null>(null);
+
+    const sortParam = writable<string | undefined>(undefined);
+    const orderParam = writable<'asc' | 'desc' | undefined>(undefined);
+    const filterQuery = writable<string | undefined>(undefined);
+
+    const localSearchActive = writable<boolean>(false);
 
     let currentOffset = 0;
     const LIMIT = 100;
@@ -19,12 +25,27 @@ function createBookStore() {
             subscribe: selectedBookId.subscribe,
             set: selectedBookId.set
         },
+        sortConfig: { subscribe: sortParam.subscribe },
+        orderConfig: { subscribe: orderParam.subscribe },
+        filterConfig: { subscribe: filterQuery.subscribe },
+        localSearchActive,
+
+        toggleLocalSearch: () => localSearchActive.update(v => !v),
+
         loadBooks: async () => {
             if (isFetching || !hasMore) return;
 
             isFetching = true;
             try {
-                const response = await apiClient.getBooks(LIMIT, currentOffset);
+                const currentQuery = get(filterQuery);
+
+                const response = await apiClient.getBooks(
+                    LIMIT,
+                    currentOffset,
+                    get(sortParam),
+                    get(orderParam),
+                    currentQuery
+                );
 
                 totalBooks.set(response.total);
 
@@ -49,6 +70,23 @@ function createBookStore() {
             isFetching = false;
             await bookStore.loadBooks();
         },
+        applySort: async (column: string) => {
+            const currentSort = get(sortParam);
+            const currentOrder = get(orderParam);
+
+            if (currentSort === column) {
+                orderParam.set(currentOrder === 'asc' ? 'desc' : 'asc');
+            } else {
+                sortParam.set(column);
+                orderParam.set('asc');
+            }
+
+            await bookStore.resetAndLoad();
+        },
+        applyFilters: async (queryJson: string | undefined) => {
+            filterQuery.set(queryJson);
+            await bookStore.resetAndLoad();
+        },
         addBook: async (payload: CreateBookPayload) => {
             const tempId = crypto.randomUUID();
 
@@ -57,7 +95,7 @@ function createBookStore() {
                 id: tempId,
             } as Book;
 
-            update(books => [...books, optimisticBook]);
+            update(books => [optimisticBook, ...books]);
             totalBooks.update(n => n + 1);
 
             try {
