@@ -22,6 +22,7 @@
     const virtualizer = createVirtualizer(options);
 
     $: {
+        // RESTORED: Bind strictly to the total database count to calculate full height immediately
         options = {
             count: $totalBooks,
             getScrollElement: () => scrollContainer,
@@ -35,7 +36,8 @@
 
     $: {
         const lastItem = virtualItems[virtualItems.length - 1];
-        if (lastItem && lastItem.index >= $bookStore.length - 10) {
+        // Trigger next page load if we render an index close to our loaded array limit
+        if (lastItem && lastItem.index >= $bookStore.length - 10 && $bookStore.length < $totalBooks) {
             bookStore.loadBooks();
         }
     }
@@ -284,6 +286,17 @@
                         <div class="cell">{book.location_room || ''}</div>
                         <div class="cell">{book.location_bookcase || ''}</div>
                     </div>
+                {:else}
+                    <!-- Fallback skeleton row to maintain perfect layout while data is fetching -->
+                    <div class="grid-row skeleton" style="transform: translateY({virtualRow.start}px); height: {virtualRow.size}px;">
+                        <div class="cell"><div class="skeleton-line"></div></div>
+                        <div class="cell"><div class="skeleton-line"></div></div>
+                        <div class="cell"><div class="skeleton-line"></div></div>
+                        <div class="cell"><div class="skeleton-line"></div></div>
+                        <div class="cell"><div class="skeleton-line"></div></div>
+                        <div class="cell"><div class="skeleton-line"></div></div>
+                        <div class="cell"><div class="skeleton-line"></div></div>
+                    </div>
                 {/if}
             {/each}
         </div>
@@ -310,6 +323,7 @@
         gap: 8px;
         box-shadow: 0 2px 4px rgba(0,0,0,0.05);
         z-index: 10;
+        flex-shrink: 0;
     }
 
     .column-select {
@@ -386,6 +400,7 @@
         font-weight: 600;
         font-size: 13px;
         color: #333;
+        flex-shrink: 0;
     }
 
     .scroll-container {
@@ -461,5 +476,27 @@
         margin-left: 6px;
         color: #0066cc;
         font-weight: bold;
+    }
+
+    .skeleton {
+        pointer-events: none;
+    }
+
+    .skeleton-line {
+        height: 12px;
+        width: 80%;
+        background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+        background-size: 200% 100%;
+        animation: loading 1.5s infinite;
+        border-radius: 4px;
+    }
+
+    @keyframes loading {
+        0% {
+            background-position: 200% 0;
+        }
+        100% {
+            background-position: -200% 0;
+        }
     }
 </style>

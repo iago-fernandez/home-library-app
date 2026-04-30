@@ -18,11 +18,16 @@
     inputType: InputHTMLType;
     operator: string;
     value: string;
+    isNot: boolean;
+    caseSensitive: boolean;
   }
 
   let activeFilters: FilterRule[] = [];
   let filterTimer: ReturnType<typeof setTimeout>;
   let lastAppliedFilters: string | undefined = undefined;
+  let matchType: 'AND' | 'OR' = 'AND';
+
+  let openMenu: string | null = null;
 
   const localSearchActive = bookStore.localSearchActive;
 
@@ -36,7 +41,7 @@
     { value: 'location_bookcase', label: 'Bookcase', type: 'text', inputType: 'text' }
   ];
 
-  const operatorDefinitions = {
+  const operatorDefinitions: Record<FieldType, { value: string, label: string }[]> = {
     text: [
       { value: '_contains', label: 'Contains' },
       { value: '_exact', label: 'Is exactly' },
@@ -45,9 +50,9 @@
     ],
     numeric: [
       { value: '_exact', label: 'Equals exactly' },
-      { value: '_gt', label: 'Greater than / After' },
+      { value: '_gt', label: 'Greater than' },
       { value: '_gte', label: 'Greater or equal' },
-      { value: '_lt', label: 'Less than / Before' },
+      { value: '_lt', label: 'Less than' },
       { value: '_lte', label: 'Less or equal' }
     ]
   };
@@ -58,6 +63,21 @@
   onMount(() => {
     bookStore.loadBooks();
   });
+
+  function toggleMenu(menuName: string) {
+    openMenu = openMenu === menuName ? null : menuName;
+  }
+
+  function closeMenus() {
+    openMenu = null;
+  }
+
+  function handleWindowClick(e: MouseEvent) {
+    const target = e.target as HTMLElement;
+    if (!target.closest('.menu-container')) {
+      closeMenus();
+    }
+  }
 
   function handleAddBookClick() {
     activePanel = 'addBook';
@@ -110,7 +130,9 @@
       type: 'text',
       inputType: 'text',
       operator: '_contains',
-      value: ''
+      value: '',
+      isNot: false,
+      caseSensitive: false
     }];
   }
 
@@ -120,32 +142,30 @@
   }
 
   function handleFieldChange(rule: FilterRule) {
-    const previousValue = rule.value;
     const fieldDef = availableFields.find(f => f.value === rule.field);
-
     if (fieldDef) {
+      const oldInputType = rule.inputType;
+
       rule.type = fieldDef.type;
       rule.inputType = fieldDef.inputType;
       rule.operator = operatorDefinitions[fieldDef.type][0].value;
-      rule.value = '';
+
+      if (oldInputType !== fieldDef.inputType) {
+        rule.value = '';
+      }
     }
     activeFilters = [...activeFilters];
-
-    if (previousValue.trim()) {
-      triggerDebouncedFilter();
-    }
+    triggerDebouncedFilter();
   }
 
-  function handleOperatorChange(rule: FilterRule) {
-    if (rule.value.trim()) {
-      triggerDebouncedFilter();
-    }
+  function handleControlChange() {
+    activeFilters = [...activeFilters];
+    triggerDebouncedFilter();
   }
 
   function triggerDebouncedFilter() {
     clearTimeout(filterTimer);
     filterTimer = setTimeout(async () => {
-
       const validRules = activeFilters.filter(rule => rule.value.trim() !== '');
 
       if (validRules.length === 0) {
@@ -156,19 +176,35 @@
         return;
       }
 
-      const astNodes = validRules.map(rule => ({
-        type: "CONDITION",
-        field: rule.field,
-        operator: rule.operator,
-        value: rule.value.trim()
-      }));
+      const astNodes = validRules.map(rule => {
+        let finalOperator = rule.operator;
+        if (rule.caseSensitive && ['_contains', '_starts', '_ends'].includes(finalOperator)) {
+          finalOperator += '_case';
+        }
+
+        const conditionNode = {
+          type: "CONDITION",
+          field: rule.field,
+          operator: finalOperator,
+          value: rule.value.trim()
+        };
+
+        if (rule.isNot) {
+          return {
+            type: "NOT",
+            node: conditionNode
+          };
+        }
+
+        return conditionNode;
+      });
 
       let finalAst;
       if (astNodes.length === 1) {
         finalAst = astNodes[0];
       } else {
         finalAst = {
-          type: "AND",
+          type: matchType,
           nodes: astNodes
         };
       }
@@ -186,24 +222,110 @@
     activeFilters = [];
     lastAppliedFilters = undefined;
     await bookStore.applyFilters(undefined);
-    addFilterRule();
+    if (activePanel === 'filter') {
+      addFilterRule();
+    }
+  }
+
+  function formatRuleForDisplay(rule: FilterRule): string {
+    const fieldDef = availableFields.find(f => f.value === rule.field);
+    const fieldLabel = fieldDef ? fieldDef.label : rule.field;
+
+    let opLabel = rule.operator;
+    for (const key in operatorDefinitions) {
+      const found = operatorDefinitions[key as FieldType].find(o => o.value === rule.operator.replace('_case', ''));
+      if (found) {
+        opLabel = found.label.toLowerCase();
+        break;
+      }
+    }
+
+    let text = `${fieldLabel} ${rule.isNot ? 'NOT ' : ''}${opLabel} "${rule.value}"`;
+    if (rule.caseSensitive) text += ' (Aa)';
+    return text;
   }
 </script>
+
+<svelte:window on:click={handleWindowClick} />
 
 <div class="app-container">
   <header class="top-bar" data-tauri-drag-region>
     <nav class="menu-bar">
-      <button class="menu-btn">File</button>
-      <button class="menu-btn" on:click={bookStore.toggleLocalSearch}>Edit</button>
-      <button class="menu-btn">View</button>
-      <button class="menu-btn">Tools</button>
-      <button class="menu-btn">Help</button>
+      <div class="menu-container">
+        <button class="menu-btn" class:active={openMenu === 'File'} on:click={() => toggleMenu('File')}>File</button>
+        {#if openMenu === 'File'}
+          <div class="dropdown-menu">
+            <button class="dropdown-item">New Library</button>
+            <button class="dropdown-item">Settings</button>
+            <div class="dropdown-divider"></div>
+            <button class="dropdown-item">Exit</button>
+          </div>
+        {/if}
+      </div>
+
+      <div class="menu-container">
+        <button class="menu-btn" class:active={openMenu === 'Edit'} on:click={() => toggleMenu('Edit')}>Edit</button>
+        {#if openMenu === 'Edit'}
+          <div class="dropdown-menu">
+            <button class="dropdown-item" on:click={() => { bookStore.toggleLocalSearch(); closeMenus(); }}>Find in view (Ctrl+F)</button>
+            <button class="dropdown-item" on:click={() => { handleFilterClick(); closeMenus(); }}>Advanced Filter</button>
+          </div>
+        {/if}
+      </div>
+
+      <div class="menu-container">
+        <button class="menu-btn" class:active={openMenu === 'View'} on:click={() => toggleMenu('View')}>View</button>
+        {#if openMenu === 'View'}
+          <div class="dropdown-menu">
+            <button class="dropdown-item">Refresh Data</button>
+            <button class="dropdown-item">Toggle Sidebar</button>
+          </div>
+        {/if}
+      </div>
+
+      <div class="menu-container">
+        <button class="menu-btn" class:active={openMenu === 'Tools'} on:click={() => toggleMenu('Tools')}>Tools</button>
+        {#if openMenu === 'Tools'}
+          <div class="dropdown-menu">
+            <button class="dropdown-item">Import ISBN List</button>
+            <button class="dropdown-item">Export to CSV</button>
+          </div>
+        {/if}
+      </div>
+
+      <div class="menu-container">
+        <button class="menu-btn" class:active={openMenu === 'Help'} on:click={() => toggleMenu('Help')}>Help</button>
+        {#if openMenu === 'Help'}
+          <div class="dropdown-menu">
+            <button class="dropdown-item">Documentation</button>
+            <button class="dropdown-item">About</button>
+          </div>
+        {/if}
+      </div>
     </nav>
   </header>
 
   <main class="workspace">
     <section class="center-stage">
-      <DataGrid />
+      {#if activeFilters.filter(r => r.value.trim() !== '').length > 0}
+        <div class="active-filters-bar">
+          <span class="active-filters-label">Active Filters {matchType === 'OR' ? '(Any)' : '(All)'}:</span>
+          <div class="filter-chips">
+            {#each activeFilters.filter(r => r.value.trim() !== '') as rule (rule.id)}
+              <div class="filter-chip">
+                <button class="chip-text-btn" on:click={handleFilterClick}>{formatRuleForDisplay(rule)}</button>
+                <button class="chip-remove" on:click={() => removeFilterRule(rule.id)}>
+                  <X size={12} strokeWidth={2} />
+                </button>
+              </div>
+            {/each}
+          </div>
+          <button class="btn-clear-chips" on:click={clearFilters}>Clear All</button>
+        </div>
+      {/if}
+      <div class="grid-wrapper">
+        <DataGrid />
+      </div>
     </section>
 
     <aside class="side-panel" class:wide-panel={activePanel === 'addBook' || activePanel === 'editBook' || activePanel === 'filter'} class:toolbar-mode={activePanel === 'actions'}>
@@ -224,7 +346,7 @@
           <button class="icon-btn" title="Find in view (Ctrl+F)" class:active={$localSearchActive} on:click={bookStore.toggleLocalSearch}>
             <Search size={20} strokeWidth={1.5} />
           </button>
-          <button class="icon-btn" title="Advanced Filter" on:click={handleFilterClick}>
+          <button class="icon-btn" title="Advanced Filter" class:active={activeFilters.filter(r => r.value.trim() !== '').length > 0} on:click={handleFilterClick}>
             <Filter size={20} strokeWidth={1.5} />
           </button>
           <button class="icon-btn" title="System Settings">
@@ -248,15 +370,31 @@
           </div>
 
           <div class="filter-rules-container">
+            {#if activeFilters.length > 1}
+              <div class="match-type-toggle">
+                <span class="match-label">Match:</span>
+                <select bind:value={matchType} on:change={triggerDebouncedFilter} class="rule-select match-select">
+                  <option value="AND">All rules (AND)</option>
+                  <option value="OR">Any rule (OR)</option>
+                </select>
+              </div>
+            {/if}
+
             {#each activeFilters as rule (rule.id)}
               <div class="filter-rule">
                 <div class="rule-controls">
+                  <button
+                          class="rule-toggle-btn {rule.isNot ? 'active-not' : ''}"
+                          on:click={() => { rule.isNot = !rule.isNot; handleControlChange(); }}
+                          title="Invert Rule (NOT)">
+                    NOT
+                  </button>
                   <select bind:value={rule.field} class="rule-select" on:change={() => handleFieldChange(rule)}>
                     {#each availableFields as field}
                       <option value={field.value}>{field.label}</option>
                     {/each}
                   </select>
-                  <select bind:value={rule.operator} class="rule-select" on:change={() => handleOperatorChange(rule)}>
+                  <select bind:value={rule.operator} class="rule-select" on:change={handleControlChange}>
                     {#each operatorDefinitions[rule.type] as op}
                       <option value={op.value}>{op.label}</option>
                     {/each}
@@ -266,30 +404,38 @@
                   </button>
                 </div>
 
-                {#if rule.inputType === 'text'}
-                  <input
-                          type="text"
-                          bind:value={rule.value}
-                          placeholder="Value..."
-                          class="rule-input"
-                          on:input={triggerDebouncedFilter}
-                  />
-                {:else if rule.inputType === 'number'}
-                  <input
-                          type="number"
-                          bind:value={rule.value}
-                          placeholder="0"
-                          class="rule-input"
-                          on:input={triggerDebouncedFilter}
-                  />
-                {:else if rule.inputType === 'date'}
-                  <input
-                          type="date"
-                          bind:value={rule.value}
-                          class="rule-input"
-                          on:input={triggerDebouncedFilter}
-                  />
-                {/if}
+                <div class="rule-input-row">
+                  {#if rule.inputType === 'text'}
+                    <input
+                            type="text"
+                            bind:value={rule.value}
+                            placeholder="Value..."
+                            class="rule-input"
+                            on:input={triggerDebouncedFilter}
+                    />
+                    <button
+                            class="rule-toggle-btn {rule.caseSensitive ? 'active-cs' : ''}"
+                            on:click={() => { rule.caseSensitive = !rule.caseSensitive; handleControlChange(); }}
+                            title="Case Sensitive">
+                      Aa
+                    </button>
+                  {:else if rule.inputType === 'number'}
+                    <input
+                            type="number"
+                            bind:value={rule.value}
+                            placeholder="0"
+                            class="rule-input"
+                            on:input={triggerDebouncedFilter}
+                    />
+                  {:else if rule.inputType === 'date'}
+                    <input
+                            type="date"
+                            bind:value={rule.value}
+                            class="rule-input"
+                            on:input={triggerDebouncedFilter}
+                    />
+                  {/if}
+                </div>
               </div>
             {/each}
 
@@ -304,6 +450,12 @@
 </div>
 
 <style>
+  .app-container {
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+  }
+
   .icon-btn.active {
     background-color: #e6f7ff;
     color: #0066cc;
@@ -317,11 +469,16 @@
     display: flex;
     align-items: center;
     padding: 0 8px;
+    flex-shrink: 0;
   }
 
   .menu-bar {
     display: flex;
     gap: 4px;
+  }
+
+  .menu-container {
+    position: relative;
   }
 
   .menu-btn {
@@ -331,10 +488,46 @@
     font-size: 13px;
     cursor: pointer;
     border-radius: 4px;
+    color: #333;
   }
 
-  .menu-btn:hover {
+  .menu-btn:hover, .menu-btn.active {
     background-color: #d0d0d0;
+  }
+
+  .dropdown-menu {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    background-color: #ffffff;
+    border: 1px solid #ccc;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+    min-width: 180px;
+    z-index: 1000;
+    padding: 4px 0;
+    border-radius: 4px;
+  }
+
+  .dropdown-item {
+    display: block;
+    width: 100%;
+    text-align: left;
+    padding: 6px 16px;
+    background: transparent;
+    border: none;
+    font-size: 13px;
+    color: #333;
+    cursor: pointer;
+  }
+
+  .dropdown-item:hover {
+    background-color: #e0e0e0;
+  }
+
+  .dropdown-divider {
+    height: 1px;
+    background-color: #e0e0e0;
+    margin: 4px 0;
   }
 
   .workspace {
@@ -346,8 +539,101 @@
   .center-stage {
     flex: 1;
     background-color: #ffffff;
-    padding: 8px;
-    overflow-y: hidden;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }
+
+  .active-filters-bar {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 8px 12px;
+    background-color: #f8f9fa;
+    border-bottom: 1px solid #e0e0e0;
+    min-height: 40px;
+    flex-wrap: wrap;
+    flex-shrink: 0;
+  }
+
+  .active-filters-label {
+    font-size: 12px;
+    font-weight: 600;
+    color: #555;
+    white-space: nowrap;
+  }
+
+  .filter-chips {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    flex: 1;
+  }
+
+  .filter-chip {
+    display: flex;
+    align-items: center;
+    background-color: #e3f2fd;
+    border: 1px solid #bbdefb;
+    border-radius: 16px;
+    padding: 2px 4px 2px 10px;
+    font-size: 12px;
+    color: #0d47a1;
+  }
+
+  .chip-text-btn {
+    background: none;
+    border: none;
+    padding: 0;
+    font: inherit;
+    color: inherit;
+    cursor: pointer;
+    margin-right: 6px;
+  }
+
+  .chip-text-btn:hover {
+    text-decoration: underline;
+  }
+
+  .chip-remove {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #bbdefb;
+    border: none;
+    border-radius: 50%;
+    width: 18px;
+    height: 18px;
+    color: #0d47a1;
+    cursor: pointer;
+    padding: 0;
+  }
+
+  .chip-remove:hover {
+    background: #90caf9;
+    color: #b71c1c;
+  }
+
+  .btn-clear-chips {
+    background: transparent;
+    border: none;
+    color: #666;
+    font-size: 12px;
+    cursor: pointer;
+    padding: 4px 8px;
+    border-radius: 4px;
+    white-space: nowrap;
+  }
+
+  .btn-clear-chips:hover {
+    background-color: #e0e0e0;
+    color: #1a1a1a;
+  }
+
+  .grid-wrapper {
+    flex: 1;
+    overflow: hidden;
+    position: relative;
   }
 
   .side-panel {
@@ -479,6 +765,12 @@
     align-items: center;
   }
 
+  .rule-input-row {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+  }
+
   .rule-select {
     flex: 1;
     padding: 4px;
@@ -489,7 +781,7 @@
   }
 
   .rule-input {
-    width: 100%;
+    flex: 1;
     padding: 6px 8px;
     border: 1px solid #e0e0e0;
     border-radius: 4px;
@@ -519,6 +811,34 @@
     color: #d32f2f;
   }
 
+  .rule-toggle-btn {
+    background: #f5f5f5;
+    border: 1px solid #e0e0e0;
+    border-radius: 4px;
+    padding: 4px 8px;
+    font-size: 11px;
+    font-weight: 600;
+    color: #666;
+    cursor: pointer;
+    transition: all 0.1s;
+  }
+
+  .rule-toggle-btn:hover {
+    background: #e0e0e0;
+  }
+
+  .rule-toggle-btn.active-not {
+    background-color: #ffebee;
+    color: #c62828;
+    border-color: #ef9a9a;
+  }
+
+  .rule-toggle-btn.active-cs {
+    background-color: #e3f2fd;
+    color: #1565c0;
+    border-color: #90caf9;
+  }
+
   .btn-secondary {
     display: flex;
     align-items: center;
@@ -537,5 +857,25 @@
   .btn-secondary:hover {
     background-color: #f9f9f9;
     border-color: #999;
+  }
+
+  .match-type-toggle {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px;
+    background-color: #f5f5f5;
+    border-radius: 6px;
+    border: 1px solid #e0e0e0;
+  }
+
+  .match-label {
+    font-size: 13px;
+    font-weight: 500;
+    color: #333;
+  }
+
+  .match-select {
+    max-width: 150px;
   }
 </style>
