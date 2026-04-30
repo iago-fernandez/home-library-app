@@ -54,6 +54,15 @@ export const apiClient = {
         if (!response.ok) throw new Error('Failed to delete book');
     },
 
+    async deleteBooksBatch(ids: string[]): Promise<void> {
+        const response = await fetch(`${API_BASE_URL}/books/batch`, {
+            method: 'DELETE',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ ids })
+        });
+        if (!response.ok) throw new Error('Failed to delete books in batch');
+    },
+
     async lookupIsbn(isbn: string): Promise<BookMetadataResponse> {
         const response = await fetch(`${API_BASE_URL}/books/lookup/${isbn}`, {
             method: 'GET',
