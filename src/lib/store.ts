@@ -6,12 +6,14 @@ function createBookStore() {
     const { subscribe, set, update } = writable<Book[]>([]);
     const totalBooks = writable<number>(0);
     const selectedBookId = writable<string | null>(null);
+    const selectedIdsList = writable<string[]>([]);
 
     const sortParam = writable<string | undefined>(undefined);
     const orderParam = writable<'asc' | 'desc' | undefined>(undefined);
     const filterQuery = writable<string | undefined>(undefined);
 
     const localSearchActive = writable<boolean>(false);
+    const multiSelectMode = writable<boolean>(false);
 
     let currentOffset = 0;
     const LIMIT = 100;
@@ -25,12 +27,26 @@ function createBookStore() {
             subscribe: selectedBookId.subscribe,
             set: selectedBookId.set
         },
+        selectedIds: {
+            subscribe: selectedIdsList.subscribe,
+            set: selectedIdsList.set
+        },
         sortConfig: { subscribe: sortParam.subscribe },
         orderConfig: { subscribe: orderParam.subscribe },
         filterConfig: { subscribe: filterQuery.subscribe },
         localSearchActive,
+        multiSelectMode,
 
         toggleLocalSearch: () => localSearchActive.update(v => !v),
+
+        toggleMultiSelectMode: () => {
+            multiSelectMode.update(active => {
+                if (active) {
+                    selectedIdsList.set([]);
+                }
+                return !active;
+            });
+        },
 
         loadBooks: async () => {
             if (isFetching || !hasMore) return;
@@ -65,6 +81,7 @@ function createBookStore() {
             set([]);
             totalBooks.set(0);
             selectedBookId.set(null);
+            selectedIdsList.set([]);
             currentOffset = 0;
             hasMore = true;
             isFetching = false;
@@ -149,6 +166,7 @@ function createBookStore() {
 
             totalBooks.update(n => Math.max(0, n - 1));
             selectedBookId.set(null);
+            selectedIdsList.update(ids => ids.filter(i => i !== id));
 
             try {
                 await apiClient.deleteBook(id);
@@ -160,6 +178,41 @@ function createBookStore() {
                 }
                 throw error;
             }
+        },
+        deleteBooksBatch: async (ids: string[]) => {
+            let removedBooks: Book[] = [];
+
+            update(books => {
+                removedBooks = books.filter(b => ids.includes(b.id));
+                return books.filter(b => !ids.includes(b.id));
+            });
+
+            totalBooks.update(n => Math.max(0, n - ids.length));
+            selectedBookId.set(null);
+            selectedIdsList.set([]);
+
+            try {
+                await apiClient.deleteBooksBatch(ids);
+            } catch (error) {
+                console.error(error);
+                if (removedBooks.length > 0) {
+                    update(books => [...books, ...removedBooks]);
+                    totalBooks.update(n => n + removedBooks.length);
+                }
+                throw error;
+            }
+        },
+        toggleSelection: (id: string) => {
+            selectedIdsList.update(ids => {
+                if (ids.includes(id)) {
+                    return ids.filter(i => i !== id);
+                } else {
+                    return [...ids, id];
+                }
+            });
+        },
+        clearSelection: () => {
+            selectedIdsList.set([]);
         }
     };
 }

@@ -4,7 +4,7 @@
   import DataGrid from '$lib/components/DataGrid.svelte';
   import BookForm from '$lib/components/BookForm.svelte';
   import type { CreateBookPayload } from '$lib/types/book';
-  import { Plus, Pencil, Trash2, Filter, Settings, X, Search } from 'lucide-svelte';
+  import { Plus, Pencil, Trash2, Filter, Settings, X, Search, CheckSquare, Download } from 'lucide-svelte';
 
   let activePanel: 'actions' | 'addBook' | 'editBook' | 'filter' = 'actions';
 
@@ -30,6 +30,9 @@
   let openMenu: string | null = null;
 
   const localSearchActive = bookStore.localSearchActive;
+  const selectedIds = bookStore.selectedIds;
+  const selectedId = bookStore.selectedId;
+  const multiSelectMode = bookStore.multiSelectMode;
 
   const availableFields: { value: string, label: string, type: FieldType, inputType: InputHTMLType }[] = [
     { value: 'title', label: 'Title', type: 'text', inputType: 'text' },
@@ -57,7 +60,6 @@
     ]
   };
 
-  const selectedId = bookStore.selectedId;
   $: selectedBook = $bookStore.find(b => b.id === $selectedId);
 
   onMount(() => {
@@ -84,7 +86,7 @@
   }
 
   function handleEditBookClick() {
-    if ($selectedId) {
+    if ($selectedIds.length === 1) {
       activePanel = 'editBook';
     }
   }
@@ -96,10 +98,10 @@
     }
   }
 
-  async function handleDeleteBookClick() {
-    if ($selectedId && confirm('Are you sure you want to delete this record?')) {
+  async function handleBatchDeleteClick() {
+    if ($selectedIds.length > 0 && confirm(`Are you sure you want to delete ${$selectedIds.length} records? This action cannot be undone.`)) {
       try {
-        await bookStore.deleteBook($selectedId);
+        await bookStore.deleteBooksBatch($selectedIds);
       } catch (error) {
         console.error(error);
       }
@@ -267,6 +269,10 @@
         <button class="menu-btn" class:active={openMenu === 'Edit'} on:click={() => toggleMenu('Edit')}>Edit</button>
         {#if openMenu === 'Edit'}
           <div class="dropdown-menu">
+            <button class="dropdown-item" on:click={() => { bookStore.toggleMultiSelectMode(); closeMenus(); }}>
+              {$multiSelectMode ? 'Exit Multi-Select Mode (Esc)' : 'Enter Multi-Select Mode'}
+            </button>
+            <div class="dropdown-divider"></div>
             <button class="dropdown-item" on:click={() => { bookStore.toggleLocalSearch(); closeMenus(); }}>Find in view (Ctrl+F)</button>
             <button class="dropdown-item" on:click={() => { handleFilterClick(); closeMenus(); }}>Advanced Filter</button>
           </div>
@@ -324,6 +330,12 @@
         </div>
       {/if}
       <div class="grid-wrapper">
+        {#if $multiSelectMode}
+          <div class="multi-select-banner">
+            Multi-Select Mode Active
+            <button class="btn-exit-mode" on:click={bookStore.toggleMultiSelectMode}>Exit</button>
+          </div>
+        {/if}
         <DataGrid />
       </div>
     </section>
@@ -331,27 +343,51 @@
     <aside class="side-panel" class:wide-panel={activePanel === 'addBook' || activePanel === 'editBook' || activePanel === 'filter'} class:toolbar-mode={activePanel === 'actions'}>
       {#if activePanel === 'actions'}
         <div class="toolbar">
-          <button class="icon-btn" title="Add Book" on:click={handleAddBookClick}>
-            <Plus size={20} strokeWidth={1.5} />
-          </button>
-          <button class="icon-btn" title="Edit Selected Book" disabled={!$selectedId} on:click={handleEditBookClick}>
-            <Pencil size={20} strokeWidth={1.5} />
-          </button>
-          <button class="icon-btn" title="Remove Selected Book" disabled={!$selectedId} on:click={handleDeleteBookClick}>
-            <Trash2 size={20} strokeWidth={1.5} />
-          </button>
+          {#if $selectedIds.length > 0}
+            <div class="batch-actions-container">
+              <span class="batch-count">{$selectedIds.length}</span>
+              <span class="batch-label">Selected</span>
 
-          <div class="toolbar-divider"></div>
+              <div class="toolbar-divider"></div>
 
-          <button class="icon-btn" title="Find in view (Ctrl+F)" class:active={$localSearchActive} on:click={bookStore.toggleLocalSearch}>
-            <Search size={20} strokeWidth={1.5} />
-          </button>
-          <button class="icon-btn" title="Advanced Filter" class:active={activeFilters.filter(r => r.value.trim() !== '').length > 0} on:click={handleFilterClick}>
-            <Filter size={20} strokeWidth={1.5} />
-          </button>
-          <button class="icon-btn" title="System Settings">
-            <Settings size={20} strokeWidth={1.5} />
-          </button>
+              <button class="icon-btn" title="Edit" disabled={$selectedIds.length !== 1} on:click={handleEditBookClick}>
+                <Pencil size={20} strokeWidth={1.5} />
+              </button>
+
+              <button class="icon-btn" title="Export Selected (WIP)" disabled>
+                <Download size={20} strokeWidth={1.5} />
+              </button>
+
+              <button class="icon-btn danger" title="Delete" on:click={handleBatchDeleteClick}>
+                <Trash2 size={20} strokeWidth={1.5} />
+              </button>
+
+              <div class="toolbar-divider"></div>
+
+              <button class="icon-btn" title="Clear Selection (Esc)" on:click={bookStore.clearSelection}>
+                <X size={20} strokeWidth={1.5} />
+              </button>
+            </div>
+          {:else}
+            <button class="icon-btn primary" title="Add Book" on:click={handleAddBookClick}>
+              <Plus size={20} strokeWidth={1.5} />
+            </button>
+
+            <div class="toolbar-divider"></div>
+
+            <button class="icon-btn" title="Toggle Multi-Select" class:active={$multiSelectMode} on:click={bookStore.toggleMultiSelectMode}>
+              <CheckSquare size={20} strokeWidth={1.5} />
+            </button>
+            <button class="icon-btn" title="Find in view (Ctrl+F)" class:active={$localSearchActive} on:click={bookStore.toggleLocalSearch}>
+              <Search size={20} strokeWidth={1.5} />
+            </button>
+            <button class="icon-btn" title="Advanced Filter" class:active={activeFilters.filter(r => r.value.trim() !== '').length > 0} on:click={handleFilterClick}>
+              <Filter size={20} strokeWidth={1.5} />
+            </button>
+            <button class="icon-btn" title="System Settings">
+              <Settings size={20} strokeWidth={1.5} />
+            </button>
+          {/if}
         </div>
       {:else if activePanel === 'addBook' || activePanel === 'editBook'}
         <div class="panel-content">
@@ -614,26 +650,38 @@
     color: #b71c1c;
   }
 
-  .btn-clear-chips {
-    background: transparent;
-    border: none;
-    color: #666;
-    font-size: 12px;
-    cursor: pointer;
-    padding: 4px 8px;
-    border-radius: 4px;
-    white-space: nowrap;
-  }
-
-  .btn-clear-chips:hover {
-    background-color: #e0e0e0;
-    color: #1a1a1a;
-  }
-
   .grid-wrapper {
     flex: 1;
     overflow: hidden;
     position: relative;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .multi-select-banner {
+    background-color: #e6f7ff;
+    color: #0066cc;
+    font-size: 12px;
+    font-weight: bold;
+    padding: 4px 12px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid #91d5ff;
+  }
+
+  .btn-exit-mode {
+    background: #0066cc;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    padding: 2px 8px;
+    font-size: 11px;
+    cursor: pointer;
+  }
+
+  .btn-exit-mode:hover {
+    background: #0052a3;
   }
 
   .side-panel {
@@ -670,6 +718,31 @@
     align-items: center;
   }
 
+  .batch-actions-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+    width: 100%;
+  }
+
+  .batch-count {
+    background-color: #0066cc;
+    color: white;
+    font-size: 12px;
+    font-weight: bold;
+    border-radius: 12px;
+    padding: 2px 8px;
+    margin-bottom: 2px;
+  }
+
+  .batch-label {
+    font-size: 10px;
+    color: #666;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+
   .icon-btn {
     width: 36px;
     height: 36px;
@@ -684,7 +757,26 @@
     transition: all 0.1s;
   }
 
-  .icon-btn:hover:not(:disabled) {
+  .icon-btn.primary {
+    background-color: #0066cc;
+    color: white;
+  }
+
+  .icon-btn.primary:hover {
+    background-color: #0052a3;
+  }
+
+  .icon-btn.danger {
+    color: #d32f2f;
+  }
+
+  .icon-btn.danger:hover:not(:disabled) {
+    background-color: #ffebee;
+    border-color: #ffcdd2;
+    color: #b71c1c;
+  }
+
+  .icon-btn:hover:not(:disabled):not(.danger):not(.primary) {
     background-color: #e0e0e0;
     border-color: #ccc;
     color: #1a1a1a;
