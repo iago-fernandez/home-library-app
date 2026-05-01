@@ -11,6 +11,7 @@
     export let onSubmit: (payload: CreateBookPayload) => void;
 
     let isLookingUp = false;
+    let fetchId = '';
 
     let formData: Partial<CreateBookPayload> = getInitialFormData(initialData);
 
@@ -45,13 +46,31 @@
     }
 
     async function handleAutoFill() {
-        // Temporarily uses the first available ID. Full backend support for OCLC/OLID pending.
-        const queryId = formData.isbn_13 || formData.isbn_10 || formData.oclc_number || formData.open_library_id;
-        if (!queryId) return;
+        if (!fetchId) return;
 
         isLookingUp = true;
         try {
-            const metadata = await apiClient.lookupIsbn(queryId);
+            const queryParam = fetchId.trim();
+            const cleanQuery = queryParam.replace(/-/g, '').replace(/\s/g, '');
+
+            const metadata = await apiClient.lookupIsbn(queryParam);
+
+            formData.title = '';
+            formData.subtitle = '';
+            formData.publish_date = '';
+            formData.page_count = undefined;
+            formData.cover_url = '';
+            formData.book_format = '';
+            formData.weight = '';
+            formData.dimensions = '';
+            formData.authors = [];
+            formData.publisher = '';
+            formData.subjects = [];
+            formData.language = '';
+            formData.isbn_10 = '';
+            formData.isbn_13 = '';
+            formData.oclc_number = '';
+            formData.open_library_id = '';
 
             if (metadata.title) formData.title = metadata.title;
             if (metadata.subtitle) formData.subtitle = metadata.subtitle;
@@ -63,17 +82,29 @@
             if (metadata.dimensions) formData.dimensions = metadata.dimensions;
 
             if (metadata.authors) {
-                formData.authors = [...new Set([...(formData.authors || []), ...metadata.authors])];
+                formData.authors = [...new Set([...(metadata.authors)])];
             }
             if (metadata.publishers && metadata.publishers.length > 0) {
                 formData.publisher = metadata.publishers[0];
             }
             if (metadata.subjects) {
-                formData.subjects = [...new Set([...(formData.subjects || []), ...metadata.subjects])];
+                formData.subjects = [...new Set([...(metadata.subjects)])];
             }
             if (metadata.languages && metadata.languages.length > 0) {
                 formData.language = metadata.languages[0];
             }
+
+            const upperQuery = cleanQuery.toUpperCase();
+            if (upperQuery.startsWith('OL')) {
+                formData.open_library_id = queryParam;
+            } else if (upperQuery.startsWith('OCLC') || (cleanQuery.length !== 10 && cleanQuery.length !== 13)) {
+                formData.oclc_number = queryParam.replace(/oclc/i, '');
+            } else if (cleanQuery.length === 10) {
+                formData.isbn_10 = queryParam;
+            } else if (cleanQuery.length === 13) {
+                formData.isbn_13 = queryParam;
+            }
+
         } catch (error) {
             console.error(error);
         } finally {
@@ -98,20 +129,24 @@
     <div class="form-scroll-area">
         <fieldset class="form-group">
             <legend>{$t.form.identifiers}</legend>
+
+            <div class="smart-fetch-row">
+                <input
+                        type="text"
+                        bind:value={fetchId}
+                        placeholder="Enter ISBN, OCLC, or OLID..."
+                        class="fetch-input"
+                        on:keydown={(e) => e.key === 'Enter' && handleAutoFill()}
+                />
+                <button type="button" class="btn-autofill" on:click={handleAutoFill} disabled={isLookingUp || !fetchId}>
+                    <DownloadCloud size={14} />
+                    {isLookingUp ? $t.form.autofillLoading : $t.form.autofill}
+                </button>
+            </div>
+
             <div class="input-row">
                 <label for="isbn_13">{$t.form.isbn13}</label>
-                <div class="autofill-container">
-                    <input type="text" id="isbn_13" bind:value={formData.isbn_13} />
-                    <button
-                            type="button"
-                            class="btn-autofill"
-                            on:click={handleAutoFill}
-                            disabled={isLookingUp || (!formData.isbn_13 && !formData.isbn_10 && !formData.oclc_number && !formData.open_library_id)}
-                    >
-                        <DownloadCloud size={14} />
-                        {isLookingUp ? $t.form.autofillLoading : $t.form.autofill}
-                    </button>
-                </div>
+                <input type="text" id="isbn_13" bind:value={formData.isbn_13} />
             </div>
             <div class="input-grid">
                 <div class="input-row">
@@ -445,6 +480,41 @@
         font-weight: 500;
     }
 
+    .smart-fetch-row {
+        display: flex;
+        gap: 8px;
+        margin-bottom: 16px;
+        align-items: stretch;
+    }
+
+    .fetch-input {
+        flex: 1;
+        padding: 8px 12px;
+        border: 1px solid #0066cc;
+        border-radius: 4px;
+        font-size: 13px;
+    }
+
+    .btn-autofill {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        background-color: #0066cc;
+        color: #ffffff;
+        border: 1px solid #005bb5;
+        font-weight: 500;
+        white-space: nowrap;
+    }
+
+    .btn-autofill:hover:not(:disabled) {
+        background-color: #005bb5;
+    }
+
+    .btn-autofill:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+    }
+
     .form-scroll-area {
         flex: 1;
         overflow-y: auto;
@@ -495,36 +565,6 @@
 
     .checkbox-row input {
         width: auto;
-    }
-
-    .autofill-container {
-        display: flex;
-        gap: 8px;
-        align-items: center;
-    }
-
-    .autofill-container input {
-        flex: 1;
-    }
-
-    .btn-autofill {
-        display: flex;
-        align-items: center;
-        gap: 6px;
-        background-color: #e3f2fd;
-        color: #0066cc;
-        border: 1px solid #90caf9;
-        font-weight: 500;
-        white-space: nowrap;
-    }
-
-    .btn-autofill:hover:not(:disabled) {
-        background-color: #bbdefb;
-    }
-
-    .btn-autofill:disabled {
-        opacity: 0.5;
-        cursor: not-allowed;
     }
 
     label {
