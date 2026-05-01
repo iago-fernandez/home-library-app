@@ -1,0 +1,93 @@
+export interface TranslationDictionary {
+    common: {
+        add: string;
+        edit: string;
+        delete: string;
+        cancel: string;
+        save: string;
+        clear: string;
+        search: string;
+        selected: string;
+        refresh: string;
+        toggleLanguage: string;
+    };
+    menu: {
+        file: string;
+        edit: string;
+        view: string;
+        tools: string;
+        help: string;
+        newLibrary: string;
+        settings: string;
+        exit: string;
+        findInView: string;
+        advancedFilter: string;
+        toggleSidebar: string;
+        importIsbn: string;
+        exportCsv: string;
+        documentation: string;
+        about: string;
+        enterMultiSelect: string;
+        exitMultiSelect: string;
+    };
+    grid: {
+        allColumns: string;
+        title: string;
+        authors: string;
+        publisher: string;
+        date: string;
+        isbn: string;
+        room: string;
+        bookcase: string;
+        noMatches: string;
+        findPlaceholder: string;
+        of: string;
+    };
+    filters: {
+        activeFilters: string;
+        clearAll: string;
+        addRule: string;
+        matchAll: string;
+        matchAny: string;
+        invertRule: string;
+        caseSensitive: string;
+        advancedFilters: string;
+        match: string;
+        contains: string;
+        exact: string;
+        starts: string;
+        ends: string;
+        greater: string;
+        greaterEqual: string;
+        less: string;
+        lessEqual: string;
+    };
+    actions: {
+        addBook: string;
+        editSelected: string;
+        removeSelected: string;
+        toggleMultiSelect: string;
+        systemSettings: string;
+        clearSelection: string;
+        exportSelected: string;
+        deleteSelected: string;
+        multiSelectActive: string;
+        exit: string;
+        confirmDelete: string;
+        confirmBatchDelete: string;
+    };
+    form: {
+        addNewBook: string;
+        editBook: string;
+        essentialInfo: string;
+        title: string;
+        authors: string;
+        pubDetails: string;
+        publisher: string;
+        pubDate: string;
+        isbn13: string;
+        physicalLoc: string;
+        room: string;
+        bookcase: string;
+    };
+}
