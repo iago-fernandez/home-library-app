@@ -9,6 +9,7 @@ export interface TranslationDictionary {
         search: string;
         selected: string;
         refresh: string;
+        toggleLanguage: string;
     };
     menu: {
         file: string;
@@ -30,6 +31,7 @@ export interface TranslationDictionary {
         exitMultiSelect: string;
     };
     grid: {
+        allColumns: string;
         title: string;
         authors: string;
         publisher: string;
@@ -39,6 +41,7 @@ export interface TranslationDictionary {
         bookcase: string;
         noMatches: string;
         findPlaceholder: string;
+        of: string;
     };
     filters: {
         activeFilters: string;
@@ -48,5 +51,43 @@ export interface TranslationDictionary {
         matchAny: string;
         invertRule: string;
         caseSensitive: string;
+        advancedFilters: string;
+        match: string;
+        contains: string;
+        exact: string;
+        starts: string;
+        ends: string;
+        greater: string;
+        greaterEqual: string;
+        less: string;
+        lessEqual: string;
+    };
+    actions: {
+        addBook: string;
+        editSelected: string;
+        removeSelected: string;
+        toggleMultiSelect: string;
+        systemSettings: string;
+        clearSelection: string;
+        exportSelected: string;
+        deleteSelected: string;
+        multiSelectActive: string;
+        exit: string;
+        confirmDelete: string;
+        confirmBatchDelete: string;
+    };
+    form: {
+        addNewBook: string;
+        editBook: string;
+        essentialInfo: string;
+        title: string;
+        authors: string;
+        pubDetails: string;
+        publisher: string;
+        pubDate: string;
+        isbn13: string;
+        physicalLoc: string;
+        room: string;
+        bookcase: string;
     };
 }

@@ -10,7 +10,8 @@ export const en: TranslationDictionary = {
         clear: 'Clear',
         search: 'Search',
         selected: 'Selected',
-        refresh: 'Refresh'
+        refresh: 'Refresh',
+        toggleLanguage: 'Switch to Spanish'
     },
     menu: {
         file: 'File',
@@ -32,6 +33,7 @@ export const en: TranslationDictionary = {
         exitMultiSelect: 'Exit Multi-Select Mode (Esc)'
     },
     grid: {
+        allColumns: 'All Columns',
         title: 'Title',
         authors: 'Authors',
         publisher: 'Publisher',
@@ -40,7 +42,8 @@ export const en: TranslationDictionary = {
         room: 'Room',
         bookcase: 'Bookcase',
         noMatches: 'No matches',
-        findPlaceholder: 'Find in loaded rows (Ctrl+F)'
+        findPlaceholder: 'Find in loaded rows (Ctrl+F)',
+        of: 'of'
     },
     filters: {
         activeFilters: 'Active Filters',
@@ -49,6 +52,44 @@ export const en: TranslationDictionary = {
         matchAll: 'All rules (AND)',
         matchAny: 'Any rule (OR)',
         invertRule: 'Invert Rule (NOT)',
-        caseSensitive: 'Case Sensitive'
+        caseSensitive: 'Case Sensitive',
+        advancedFilters: 'Advanced Filters',
+        match: 'Match:',
+        contains: 'Contains',
+        exact: 'Is exactly',
+        starts: 'Starts with',
+        ends: 'Ends with',
+        greater: 'Greater than',
+        greaterEqual: 'Greater or equal',
+        less: 'Less than',
+        lessEqual: 'Less or equal'
+    },
+    actions: {
+        addBook: 'Add Book',
+        editSelected: 'Edit Selected',
+        removeSelected: 'Remove Selected',
+        toggleMultiSelect: 'Toggle Multi-Select',
+        systemSettings: 'System Settings',
+        clearSelection: 'Clear Selection (Esc)',
+        exportSelected: 'Export Selected',
+        deleteSelected: 'Delete Selected',
+        multiSelectActive: 'Multi-Select Mode Active',
+        exit: 'Exit',
+        confirmDelete: 'Are you sure you want to delete this record?',
+        confirmBatchDelete: 'records will be deleted. This action cannot be undone. Proceed?'
+    },
+    form: {
+        addNewBook: 'Add New Book',
+        editBook: 'Edit Book',
+        essentialInfo: 'ESSENTIAL INFORMATION',
+        title: 'Title',
+        authors: 'Authors',
+        pubDetails: 'PUBLICATION DETAILS',
+        publisher: 'Publisher',
+        pubDate: 'Publication Date',
+        isbn13: 'ISBN-13',
+        physicalLoc: 'PHYSICAL LOCATION',
+        room: 'Room',
+        bookcase: 'Bookcase'
     }
 };

@@ -10,7 +10,8 @@ export const es: TranslationDictionary = {
         clear: 'Limpiar',
         search: 'Buscar',
         selected: 'Seleccionados',
-        refresh: 'Actualizar'
+        refresh: 'Actualizar',
+        toggleLanguage: 'Cambiar a Inglés'
     },
     menu: {
         file: 'Archivo',
@@ -32,6 +33,7 @@ export const es: TranslationDictionary = {
         exitMultiSelect: 'Salir de Selección Múltiple (Esc)'
     },
     grid: {
+        allColumns: 'Todas las Columnas',
         title: 'Título',
         authors: 'Autores',
         publisher: 'Editorial',
@@ -40,7 +42,8 @@ export const es: TranslationDictionary = {
         room: 'Habitación',
         bookcase: 'Estantería',
         noMatches: 'Sin resultados',
-        findPlaceholder: 'Buscar en filas cargadas (Ctrl+F)'
+        findPlaceholder: 'Buscar en filas cargadas (Ctrl+F)',
+        of: 'de'
     },
     filters: {
         activeFilters: 'Filtros Activos',
@@ -49,6 +52,44 @@ export const es: TranslationDictionary = {
         matchAll: 'Todas las reglas (AND)',
         matchAny: 'Cualquier regla (OR)',
         invertRule: 'Invertir Regla (NOT)',
-        caseSensitive: 'Distinguir Mayúsculas'
+        caseSensitive: 'Distinguir Mayúsculas',
+        advancedFilters: 'Filtros Avanzados',
+        match: 'Coincidencia:',
+        contains: 'Contiene',
+        exact: 'Es exactamente',
+        starts: 'Empieza por',
+        ends: 'Termina en',
+        greater: 'Mayor que',
+        greaterEqual: 'Mayor o igual',
+        less: 'Menor que',
+        lessEqual: 'Menor o igual'
+    },
+    actions: {
+        addBook: 'Añadir Libro',
+        editSelected: 'Editar Selección',
+        removeSelected: 'Eliminar Selección',
+        toggleMultiSelect: 'Alternar Selección Múltiple',
+        systemSettings: 'Ajustes del Sistema',
+        clearSelection: 'Limpiar Selección (Esc)',
+        exportSelected: 'Exportar Selección',
+        deleteSelected: 'Eliminar Selección',
+        multiSelectActive: 'Modo Selección Múltiple Activo',
+        exit: 'Salir',
+        confirmDelete: '¿Estás seguro de que deseas eliminar este registro?',
+        confirmBatchDelete: 'registros serán eliminados. Esta acción no se puede deshacer. ¿Proceder?'
+    },
+    form: {
+        addNewBook: 'Añadir Nuevo Libro',
+        editBook: 'Editar Libro',
+        essentialInfo: 'INFORMACIÓN ESENCIAL',
+        title: 'Título',
+        authors: 'Autores',
+        pubDetails: 'DETALLES DE PUBLICACIÓN',
+        publisher: 'Editorial',
+        pubDate: 'Fecha de Publicación',
+        isbn13: 'ISBN-13',
+        physicalLoc: 'UBICACIÓN FÍSICA',
+        room: 'Habitación',
+        bookcase: 'Estantería'
     }
 };
