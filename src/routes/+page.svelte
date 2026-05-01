@@ -1,6 +1,7 @@
 <script lang="ts">
   import { onMount } from 'svelte';
   import { bookStore } from '$lib/store';
+  import { t, locale, setLocale } from '$lib/i18n';
   import DataGrid from '$lib/components/DataGrid.svelte';
   import BookForm from '$lib/components/BookForm.svelte';
   import type { CreateBookPayload } from '$lib/types/book';
@@ -34,29 +35,29 @@
   const selectedId = bookStore.selectedId;
   const multiSelectMode = bookStore.multiSelectMode;
 
-  const availableFields: { value: string, label: string, type: FieldType, inputType: InputHTMLType }[] = [
-    { value: 'title', label: 'Title', type: 'text', inputType: 'text' },
-    { value: 'author', label: 'Author', type: 'text', inputType: 'text' },
-    { value: 'publisher', label: 'Publisher', type: 'text', inputType: 'text' },
-    { value: 'publish_date', label: 'Publish Date', type: 'numeric', inputType: 'date' },
-    { value: 'isbn_13', label: 'ISBN', type: 'text', inputType: 'text' },
-    { value: 'location_room', label: 'Room', type: 'text', inputType: 'text' },
-    { value: 'location_bookcase', label: 'Bookcase', type: 'text', inputType: 'text' }
+  $: availableFields = [
+    { value: 'title', label: $t.grid.title, type: 'text' as FieldType, inputType: 'text' as InputHTMLType },
+    { value: 'author', label: $t.grid.authors, type: 'text' as FieldType, inputType: 'text' as InputHTMLType },
+    { value: 'publisher', label: $t.grid.publisher, type: 'text' as FieldType, inputType: 'text' as InputHTMLType },
+    { value: 'publish_date', label: $t.grid.date, type: 'numeric' as FieldType, inputType: 'date' as InputHTMLType },
+    { value: 'isbn_13', label: $t.grid.isbn, type: 'text' as FieldType, inputType: 'text' as InputHTMLType },
+    { value: 'location_room', label: $t.grid.room, type: 'text' as FieldType, inputType: 'text' as InputHTMLType },
+    { value: 'location_bookcase', label: $t.grid.bookcase, type: 'text' as FieldType, inputType: 'text' as InputHTMLType }
   ];
 
-  const operatorDefinitions: Record<FieldType, { value: string, label: string }[]> = {
+  $: operatorDefinitions = {
     text: [
-      { value: '_contains', label: 'Contains' },
-      { value: '_exact', label: 'Is exactly' },
-      { value: '_starts', label: 'Starts with' },
-      { value: '_ends', label: 'Ends with' }
+      { value: '_contains', label: $t.filters.contains },
+      { value: '_exact', label: $t.filters.exact },
+      { value: '_starts', label: $t.filters.starts },
+      { value: '_ends', label: $t.filters.ends }
     ],
     numeric: [
-      { value: '_exact', label: 'Equals exactly' },
-      { value: '_gt', label: 'Greater than' },
-      { value: '_gte', label: 'Greater or equal' },
-      { value: '_lt', label: 'Less than' },
-      { value: '_lte', label: 'Less or equal' }
+      { value: '_exact', label: $t.filters.exact },
+      { value: '_gt', label: $t.filters.greater },
+      { value: '_gte', label: $t.filters.greaterEqual },
+      { value: '_lt', label: $t.filters.less },
+      { value: '_lte', label: $t.filters.lessEqual }
     ]
   };
 
@@ -99,7 +100,7 @@
   }
 
   async function handleBatchDeleteClick() {
-    if ($selectedIds.length > 0 && confirm(`Are you sure you want to delete ${$selectedIds.length} records? This action cannot be undone.`)) {
+    if ($selectedIds.length > 0 && confirm(`${$selectedIds.length} ${$t.actions.confirmBatchDelete}`)) {
       try {
         await bookStore.deleteBooksBatch($selectedIds);
       } catch (error) {
@@ -150,7 +151,7 @@
 
       rule.type = fieldDef.type;
       rule.inputType = fieldDef.inputType;
-      rule.operator = operatorDefinitions[fieldDef.type][0].value;
+      rule.operator = operatorDefinitions[fieldDef.type as FieldType][0].value;
 
       if (oldInputType !== fieldDef.inputType) {
         rule.value = '';
@@ -254,57 +255,61 @@
   <header class="top-bar" data-tauri-drag-region>
     <nav class="menu-bar">
       <div class="menu-container">
-        <button class="menu-btn" class:active={openMenu === 'File'} on:click={() => toggleMenu('File')}>File</button>
+        <button class="menu-btn" class:active={openMenu === 'File'} on:click={() => toggleMenu('File')}>{$t.menu.file}</button>
         {#if openMenu === 'File'}
           <div class="dropdown-menu">
-            <button class="dropdown-item">New Library</button>
-            <button class="dropdown-item">Settings</button>
+            <button class="dropdown-item">{$t.menu.newLibrary}</button>
+            <button class="dropdown-item">{$t.menu.settings}</button>
             <div class="dropdown-divider"></div>
-            <button class="dropdown-item">Exit</button>
+            <button class="dropdown-item">{$t.menu.exit}</button>
           </div>
         {/if}
       </div>
 
       <div class="menu-container">
-        <button class="menu-btn" class:active={openMenu === 'Edit'} on:click={() => toggleMenu('Edit')}>Edit</button>
+        <button class="menu-btn" class:active={openMenu === 'Edit'} on:click={() => toggleMenu('Edit')}>{$t.menu.edit}</button>
         {#if openMenu === 'Edit'}
           <div class="dropdown-menu">
             <button class="dropdown-item" on:click={() => { bookStore.toggleMultiSelectMode(); closeMenus(); }}>
-              {$multiSelectMode ? 'Exit Multi-Select Mode (Esc)' : 'Enter Multi-Select Mode'}
+              {$multiSelectMode ? $t.menu.exitMultiSelect : $t.menu.enterMultiSelect}
             </button>
             <div class="dropdown-divider"></div>
-            <button class="dropdown-item" on:click={() => { bookStore.toggleLocalSearch(); closeMenus(); }}>Find in view (Ctrl+F)</button>
-            <button class="dropdown-item" on:click={() => { handleFilterClick(); closeMenus(); }}>Advanced Filter</button>
+            <button class="dropdown-item" on:click={() => { bookStore.toggleLocalSearch(); closeMenus(); }}>{$t.menu.findInView}</button>
+            <button class="dropdown-item" on:click={() => { handleFilterClick(); closeMenus(); }}>{$t.menu.advancedFilter}</button>
           </div>
         {/if}
       </div>
 
       <div class="menu-container">
-        <button class="menu-btn" class:active={openMenu === 'View'} on:click={() => toggleMenu('View')}>View</button>
+        <button class="menu-btn" class:active={openMenu === 'View'} on:click={() => toggleMenu('View')}>{$t.menu.view}</button>
         {#if openMenu === 'View'}
           <div class="dropdown-menu">
-            <button class="dropdown-item">Refresh Data</button>
-            <button class="dropdown-item">Toggle Sidebar</button>
+            <button class="dropdown-item" on:click={() => { setLocale($locale === 'en' ? 'es' : 'en'); closeMenus(); }}>
+              {$t.common.toggleLanguage}
+            </button>
+            <div class="dropdown-divider"></div>
+            <button class="dropdown-item">{$t.common.refresh}</button>
+            <button class="dropdown-item">{$t.menu.toggleSidebar}</button>
           </div>
         {/if}
       </div>
 
       <div class="menu-container">
-        <button class="menu-btn" class:active={openMenu === 'Tools'} on:click={() => toggleMenu('Tools')}>Tools</button>
+        <button class="menu-btn" class:active={openMenu === 'Tools'} on:click={() => toggleMenu('Tools')}>{$t.menu.tools}</button>
         {#if openMenu === 'Tools'}
           <div class="dropdown-menu">
-            <button class="dropdown-item">Import ISBN List</button>
-            <button class="dropdown-item">Export to CSV</button>
+            <button class="dropdown-item">{$t.menu.importIsbn}</button>
+            <button class="dropdown-item">{$t.menu.exportCsv}</button>
           </div>
         {/if}
       </div>
 
       <div class="menu-container">
-        <button class="menu-btn" class:active={openMenu === 'Help'} on:click={() => toggleMenu('Help')}>Help</button>
+        <button class="menu-btn" class:active={openMenu === 'Help'} on:click={() => toggleMenu('Help')}>{$t.menu.help}</button>
         {#if openMenu === 'Help'}
           <div class="dropdown-menu">
-            <button class="dropdown-item">Documentation</button>
-            <button class="dropdown-item">About</button>
+            <button class="dropdown-item">{$t.menu.documentation}</button>
+            <button class="dropdown-item">{$t.menu.about}</button>
           </div>
         {/if}
       </div>
@@ -315,7 +320,7 @@
     <section class="center-stage">
       {#if activeFilters.filter(r => r.value.trim() !== '').length > 0}
         <div class="active-filters-bar">
-          <span class="active-filters-label">Active Filters {matchType === 'OR' ? '(Any)' : '(All)'}:</span>
+          <span class="active-filters-label">{$t.filters.activeFilters} {matchType === 'OR' ? '(Any)' : '(All)'}:</span>
           <div class="filter-chips">
             {#each activeFilters.filter(r => r.value.trim() !== '') as rule (rule.id)}
               <div class="filter-chip">
@@ -326,14 +331,14 @@
               </div>
             {/each}
           </div>
-          <button class="btn-clear-chips" on:click={clearFilters}>Clear All</button>
+          <button class="btn-clear-chips" on:click={clearFilters}>{$t.filters.clearAll}</button>
         </div>
       {/if}
       <div class="grid-wrapper">
         {#if $multiSelectMode}
           <div class="multi-select-banner">
-            Multi-Select Mode Active
-            <button class="btn-exit-mode" on:click={bookStore.toggleMultiSelectMode}>Exit</button>
+            {$t.actions.multiSelectActive}
+            <button class="btn-exit-mode" on:click={bookStore.toggleMultiSelectMode}>{$t.actions.exit}</button>
           </div>
         {/if}
         <DataGrid />
@@ -346,45 +351,45 @@
           {#if $selectedIds.length > 0}
             <div class="batch-actions-container">
               <span class="batch-count">{$selectedIds.length}</span>
-              <span class="batch-label">Selected</span>
+              <span class="batch-label">{$t.common.selected}</span>
 
               <div class="toolbar-divider"></div>
 
-              <button class="icon-btn" title="Edit" disabled={$selectedIds.length !== 1} on:click={handleEditBookClick}>
+              <button class="icon-btn" title={$t.actions.editSelected} disabled={$selectedIds.length !== 1} on:click={handleEditBookClick}>
                 <Pencil size={20} strokeWidth={1.5} />
               </button>
 
-              <button class="icon-btn" title="Export Selected (WIP)" disabled>
+              <button class="icon-btn" title={$t.actions.exportSelected} disabled>
                 <Download size={20} strokeWidth={1.5} />
               </button>
 
-              <button class="icon-btn danger" title="Delete" on:click={handleBatchDeleteClick}>
+              <button class="icon-btn danger" title={$t.actions.deleteSelected} on:click={handleBatchDeleteClick}>
                 <Trash2 size={20} strokeWidth={1.5} />
               </button>
 
               <div class="toolbar-divider"></div>
 
-              <button class="icon-btn" title="Clear Selection (Esc)" on:click={bookStore.clearSelection}>
+              <button class="icon-btn" title={$t.actions.clearSelection} on:click={bookStore.clearSelection}>
                 <X size={20} strokeWidth={1.5} />
               </button>
             </div>
           {:else}
-            <button class="icon-btn primary" title="Add Book" on:click={handleAddBookClick}>
+            <button class="icon-btn primary" title={$t.actions.addBook} on:click={handleAddBookClick}>
               <Plus size={20} strokeWidth={1.5} />
             </button>
 
             <div class="toolbar-divider"></div>
 
-            <button class="icon-btn" title="Toggle Multi-Select" class:active={$multiSelectMode} on:click={bookStore.toggleMultiSelectMode}>
+            <button class="icon-btn" title={$t.actions.toggleMultiSelect} class:active={$multiSelectMode} on:click={bookStore.toggleMultiSelectMode}>
               <CheckSquare size={20} strokeWidth={1.5} />
             </button>
-            <button class="icon-btn" title="Find in view (Ctrl+F)" class:active={$localSearchActive} on:click={bookStore.toggleLocalSearch}>
+            <button class="icon-btn" title={$t.menu.findInView} class:active={$localSearchActive} on:click={bookStore.toggleLocalSearch}>
               <Search size={20} strokeWidth={1.5} />
             </button>
-            <button class="icon-btn" title="Advanced Filter" class:active={activeFilters.filter(r => r.value.trim() !== '').length > 0} on:click={handleFilterClick}>
+            <button class="icon-btn" title={$t.menu.advancedFilter} class:active={activeFilters.filter(r => r.value.trim() !== '').length > 0} on:click={handleFilterClick}>
               <Filter size={20} strokeWidth={1.5} />
             </button>
-            <button class="icon-btn" title="System Settings">
+            <button class="icon-btn" title={$t.actions.systemSettings}>
               <Settings size={20} strokeWidth={1.5} />
             </button>
           {/if}
@@ -396,9 +401,9 @@
       {:else if activePanel === 'filter'}
         <div class="panel-content filter-panel">
           <div class="panel-header">
-            <h3>Advanced Filters</h3>
+            <h3>{$t.filters.advancedFilters}</h3>
             <div class="header-actions">
-              <button class="btn-clear" on:click={clearFilters}>Clear</button>
+              <button class="btn-clear" on:click={clearFilters}>{$t.common.clear}</button>
               <button class="icon-btn close-btn" on:click={handleFormCancel}>
                 <X size={16} />
               </button>
@@ -408,10 +413,10 @@
           <div class="filter-rules-container">
             {#if activeFilters.length > 1}
               <div class="match-type-toggle">
-                <span class="match-label">Match:</span>
+                <span class="match-label">{$t.filters.match}</span>
                 <select bind:value={matchType} on:change={triggerDebouncedFilter} class="rule-select match-select">
-                  <option value="AND">All rules (AND)</option>
-                  <option value="OR">Any rule (OR)</option>
+                  <option value="AND">{$t.filters.matchAll}</option>
+                  <option value="OR">{$t.filters.matchAny}</option>
                 </select>
               </div>
             {/if}
@@ -422,7 +427,7 @@
                   <button
                           class="rule-toggle-btn {rule.isNot ? 'active-not' : ''}"
                           on:click={() => { rule.isNot = !rule.isNot; handleControlChange(); }}
-                          title="Invert Rule (NOT)">
+                          title={$t.filters.invertRule}>
                     NOT
                   </button>
                   <select bind:value={rule.field} class="rule-select" on:change={() => handleFieldChange(rule)}>
@@ -445,14 +450,14 @@
                     <input
                             type="text"
                             bind:value={rule.value}
-                            placeholder="Value..."
+                            placeholder="..."
                             class="rule-input"
                             on:input={triggerDebouncedFilter}
                     />
                     <button
                             class="rule-toggle-btn {rule.caseSensitive ? 'active-cs' : ''}"
                             on:click={() => { rule.caseSensitive = !rule.caseSensitive; handleControlChange(); }}
-                            title="Case Sensitive">
+                            title={$t.filters.caseSensitive}>
                       Aa
                     </button>
                   {:else if rule.inputType === 'number'}
@@ -476,7 +481,7 @@
             {/each}
 
             <button class="btn-secondary add-rule-btn" on:click={addFilterRule}>
-              <Plus size={14} /> Add Rule
+              <Plus size={14} /> {$t.filters.addRule}
             </button>
           </div>
         </div>

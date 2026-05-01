@@ -1,5 +1,6 @@
 <script lang="ts">
     import { bookStore } from '$lib/store';
+    import { t } from '$lib/i18n';
     import { createVirtualizer } from '@tanstack/svelte-virtual';
     import { Search, ChevronUp, ChevronDown, X, CaseSensitive } from 'lucide-svelte';
     import { tick } from 'svelte';
@@ -49,15 +50,15 @@
     let currentMatchIndex = -1;
     let localSearchInput: HTMLInputElement;
 
-    const searchColumns = [
-        { value: 'all', label: 'All Columns' },
-        { value: 'title', label: 'Title' },
-        { value: 'authors', label: 'Authors' },
-        { value: 'publisher', label: 'Publisher' },
-        { value: 'publish_date', label: 'Date' },
-        { value: 'isbn_13', label: 'ISBN' },
-        { value: 'location_room', label: 'Room' },
-        { value: 'location_bookcase', label: 'Bookcase' }
+    $: searchColumns = [
+        { value: 'all', label: $t.grid.allColumns },
+        { value: 'title', label: $t.grid.title },
+        { value: 'authors', label: $t.grid.authors },
+        { value: 'publisher', label: $t.grid.publisher },
+        { value: 'publish_date', label: $t.grid.date },
+        { value: 'isbn_13', label: $t.grid.isbn },
+        { value: 'location_room', label: $t.grid.room },
+        { value: 'location_bookcase', label: $t.grid.bookcase }
     ];
 
     $: if ($localSearchActive) {
@@ -217,7 +218,7 @@
 
         if (event.key === 'Delete' && $selectedIds.length > 0) {
             event.preventDefault();
-            if (confirm(`Are you sure you want to delete ${$selectedIds.length} records?`)) {
+            if (confirm(`${$selectedIds.length} ${$t.actions.confirmBatchDelete}`)) {
                 bookStore.deleteBooksBatch($selectedIds);
             }
         }
@@ -242,22 +243,22 @@
             <input
                     bind:this={localSearchInput}
                     type="text"
-                    placeholder="Find in loaded rows (Ctrl+F)"
+                    placeholder={$t.grid.findPlaceholder}
                     bind:value={localSearchQuery}
                     on:input={executeLocalSearch}
                     on:keydown={(e) => e.key === 'Enter' && nextMatch()}
             />
             <button
                     class="icon-btn-small {isCaseSensitive ? 'active' : ''}"
-                    title="Match Case"
+                    title={$t.filters.caseSensitive}
                     on:click={toggleCaseSensitivity}
             >
                 <CaseSensitive size={16} />
             </button>
             {#if matchIndices.length > 0}
-                <span class="match-count">{currentMatchIndex + 1} of {matchIndices.length}</span>
+                <span class="match-count">{currentMatchIndex + 1} {$t.grid.of} {matchIndices.length}</span>
             {:else if localSearchQuery}
-                <span class="match-count no-matches">No matches</span>
+                <span class="match-count no-matches">{$t.grid.noMatches}</span>
             {/if}
             <div class="nav-buttons">
                 <button class="icon-btn-small" on:click={prevMatch} disabled={matchIndices.length === 0}><ChevronUp size={16} /></button>
@@ -270,43 +271,43 @@
 
     <div class="grid-header">
         <div class="cell header-cell sortable" role="button" tabindex="0" on:click={() => handleSort('title')} on:keydown={(e) => e.key === 'Enter' && handleSort('title')}>
-            Title
+            {$t.grid.title}
             {#if $sortConfig === 'title'}
                 <span class="sort-indicator">{$orderConfig === 'asc' ? '↑' : '↓'}</span>
             {/if}
         </div>
         <div class="cell header-cell sortable" role="button" tabindex="0" on:click={() => handleSort('authors')} on:keydown={(e) => e.key === 'Enter' && handleSort('authors')}>
-            Authors
+            {$t.grid.authors}
             {#if $sortConfig === 'authors'}
                 <span class="sort-indicator">{$orderConfig === 'asc' ? '↑' : '↓'}</span>
             {/if}
         </div>
         <div class="cell header-cell sortable" role="button" tabindex="0" on:click={() => handleSort('publisher')} on:keydown={(e) => e.key === 'Enter' && handleSort('publisher')}>
-            Publisher
+            {$t.grid.publisher}
             {#if $sortConfig === 'publisher'}
                 <span class="sort-indicator">{$orderConfig === 'asc' ? '↑' : '↓'}</span>
             {/if}
         </div>
         <div class="cell header-cell sortable" role="button" tabindex="0" on:click={() => handleSort('publish_date')} on:keydown={(e) => e.key === 'Enter' && handleSort('publish_date')}>
-            Date
+            {$t.grid.date}
             {#if $sortConfig === 'publish_date'}
                 <span class="sort-indicator">{$orderConfig === 'asc' ? '↑' : '↓'}</span>
             {/if}
         </div>
         <div class="cell header-cell sortable" role="button" tabindex="0" on:click={() => handleSort('isbn_13')} on:keydown={(e) => e.key === 'Enter' && handleSort('isbn_13')}>
-            ISBN
+            {$t.grid.isbn}
             {#if $sortConfig === 'isbn_13'}
                 <span class="sort-indicator">{$orderConfig === 'asc' ? '↑' : '↓'}</span>
             {/if}
         </div>
         <div class="cell header-cell sortable" role="button" tabindex="0" on:click={() => handleSort('location_room')} on:keydown={(e) => e.key === 'Enter' && handleSort('location_room')}>
-            Room
+            {$t.grid.room}
             {#if $sortConfig === 'location_room'}
                 <span class="sort-indicator">{$orderConfig === 'asc' ? '↑' : '↓'}</span>
             {/if}
         </div>
         <div class="cell header-cell sortable" role="button" tabindex="0" on:click={() => handleSort('location_bookcase')} on:keydown={(e) => e.key === 'Enter' && handleSort('location_bookcase')}>
-            Bookcase
+            {$t.grid.bookcase}
             {#if $sortConfig === 'location_bookcase'}
                 <span class="sort-indicator">{$orderConfig === 'asc' ? '↑' : '↓'}</span>
             {/if}

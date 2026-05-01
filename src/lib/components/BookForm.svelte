@@ -1,5 +1,6 @@
 <script lang="ts">
     import type { CreateBookPayload, Book } from '$lib/types/book';
+    import { t } from '$lib/i18n';
     import AutoExpandTextarea from './AutoExpandTextarea.svelte';
 
     export let initialData: Book | null = null;
@@ -50,57 +51,57 @@
 
 <form class="book-form" on:submit|preventDefault={handleSubmit}>
     <div class="form-header">
-        <h3>Add New Book</h3>
+        <h3>{initialData ? $t.form.editBook : $t.form.addNewBook}</h3>
         <div class="header-actions">
-            <button type="button" class="btn-cancel" on:click={onCancel}>Cancel</button>
-            <button type="submit" class="btn-submit">Save</button>
+            <button type="button" class="btn-cancel" on:click={onCancel}>{$t.common.cancel}</button>
+            <button type="submit" class="btn-submit">{$t.common.save}</button>
         </div>
     </div>
 
     <div class="form-scroll-area">
         <fieldset class="form-group">
-            <legend>Essential Information</legend>
+            <legend>{$t.form.essentialInfo}</legend>
 
             <div class="input-row">
-                <label for="title">Title</label>
+                <label for="title">{$t.form.title}</label>
                 <AutoExpandTextarea id="title" bind:value={formData.title} required={true} />
             </div>
 
             <div class="input-row">
-                <label for="authors">Authors</label>
+                <label for="authors">{$t.form.authors}</label>
                 <AutoExpandTextarea id="authors" bind:value={authorsInput} required={true} />
             </div>
         </fieldset>
 
         <fieldset class="form-group">
-            <legend>Publication Details</legend>
+            <legend>{$t.form.pubDetails}</legend>
 
             <div class="input-row">
-                <label for="publisher">Publisher</label>
+                <label for="publisher">{$t.form.publisher}</label>
                 <input type="text" id="publisher" bind:value={formData.publisher} />
             </div>
 
             <div class="input-row">
-                <label for="publish_date">Publication Date</label>
+                <label for="publish_date">{$t.form.pubDate}</label>
                 <input type="text" id="publish_date" bind:value={formData.publish_date} />
             </div>
 
             <div class="input-row">
-                <label for="isbn_13">ISBN-13</label>
+                <label for="isbn_13">{$t.form.isbn13}</label>
                 <input type="text" id="isbn_13" bind:value={formData.isbn_13} />
             </div>
         </fieldset>
 
         <fieldset class="form-group">
-            <legend>Physical Location</legend>
+            <legend>{$t.form.physicalLoc}</legend>
 
             <div class="input-row">
-                <label for="room">Room</label>
+                <label for="room">{$t.form.room}</label>
                 <input type="text" id="room" bind:value={formData.location_room} />
             </div>
 
             <div class="input-row">
-                <label for="bookcase">Bookcase</label>
+                <label for="bookcase">{$t.form.bookcase}</label>
                 <input type="text" id="bookcase" bind:value={formData.location_bookcase} />
             </div>
         </fieldset>
