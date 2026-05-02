@@ -1,5 +1,5 @@
-import { fetch } from '@tauri-apps/plugin-http';
-import type { Book, CreateBookPayload, PaginatedResponse, BookMetadataResponse } from '../types/book';
+import type { Book, CreateBookPayload, UpdateBookPayload, PaginatedResponse, BookMetadataResponse } from '../types/book';
+import { sanitizeBookPayload } from './sanitizer';
 
 const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001';
 
@@ -19,38 +19,41 @@ export const apiClient = {
         if (sortOrder) url.searchParams.append('sort_order', sortOrder);
         if (queryJson) url.searchParams.append('query', queryJson);
 
-        const response = await fetch(url.toString(), {
-            method: 'GET',
-        });
-
+        const response = await fetch(url.toString(), { method: 'GET' });
         if (!response.ok) throw new Error('Failed to fetch books');
         return response.json();
     },
 
     async createBook(payload: CreateBookPayload): Promise<Book> {
+        const safePayload = sanitizeBookPayload(payload);
         const response = await fetch(`${API_BASE_URL}/books`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(payload)
+            body: JSON.stringify(safePayload)
         });
-        if (!response.ok) throw new Error('Failed to create book');
+        if (!response.ok) {
+            const errBody = await response.text();
+            throw new Error(`Failed to create book: ${errBody}`);
+        }
         return response.json();
     },
 
-    async updateBook(id: string, payload: CreateBookPayload): Promise<Book> {
+    async updateBook(id: string, payload: UpdateBookPayload): Promise<Book> {
+        const safePayload = sanitizeBookPayload(payload);
         const response = await fetch(`${API_BASE_URL}/books/${id}`, {
             method: 'PUT',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(payload)
+            body: JSON.stringify(safePayload)
         });
-        if (!response.ok) throw new Error('Failed to update book');
+        if (!response.ok) {
+            const errBody = await response.text();
+            throw new Error(`Failed to update book: ${errBody}`);
+        }
         return response.json();
     },
 
     async deleteBook(id: string): Promise<void> {
-        const response = await fetch(`${API_BASE_URL}/books/${id}`, {
-            method: 'DELETE',
-        });
+        const response = await fetch(`${API_BASE_URL}/books/${id}`, { method: 'DELETE' });
         if (!response.ok) throw new Error('Failed to delete book');
     },
 
@@ -60,24 +63,19 @@ export const apiClient = {
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ ids })
         });
-        if (!response.ok) throw new Error('Failed to delete books in batch');
+        if (!response.ok) throw new Error('Failed to batch delete');
     },
 
-    async lookupIsbn(isbn: string): Promise<BookMetadataResponse> {
-        const response = await fetch(`${API_BASE_URL}/books/lookup/${isbn}`, {
-            method: 'GET',
-        });
-        if (!response.ok) throw new Error('Failed to lookup ISBN');
+    async lookupMetadata(identifier: string): Promise<BookMetadataResponse> {
+        const response = await fetch(`${API_BASE_URL}/books/lookup/${identifier}`, { method: 'GET' });
+        if (!response.ok) throw new Error('Failed to lookup metadata');
         return response.json();
     },
 
     async searchMetadata(query: string): Promise<BookMetadataResponse[]> {
         const url = new URL(`${API_BASE_URL}/books/search-metadata`);
         url.searchParams.append('q', query);
-
-        const response = await fetch(url.toString(), {
-            method: 'GET',
-        });
+        const response = await fetch(url.toString(), { method: 'GET' });
         if (!response.ok) throw new Error('Failed to search metadata');
         return response.json();
     }
