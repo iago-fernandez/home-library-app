@@ -315,8 +315,16 @@
                             on:keydown={(e) => e.key === 'Enter' && handleRowClick(e, row.original.id, virtualRow.index)}
                     >
                         {#each row.getVisibleCells() as cell}
-                            <div class="cell" style="width: {cell.column.getSize()}px" title={cell.getValue() ? String(cell.getValue()) : ''}>
-                                <svelte:component this={flexRender(cell.column.columnDef.cell, cell.getContext())} />
+                            <div class="cell" style="width: {cell.column.getSize()}px" title={cell.column.id !== 'cover_url' && cell.getValue() ? String(cell.getValue()) : ''}>
+                                {#if cell.column.id === 'cover_url'}
+                                    {#if cell.getValue()}
+                                        <img src={String(cell.getValue())} alt="Cover" class="row-cover" loading="lazy" />
+                                    {:else}
+                                        <div class="row-cover-placeholder"></div>
+                                    {/if}
+                                {:else}
+                                    <svelte:component this={flexRender(cell.column.columnDef.cell, cell.getContext())} />
+                                {/if}
                             </div>
                         {/each}
                     </div>
@@ -415,6 +423,22 @@
     .resizer:hover, .resizer.isResizing {
         background: #0066cc;
         opacity: 0.5;
+    }
+
+    .row-cover {
+        height: 24px;
+        width: auto;
+        max-width: 100%;
+        border-radius: 2px;
+        object-fit: contain;
+        display: block;
+    }
+
+    .row-cover-placeholder {
+        height: 24px;
+        width: 18px;
+        background-color: #e0e0e0;
+        border-radius: 2px;
     }
 
     .skeleton { pointer-events: none; }
