@@ -11,7 +11,9 @@ export const en: TranslationDictionary = {
         search: 'Search',
         selected: 'Selected',
         refresh: 'Refresh',
-        toggleLanguage: 'Switch to Spanish'
+        toggleLanguage: 'Switch to Spanish',
+        reset: 'Reset',
+        close: 'Close'
     },
     menu: {
         file: 'File',
@@ -43,7 +45,10 @@ export const en: TranslationDictionary = {
         bookcase: 'Bookcase',
         noMatches: 'No matches',
         findPlaceholder: 'Find in loaded rows (Ctrl+F)',
-        of: 'of'
+        of: 'of',
+        manageColumns: 'Manage Columns',
+        columnsHelp: 'Drag to reorder. Check to show or hide.',
+        columns: 'Columns'
     },
     filters: {
         activeFilters: 'Active Filters',

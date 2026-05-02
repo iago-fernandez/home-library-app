@@ -11,7 +11,9 @@ export const es: TranslationDictionary = {
         search: 'Buscar',
         selected: 'Seleccionados',
         refresh: 'Actualizar',
-        toggleLanguage: 'Cambiar a Inglés'
+        toggleLanguage: 'Cambiar a Inglés',
+        reset: 'Restablecer',
+        close: 'Cerrar'
     },
     menu: {
         file: 'Archivo',
@@ -43,7 +45,10 @@ export const es: TranslationDictionary = {
         bookcase: 'Estantería',
         noMatches: 'Sin resultados',
         findPlaceholder: 'Buscar en filas cargadas (Ctrl+F)',
-        of: 'de'
+        of: 'de',
+        manageColumns: 'Gestionar Columnas',
+        columnsHelp: 'Arrastra para reordenar. Marca para mostrar u ocultar.',
+        columns: 'Columnas'
     },
     filters: {
         activeFilters: 'Filtros Activos',

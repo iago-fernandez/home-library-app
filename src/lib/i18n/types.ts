@@ -10,6 +10,8 @@ export interface TranslationDictionary {
         selected: string;
         refresh: string;
         toggleLanguage: string;
+        reset: string;
+        close: string;
     };
     menu: {
         file: string;
@@ -42,6 +44,9 @@ export interface TranslationDictionary {
         noMatches: string;
         findPlaceholder: string;
         of: string;
+        manageColumns: string;
+        columnsHelp: string;
+        columns: string;
     };
     filters: {
         activeFilters: string;
