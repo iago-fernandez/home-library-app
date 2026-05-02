@@ -150,6 +150,7 @@ export const en: TranslationDictionary = {
         loanDate: 'Loan Date',
         expectedReturnDate: 'Expected Return Date',
         autofill: 'Fetch Metadata',
-        autofillLoading: 'Fetching...'
+        autofillLoading: 'Fetching...',
+        fetchErrorEmpty: 'No data found in OpenLibrary for this identifier.'
     }
 };

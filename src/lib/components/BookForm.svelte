@@ -12,6 +12,7 @@
 
     let isLookingUp = false;
     let fetchId = '';
+    let fetchError = '';
 
     let formData: Partial<CreateBookPayload> = getInitialFormData(initialData);
 
@@ -49,11 +50,16 @@
         if (!fetchId) return;
 
         isLookingUp = true;
+        fetchError = '';
         try {
             const queryParam = fetchId.trim();
             const cleanQuery = queryParam.replace(/-/g, '').replace(/\s/g, '');
 
-            const metadata = await apiClient.lookupIsbn(queryParam);
+            const metadata = await apiClient.lookupMetadata(queryParam);
+
+            if (!metadata.title && !metadata.authors) {
+                fetchError = $t.form.fetchErrorEmpty;
+            }
 
             formData.title = '';
             formData.subtitle = '';
@@ -74,7 +80,12 @@
 
             if (metadata.title) formData.title = metadata.title;
             if (metadata.subtitle) formData.subtitle = metadata.subtitle;
-            if (metadata.publish_date) formData.publish_date = metadata.publish_date;
+            if (metadata.publish_date) {
+                const parsedDate = new Date(metadata.publish_date);
+                if (!isNaN(parsedDate.getTime())) {
+                    formData.publish_date = parsedDate.toISOString().split('T')[0];
+                }
+            }
             if (metadata.page_count) formData.page_count = metadata.page_count;
             if (metadata.cover_url) formData.cover_url = metadata.cover_url;
             if (metadata.physical_format) formData.book_format = metadata.physical_format;
@@ -143,6 +154,10 @@
                     {isLookingUp ? $t.form.autofillLoading : $t.form.autofill}
                 </button>
             </div>
+
+            {#if fetchError}
+                <div class="fetch-error-message">{fetchError}</div>
+            {/if}
 
             <div class="input-row">
                 <label for="isbn_13">{$t.form.isbn13}</label>
@@ -587,5 +602,13 @@
     input:focus, .form-select:focus {
         outline: none;
         border-color: #0066cc;
+    }
+
+    .fetch-error-message {
+        color: #cc0000;
+        font-size: 12px;
+        margin-top: -12px;
+        margin-bottom: 12px;
+        font-weight: 500;
     }
 </style>
