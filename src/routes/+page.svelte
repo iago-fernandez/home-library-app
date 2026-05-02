@@ -4,10 +4,12 @@
   import { t, locale, setLocale } from '$lib/i18n';
   import DataGrid from '$lib/components/DataGrid.svelte';
   import BookForm from '$lib/components/BookForm.svelte';
+  import ColumnSettings from '$lib/components/ColumnSettings.svelte';
   import type { CreateBookPayload } from '$lib/types/book';
   import { Plus, Pencil, Trash2, Filter, Settings, X, Search, CheckSquare, Download } from 'lucide-svelte';
 
   let activePanel: 'actions' | 'addBook' | 'editBook' | 'filter' = 'actions';
+  let showColumnSettings = false;
 
   type FieldType = 'text' | 'numeric';
   type InputHTMLType = 'text' | 'number' | 'date';
@@ -284,6 +286,10 @@
         <button class="menu-btn" class:active={openMenu === 'View'} on:click={() => toggleMenu('View')}>{$t.menu.view}</button>
         {#if openMenu === 'View'}
           <div class="dropdown-menu">
+            <button class="dropdown-item" on:click={() => { showColumnSettings = true; closeMenus(); }}>
+              {$t.grid.manageColumns}
+            </button>
+            <div class="dropdown-divider"></div>
             <button class="dropdown-item" on:click={() => { setLocale($locale === 'en' ? 'es' : 'en'); closeMenus(); }}>
               {$t.common.toggleLanguage}
             </button>
@@ -489,6 +495,10 @@
     </aside>
   </main>
 </div>
+
+{#if showColumnSettings}
+  <ColumnSettings onClose={() => showColumnSettings = false} />
+{/if}
 
 <style>
   .app-container {
