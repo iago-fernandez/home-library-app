@@ -23,7 +23,19 @@
     let scrollContainer: HTMLDivElement;
     let lastSelectedIndex = -1;
     let sorting: SortingState = [];
+    let columnSizing: Record<string, number> = {};
     let isMounted = false;
+
+    if (typeof window !== 'undefined') {
+        const storedSizes = localStorage.getItem('library_column_sizes');
+        if (storedSizes) {
+            try {
+                columnSizing = JSON.parse(storedSizes);
+            } catch (e) {
+                columnSizing = {};
+            }
+        }
+    }
 
     function getCellData(book: any, colId: string): string {
         if (!book) return '';
@@ -33,7 +45,23 @@
         return val ? String(val) : '';
     }
 
-    // Reactividad pura de columnas
+    function autoSizeColumn(colId: string) {
+        let maxLen = colId.length;
+        for (const book of $bookStore) {
+            const val = getCellData(book, colId);
+            if (val && val.length > maxLen) {
+                maxLen = val.length;
+            }
+        }
+
+        const calculatedWidth = Math.min(Math.max(maxLen * 8 + 32, 100), 500);
+        columnSizing = { ...columnSizing, [colId]: calculatedWidth };
+
+        if (typeof window !== 'undefined') {
+            localStorage.setItem('library_column_sizes', JSON.stringify(columnSizing));
+        }
+    }
+
     $: columns = $activeColumns.map(id => {
         const colDef = availableColumns.find(c => c.id === id);
         return {
@@ -46,25 +74,31 @@
         } as ColumnDef<any>;
     });
 
-    // Opciones de TanStack reactivas al store
+    let tableOptions: TableOptions<any>;
     $: tableOptions = {
         data: $bookStore,
         columns,
-        state: { sorting },
+        state: { sorting, columnSizing },
         onSortingChange: (updater) => {
             sorting = typeof updater === 'function' ? updater(sorting) : updater;
             if (sorting.length > 0 && isMounted) {
                 bookStore.applySort(sorting[0].id);
             }
         },
+        onColumnSizingChange: (updater) => {
+            columnSizing = typeof updater === 'function' ? updater(columnSizing) : updater;
+            if (typeof window !== 'undefined') {
+                localStorage.setItem('library_column_sizes', JSON.stringify(columnSizing));
+            }
+        },
         columnResizeMode: 'onChange',
         getCoreRowModel: getCoreRowModel(),
         getSortedRowModel: getSortedRowModel(),
-    } as TableOptions<any>;
+    };
 
     $: table = createSvelteTable(tableOptions);
 
-    // Opciones del virtualizador reactivas al total de libros
+    let virtualizerOptions: any;
     $: virtualizerOptions = {
         count: $totalBooks,
         getScrollElement: () => scrollContainer,
@@ -75,7 +109,6 @@
     $: virtualizer = createVirtualizer(virtualizerOptions);
     $: virtualItems = $virtualizer.getVirtualItems();
 
-    // Trigger de infinite scroll
     $: {
         if (isMounted) {
             const lastItem = virtualItems[virtualItems.length - 1];
@@ -227,7 +260,7 @@
         </div>
     {/if}
 
-    <div class="grid-header" style="width: {$table.getTotalSize()}px">
+    <div class="grid-header" style="min-width: 100%; width: {$table.getTotalSize()}px">
         {#each $table.getHeaderGroups() as headerGroup}
             <div class="header-row">
                 {#each headerGroup.headers as header}
@@ -253,6 +286,7 @@
                             <div
                                     on:mousedown={header.getResizeHandler()}
                                     on:touchstart={header.getResizeHandler()}
+                                    on:dblclick={(e) => { e.stopPropagation(); autoSizeColumn(header.column.id); }}
                                     class="resizer"
                                     class:isResizing={header.column.getIsResizing()}
                                     on:click={(e) => e.stopPropagation()}
@@ -268,14 +302,14 @@
     </div>
 
     <div bind:this={scrollContainer} class="scroll-container">
-        <div class="virtual-inner" style="height: {$virtualizer.getTotalSize()}px; width: {$table.getTotalSize()}px">
+        <div class="virtual-inner" style="height: {$virtualizer.getTotalSize()}px; min-width: 100%; width: {$table.getTotalSize()}px">
             {#each virtualItems as virtualRow (virtualRow.index)}
                 {@const row = $table.getRowModel().rows[virtualRow.index]}
                 {#if row}
                     <div
                             class="grid-row"
                             class:selected={$selectedIds.includes(row.original.id)}
-                            style="transform: translateY({virtualRow.start}px); height: {virtualRow.size}px; width: 100%"
+                            style="transform: translateY({virtualRow.start}px); height: {virtualRow.size}px; min-width: 100%; width: {$table.getTotalSize()}px"
                             role="button" tabindex="0"
                             on:click={(e) => handleRowClick(e, row.original.id, virtualRow.index)}
                             on:keydown={(e) => e.key === 'Enter' && handleRowClick(e, row.original.id, virtualRow.index)}
@@ -287,7 +321,7 @@
                         {/each}
                     </div>
                 {:else}
-                    <div class="grid-row skeleton" style="transform: translateY({virtualRow.start}px); height: {virtualRow.size}px; width: {$table.getTotalSize()}px">
+                    <div class="grid-row skeleton" style="transform: translateY({virtualRow.start}px); height: {virtualRow.size}px; min-width: 100%; width: {$table.getTotalSize()}px">
                         {#each columns as col}
                             <div class="cell" style="width: {col.size}px"><div class="skeleton-line"></div></div>
                         {/each}
@@ -325,7 +359,7 @@
         z-index: 2;
     }
 
-    .header-row { display: flex; }
+    .header-row { display: flex; min-width: 100%; }
     .scroll-container { flex: 1; overflow: auto; position: relative; }
     .virtual-inner { position: relative; }
 
