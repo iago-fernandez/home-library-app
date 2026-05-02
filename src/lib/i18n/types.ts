@@ -149,5 +149,6 @@ export interface TranslationDictionary {
         expectedReturnDate: string;
         autofill: string;
         autofillLoading: string;
+        fetchErrorEmpty: string;
     };
 }

@@ -60,6 +60,8 @@ export interface Book {
 
 export type CreateBookPayload = Omit<Book, 'id' | 'catalog_number' | 'created_at' | 'updated_at'>;
 
+export type UpdateBookPayload = Partial<CreateBookPayload>;
+
 export interface PaginatedResponse {
     data: Book[];
     total: number;
