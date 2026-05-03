@@ -4,6 +4,7 @@ const PREF_KEY = 'library_datagrid_columns';
 
 export const availableColumns = [
     { id: 'cover_url', label: 'Cover' },
+    { id: 'catalog_number', label: 'ID' },
     { id: 'title', label: 'Title' },
     { id: 'subtitle', label: 'Subtitle' },
     { id: 'original_title', label: 'Original Title' },

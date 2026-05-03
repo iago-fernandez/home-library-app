@@ -34,6 +34,7 @@ export interface TranslationDictionary {
     };
     grid: {
         allColumns: string;
+        catalogNumber: string;
         title: string;
         authors: string;
         publisher: string;
@@ -47,6 +48,7 @@ export interface TranslationDictionary {
         manageColumns: string;
         columnsHelp: string;
         columns: string;
+        noCover: string;
     };
     filters: {
         activeFilters: string;

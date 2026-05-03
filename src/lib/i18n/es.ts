@@ -36,6 +36,7 @@ export const es: TranslationDictionary = {
     },
     grid: {
         allColumns: 'Todas las Columnas',
+        catalogNumber: 'ID',
         title: 'Título',
         authors: 'Autores',
         publisher: 'Editorial',
@@ -48,7 +49,8 @@ export const es: TranslationDictionary = {
         of: 'de',
         manageColumns: 'Gestionar Columnas',
         columnsHelp: 'Arrastra para reordenar. Marca para mostrar u ocultar.',
-        columns: 'Columnas'
+        columns: 'Columnas',
+        noCover: 'Sin Portada'
     },
     filters: {
         activeFilters: 'Filtros Activos',

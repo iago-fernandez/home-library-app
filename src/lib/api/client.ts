@@ -78,5 +78,21 @@ export const apiClient = {
         const response = await fetch(url.toString(), { method: 'GET' });
         if (!response.ok) throw new Error('Failed to search metadata');
         return response.json();
+    },
+
+    async uploadCover(file: File): Promise<{ url: string }> {
+        const formData = new FormData();
+        formData.append('cover', file);
+
+        const response = await fetch(`${API_BASE_URL}/books/upload-cover`, {
+            method: 'POST',
+            body: formData
+        });
+
+        if (!response.ok) {
+            const errBody = await response.text();
+            throw new Error(`Failed to upload cover: ${errBody}`);
+        }
+        return response.json();
     }
 };
