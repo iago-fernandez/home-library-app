@@ -1,6 +1,7 @@
 <script lang="ts">
   import { onMount } from 'svelte';
   import { bookStore } from '$lib/store';
+  import { apiClient } from '$lib/api/client';
   import { t, locale, setLocale } from '$lib/i18n';
   import DataGrid from '$lib/components/DataGrid.svelte';
   import MosaicGrid from '$lib/components/MosaicGrid.svelte';
@@ -117,8 +118,25 @@
     activePanel = 'actions';
   }
 
-  async function handleFormSubmit(payload: CreateBookPayload) {
+  async function handleFormSubmit(payload: CreateBookPayload, imageFile?: File) {
     try {
+      if (imageFile) {
+        const uploadResponse = await apiClient.uploadCover(imageFile);
+        payload.cover_url = uploadResponse.url;
+      } else if (payload.cover_url && payload.cover_url.startsWith('http') && !payload.cover_url.includes(window.location.hostname)) {
+        try {
+          const response = await fetch(payload.cover_url);
+          if (response.ok) {
+            const blob = await response.blob();
+            const file = new File([blob], "fetched-cover.jpg", { type: blob.type });
+            const uploadResponse = await apiClient.uploadCover(file);
+            payload.cover_url = uploadResponse.url;
+          }
+        } catch (error) {
+          console.warn("External image download failed, keeping original URL", error);
+        }
+      }
+
       if (activePanel === 'editBook' && $selectedId) {
         await bookStore.updateBook($selectedId, payload);
       } else {

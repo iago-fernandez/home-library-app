@@ -18,6 +18,7 @@
     const selectedIds = bookStore.selectedIds;
     const localSearchActive = bookStore.localSearchActive;
     const multiSelectMode = bookStore.multiSelectMode;
+    const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001';
 
     let scrollContainer: HTMLDivElement;
     let lastSelectedIndex = -1;
@@ -34,6 +35,12 @@
                 columnSizing = {};
             }
         }
+    }
+
+    function getCoverUrl(path: string) {
+        if (!path) return null;
+        if (path.startsWith('http')) return path;
+        return `${API_BASE_URL}${path}`;
     }
 
     function getCellData(book: any, colId: string): string {
@@ -330,7 +337,7 @@
                                 <div class="cell" style="width: {cell.column.getSize()}px" title={cell.column.id !== 'cover_url' && cell.getValue() ? String(cell.getValue()) : ''}>
                                     {#if cell.column.id === 'cover_url'}
                                         {#if cell.getValue()}
-                                            <img src={String(cell.getValue())} alt="Cover" class="row-cover" loading="lazy" />
+                                            <img src={getCoverUrl(String(cell.getValue()))} alt="Cover" class="row-cover" loading="lazy" />
                                         {:else}
                                             <div class="row-cover-placeholder"></div>
                                         {/if}

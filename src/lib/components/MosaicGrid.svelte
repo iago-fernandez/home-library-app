@@ -1,11 +1,20 @@
 <script lang="ts">
     import { bookStore } from '$lib/store';
+    import { t } from '$lib/i18n';
 
     $: books = $bookStore;
     const selectedIds = bookStore.selectedIds;
+    const multiSelectMode = bookStore.multiSelectMode;
+    const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001';
+
+    function getCoverUrl(path: string) {
+        if (!path) return null;
+        if (path.startsWith('http')) return path;
+        return `${API_BASE_URL}${path}`;
+    }
 
     function handleSelect(event: MouseEvent | KeyboardEvent, id: string) {
-        if (event.ctrlKey || event.metaKey || $bookStore.multiSelectMode) {
+        if (event.ctrlKey || event.metaKey || $multiSelectMode) {
             let newSelection = [...$selectedIds];
             if (newSelection.includes(id)) {
                 newSelection = newSelection.filter(selectedId => selectedId !== id);
@@ -35,14 +44,14 @@
         >
             <div class="cover-wrapper">
                 {#if book.cover_url}
-                    <img src={book.cover_url} alt={book.title} loading="lazy" />
+                    <img src={getCoverUrl(book.cover_url)} alt={book.title} loading="lazy" />
                 {:else}
-                    <div class="no-cover">No Cover</div>
+                    <div class="no-cover">{$t.grid.noCover}</div>
                 {/if}
             </div>
             <div class="info">
                 <h4>{book.title}</h4>
-                <p>{book.authors?.join(', ') || 'Unknown Author'}</p>
+                <p>{book.authors?.join(', ') || ''}</p>
             </div>
         </div>
     {/each}

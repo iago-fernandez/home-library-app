@@ -49,7 +49,8 @@ export const en: TranslationDictionary = {
         of: 'of',
         manageColumns: 'Manage Columns',
         columnsHelp: 'Drag to reorder. Check to show or hide.',
-        columns: 'Columns'
+        columns: 'Columns',
+        noCover: 'No Cover'
     },
     filters: {
         activeFilters: 'Active Filters',

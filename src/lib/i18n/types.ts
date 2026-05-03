@@ -48,6 +48,7 @@ export interface TranslationDictionary {
         manageColumns: string;
         columnsHelp: string;
         columns: string;
+        noCover: string;
     };
     filters: {
         activeFilters: string;

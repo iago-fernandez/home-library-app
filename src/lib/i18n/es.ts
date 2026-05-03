@@ -49,7 +49,8 @@ export const es: TranslationDictionary = {
         of: 'de',
         manageColumns: 'Gestionar Columnas',
         columnsHelp: 'Arrastra para reordenar. Marca para mostrar u ocultar.',
-        columns: 'Columnas'
+        columns: 'Columnas',
+        noCover: 'Sin Portada'
     },
     filters: {
         activeFilters: 'Filtros Activos',

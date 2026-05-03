@@ -4,17 +4,20 @@
     import { apiClient } from '$lib/api/client';
     import AutoExpandTextarea from './AutoExpandTextarea.svelte';
     import ChipInput from './ChipInput.svelte';
-    import { Search, DownloadCloud } from 'lucide-svelte';
+    import { Search, DownloadCloud, UploadCloud, Camera } from 'lucide-svelte';
 
     export let initialData: Book | null = null;
     export let onCancel: () => void;
-    export let onSubmit: (payload: CreateBookPayload) => void;
+    export let onSubmit: (payload: CreateBookPayload, imageFile?: File) => void;
 
     let isLookingUp = false;
     let fetchId = '';
     let fetchError = '';
 
     let formData: Partial<CreateBookPayload> = getInitialFormData(initialData);
+    let selectedImageFile: File | undefined = undefined;
+    let imagePreviewUrl: string = formData.cover_url || '';
+    let fileInputRef: HTMLInputElement;
 
     function getInitialFormData(data: Book | null): Partial<CreateBookPayload> {
         if (data) {
@@ -61,49 +64,30 @@
                 fetchError = $t.form.fetchErrorEmpty;
             }
 
-            formData.title = '';
-            formData.subtitle = '';
-            formData.publish_date = '';
-            formData.page_count = undefined;
-            formData.cover_url = '';
-            formData.book_format = '';
-            formData.weight = '';
-            formData.dimensions = '';
-            formData.authors = [];
-            formData.publisher = '';
-            formData.subjects = [];
-            formData.language = '';
-            formData.isbn_10 = '';
-            formData.isbn_13 = '';
-            formData.oclc_number = '';
-            formData.open_library_id = '';
+            formData.title = metadata.title || '';
+            formData.subtitle = metadata.subtitle || '';
+            formData.page_count = metadata.page_count || undefined;
+            formData.book_format = metadata.physical_format || '';
+            formData.weight = metadata.weight || '';
+            formData.dimensions = metadata.dimensions || '';
 
-            if (metadata.title) formData.title = metadata.title;
-            if (metadata.subtitle) formData.subtitle = metadata.subtitle;
             if (metadata.publish_date) {
                 const parsedDate = new Date(metadata.publish_date);
                 if (!isNaN(parsedDate.getTime())) {
                     formData.publish_date = parsedDate.toISOString().split('T')[0];
                 }
             }
-            if (metadata.page_count) formData.page_count = metadata.page_count;
-            if (metadata.cover_url) formData.cover_url = metadata.cover_url;
-            if (metadata.physical_format) formData.book_format = metadata.physical_format;
-            if (metadata.weight) formData.weight = metadata.weight;
-            if (metadata.dimensions) formData.dimensions = metadata.dimensions;
 
-            if (metadata.authors) {
-                formData.authors = [...new Set([...(metadata.authors)])];
+            if (metadata.cover_url) {
+                formData.cover_url = metadata.cover_url;
+                imagePreviewUrl = metadata.cover_url;
+                selectedImageFile = undefined;
             }
-            if (metadata.publishers && metadata.publishers.length > 0) {
-                formData.publisher = metadata.publishers[0];
-            }
-            if (metadata.subjects) {
-                formData.subjects = [...new Set([...(metadata.subjects)])];
-            }
-            if (metadata.languages && metadata.languages.length > 0) {
-                formData.language = metadata.languages[0];
-            }
+
+            if (metadata.authors) formData.authors = [...new Set([...metadata.authors])];
+            if (metadata.publishers && metadata.publishers.length > 0) formData.publisher = metadata.publishers[0];
+            if (metadata.subjects) formData.subjects = [...new Set([...metadata.subjects])];
+            if (metadata.languages && metadata.languages.length > 0) formData.language = metadata.languages[0];
 
             const upperQuery = cleanQuery.toUpperCase();
             if (upperQuery.startsWith('OL')) {
@@ -123,8 +107,21 @@
         }
     }
 
+    function handleFileSelection(event: Event) {
+        const target = event.target as HTMLInputElement;
+        if (target.files && target.files.length > 0) {
+            selectedImageFile = target.files[0];
+            imagePreviewUrl = URL.createObjectURL(selectedImageFile);
+            formData.cover_url = '';
+        }
+    }
+
+    function triggerFileInput() {
+        fileInputRef.click();
+    }
+
     function handleSubmit() {
-        onSubmit(formData as CreateBookPayload);
+        onSubmit(formData as CreateBookPayload, selectedImageFile);
     }
 </script>
 
@@ -180,6 +177,39 @@
         </fieldset>
 
         <fieldset class="form-group">
+            <legend>Cover Image</legend>
+            <div class="cover-upload-container">
+                <div class="cover-preview" class:has-image={!!imagePreviewUrl}>
+                    {#if imagePreviewUrl}
+                        <img src={imagePreviewUrl} alt="Cover Preview" />
+                    {:else}
+                        <div class="cover-placeholder">
+                            <Camera size={32} color="#999" />
+                            <span>{$t.grid.noCover}</span>
+                        </div>
+                    {/if}
+                </div>
+                <div class="cover-actions">
+                    <input
+                            type="file"
+                            accept="image/*"
+                            capture="environment"
+                            bind:this={fileInputRef}
+                            on:change={handleFileSelection}
+                            style="display: none;"
+                    />
+                    <button type="button" class="btn-secondary" on:click={triggerFileInput}>
+                        <UploadCloud size={16} /> Select File or Camera
+                    </button>
+                    <div class="input-row" style="width: 100%;">
+                        <label for="cover_url_manual">Or external URL:</label>
+                        <input type="url" id="cover_url_manual" bind:value={formData.cover_url} on:input={() => { imagePreviewUrl = formData.cover_url || ''; selectedImageFile = undefined; }} />
+                    </div>
+                </div>
+            </div>
+        </fieldset>
+
+        <fieldset class="form-group">
             <legend>{$t.form.essentialInfo}</legend>
             <div class="input-row">
                 <label for="title">{$t.form.title}</label>
@@ -204,10 +234,6 @@
             <div class="input-row">
                 <label for="illustrators">{$t.form.illustrators}</label>
                 <ChipInput id="illustrators" bind:values={formData.illustrators} placeholder="..." />
-            </div>
-            <div class="input-row">
-                <label for="cover_url">{$t.form.coverUrl}</label>
-                <input type="url" id="cover_url" bind:value={formData.cover_url} />
             </div>
         </fieldset>
 
@@ -495,6 +521,22 @@
         font-weight: 500;
     }
 
+    .btn-secondary {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 6px;
+        background-color: #ffffff;
+        color: #333;
+        border: 1px solid #ccc;
+        font-weight: 500;
+    }
+
+    .btn-secondary:hover {
+        background-color: #f9f9f9;
+        border-color: #999;
+    }
+
     .smart-fetch-row {
         display: flex;
         gap: 8px;
@@ -558,6 +600,58 @@
         padding-bottom: 4px;
         border-bottom: 1px solid #d0d0d0;
         width: 100%;
+    }
+
+    .cover-upload-container {
+        display: flex;
+        gap: 16px;
+        align-items: center;
+        background-color: #ffffff;
+        padding: 12px;
+        border-radius: 6px;
+        border: 1px solid #ccc;
+    }
+
+    .cover-preview {
+        width: 80px;
+        height: 120px;
+        background-color: #f5f5f5;
+        border-radius: 4px;
+        border: 1px dashed #aaa;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        overflow: hidden;
+        flex-shrink: 0;
+    }
+
+    .cover-preview.has-image {
+        border-style: solid;
+        border-color: #e0e0e0;
+    }
+
+    .cover-preview img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+    }
+
+    .cover-placeholder {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 4px;
+        color: #999;
+        font-size: 10px;
+    }
+
+    .cover-actions {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+        flex: 1;
+        align-items: flex-start;
     }
 
     .input-row {
