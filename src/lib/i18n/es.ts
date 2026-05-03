@@ -36,6 +36,7 @@ export const es: TranslationDictionary = {
     },
     grid: {
         allColumns: 'Todas las Columnas',
+        catalogNumber: 'ID',
         title: 'Título',
         authors: 'Autores',
         publisher: 'Editorial',

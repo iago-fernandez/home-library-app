@@ -3,6 +3,7 @@
   import { bookStore } from '$lib/store';
   import { t, locale, setLocale } from '$lib/i18n';
   import DataGrid from '$lib/components/DataGrid.svelte';
+  import MosaicGrid from '$lib/components/MosaicGrid.svelte';
   import BookForm from '$lib/components/BookForm.svelte';
   import ColumnSettings from '$lib/components/ColumnSettings.svelte';
   import type { CreateBookPayload } from '$lib/types/book';
@@ -10,6 +11,7 @@
 
   let activePanel: 'actions' | 'addBook' | 'editBook' | 'filter' = 'actions';
   let showColumnSettings = false;
+  let currentView: 'table' | 'mosaic' = 'table';
 
   type FieldType = 'text' | 'numeric';
   type InputHTMLType = 'text' | 'number' | 'date';
@@ -347,7 +349,19 @@
             <button class="btn-exit-mode" on:click={bookStore.toggleMultiSelectMode}>{$t.actions.exit}</button>
           </div>
         {/if}
-        <DataGrid />
+
+        <div class="view-selector">
+          <button class:active={currentView === 'table'} on:click={() => currentView = 'table'}>Tabla</button>
+          <button class:active={currentView === 'mosaic'} on:click={() => currentView = 'mosaic'}>Mosaico</button>
+        </div>
+
+        <div class="view-container">
+          {#if currentView === 'table'}
+            <DataGrid />
+          {:else if currentView === 'mosaic'}
+            <MosaicGrid />
+          {/if}
+        </div>
       </div>
     </section>
 
@@ -985,4 +999,34 @@
   .match-select {
     max-width: 150px;
   }
+
+  .view-selector {
+    display: flex;
+    gap: 4px;
+    padding: 8px 16px;
+    background-color: #f5f5f5;
+    border-bottom: 1px solid #e0e0e0;
+  }
+
+  .view-selector button {
+    padding: 4px 12px;
+    border: 1px solid #ccc;
+    background: #fff;
+    cursor: pointer;
+    font-size: 12px;
+    border-radius: 4px;
+  }
+
+  .view-selector button.active {
+    background: #0066cc;
+    color: white;
+    border-color: #005bb5;
+  }
+
+  .view-container {
+    flex: 1;
+    position: relative;
+    overflow: hidden;
+  }
+
 </style>

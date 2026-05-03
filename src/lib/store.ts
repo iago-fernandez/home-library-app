@@ -19,6 +19,7 @@ function createBookStore() {
     const LIMIT = 100;
     let hasMore = true;
     let isFetching = false;
+    let currentRequestId = 0;
 
     return {
         subscribe,
@@ -52,32 +53,56 @@ function createBookStore() {
             if (isFetching || !hasMore) return;
 
             isFetching = true;
+            currentRequestId += 1;
+            const reqId = currentRequestId;
+            const requestedOffset = currentOffset;
+            currentOffset += LIMIT;
+
             try {
                 const currentQuery = get(filterQuery);
 
                 const response = await apiClient.getBooks(
                     LIMIT,
-                    currentOffset,
+                    requestedOffset,
                     get(sortParam),
                     get(orderParam),
                     currentQuery
                 );
 
-                totalBooks.set(response.total);
+                if (reqId !== currentRequestId) return;
+
+                let currentArrayLength = 0;
+
+                update(currentBooks => {
+                    const combined = [...currentBooks, ...response.data];
+                    const uniqueBooks = combined.filter((book, index, self) =>
+                        index === self.findIndex((b) => b.id === book.id)
+                    );
+                    currentArrayLength = uniqueBooks.length;
+                    return uniqueBooks;
+                });
 
                 if (response.data.length < LIMIT) {
                     hasMore = false;
+                    totalBooks.set(currentArrayLength);
+                } else {
+                    totalBooks.set(response.total);
                 }
 
-                update(currentBooks => [...currentBooks, ...response.data]);
-                currentOffset += LIMIT;
             } catch (error) {
                 console.error(error);
+                if (reqId === currentRequestId) {
+                    currentOffset -= LIMIT;
+                }
             } finally {
-                isFetching = false;
+                if (reqId === currentRequestId) {
+                    isFetching = false;
+                }
             }
         },
+
         resetAndLoad: async () => {
+            currentRequestId += 1;
             set([]);
             totalBooks.set(0);
             selectedBookId.set(null);
@@ -85,25 +110,21 @@ function createBookStore() {
             currentOffset = 0;
             hasMore = true;
             isFetching = false;
+
             await bookStore.loadBooks();
         },
-        applySort: async (column: string) => {
-            const currentSort = get(sortParam);
-            const currentOrder = get(orderParam);
 
-            if (currentSort === column) {
-                orderParam.set(currentOrder === 'asc' ? 'desc' : 'asc');
-            } else {
-                sortParam.set(column);
-                orderParam.set('asc');
-            }
-
+        applySort: async (column: string | undefined, order: 'asc' | 'desc' | undefined) => {
+            sortParam.set(column);
+            orderParam.set(order);
             await bookStore.resetAndLoad();
         },
+
         applyFilters: async (queryJson: string | undefined) => {
             filterQuery.set(queryJson);
             await bookStore.resetAndLoad();
         },
+
         addBook: async (payload: CreateBookPayload) => {
             const tempId = crypto.randomUUID();
 
@@ -125,6 +146,7 @@ function createBookStore() {
                 throw error;
             }
         },
+
         updateBook: async (id: string, payload: CreateBookPayload) => {
             let previousBook: Book | undefined;
 
@@ -150,6 +172,7 @@ function createBookStore() {
                 throw error;
             }
         },
+
         deleteBook: async (id: string) => {
             let removedBook: Book | undefined;
 
@@ -179,6 +202,7 @@ function createBookStore() {
                 throw error;
             }
         },
+
         deleteBooksBatch: async (ids: string[]) => {
             let removedBooks: Book[] = [];
 
@@ -211,6 +235,7 @@ function createBookStore() {
                 }
             });
         },
+
         clearSelection: () => {
             selectedIdsList.set([]);
         }

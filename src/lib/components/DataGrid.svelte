@@ -7,7 +7,6 @@
         createSvelteTable,
         flexRender,
         getCoreRowModel,
-        getSortedRowModel,
         type ColumnDef,
         type TableOptions,
         type SortingState
@@ -79,10 +78,20 @@
         data: $bookStore,
         columns,
         state: { sorting, columnSizing },
+        manualSorting: true,
+        sortDescFirst: false,
+        enableSortingRemoval: false,
         onSortingChange: (updater) => {
             sorting = typeof updater === 'function' ? updater(sorting) : updater;
-            if (sorting.length > 0 && isMounted) {
-                bookStore.applySort(sorting[0].id);
+            if (isMounted) {
+                if (scrollContainer) {
+                    scrollContainer.scrollTop = 0;
+                }
+                if (sorting.length > 0) {
+                    bookStore.applySort(sorting[0].id, sorting[0].desc ? 'desc' : 'asc');
+                } else {
+                    bookStore.applySort(undefined, undefined);
+                }
             }
         },
         onColumnSizingChange: (updater) => {
@@ -93,7 +102,6 @@
         },
         columnResizeMode: 'onChange',
         getCoreRowModel: getCoreRowModel(),
-        getSortedRowModel: getSortedRowModel(),
     };
 
     $: table = createSvelteTable(tableOptions);
@@ -260,82 +268,87 @@
         </div>
     {/if}
 
-    <div class="grid-header" style="min-width: 100%; width: {$table.getTotalSize()}px">
-        {#each $table.getHeaderGroups() as headerGroup}
-            <div class="header-row">
-                {#each headerGroup.headers as header}
-                    <!-- svelte-ignore a11y_interactive_supports_focus -->
-                    <div
-                            class="cell header-cell sortable"
-                            style="width: {header.getSize()}px"
-                            role="button"
-                            on:click={header.column.getToggleSortingHandler()}
-                            on:keydown={(e) => e.key === 'Enter' && header.column.toggleSorting()}
-                    >
-                        {#if !header.isPlaceholder}
-                            <svelte:component this={flexRender(header.column.columnDef.header, header.getContext())} />
-
-                            {#if header.column.getIsSorted() === 'asc'}
-                                <span class="sort-indicator">↑</span>
-                            {:else if header.column.getIsSorted() === 'desc'}
-                                <span class="sort-indicator">↓</span>
-                            {/if}
-
-                            <!-- svelte-ignore a11y_no_noninteractive_element_interactions -->
-                            <!-- svelte-ignore a11y_click_events_have_key_events -->
-                            <div
-                                    on:mousedown={header.getResizeHandler()}
-                                    on:touchstart={header.getResizeHandler()}
-                                    on:dblclick={(e) => { e.stopPropagation(); autoSizeColumn(header.column.id); }}
-                                    class="resizer"
-                                    class:isResizing={header.column.getIsResizing()}
-                                    on:click={(e) => e.stopPropagation()}
-                                    role="separator"
-                                    aria-orientation="vertical"
-                                    tabindex="-1"
-                            ></div>
-                        {/if}
-                    </div>
-                {/each}
-            </div>
-        {/each}
-    </div>
-
     <div bind:this={scrollContainer} class="scroll-container">
-        <div class="virtual-inner" style="height: {$virtualizer.getTotalSize()}px; min-width: 100%; width: {$table.getTotalSize()}px">
-            {#each virtualItems as virtualRow (virtualRow.index)}
-                {@const row = $table.getRowModel().rows[virtualRow.index]}
-                {#if row}
-                    <div
-                            class="grid-row"
-                            class:selected={$selectedIds.includes(row.original.id)}
-                            style="transform: translateY({virtualRow.start}px); height: {virtualRow.size}px; min-width: 100%; width: {$table.getTotalSize()}px"
-                            role="button" tabindex="0"
-                            on:click={(e) => handleRowClick(e, row.original.id, virtualRow.index)}
-                            on:keydown={(e) => e.key === 'Enter' && handleRowClick(e, row.original.id, virtualRow.index)}
-                    >
-                        {#each row.getVisibleCells() as cell}
-                            <div class="cell" style="width: {cell.column.getSize()}px" title={cell.column.id !== 'cover_url' && cell.getValue() ? String(cell.getValue()) : ''}>
-                                {#if cell.column.id === 'cover_url'}
-                                    {#if cell.getValue()}
-                                        <img src={String(cell.getValue())} alt="Cover" class="row-cover" loading="lazy" />
-                                    {:else}
-                                        <div class="row-cover-placeholder"></div>
+        <div class="grid-table-inner" style="min-width: 100%; width: {$table.getTotalSize()}px">
+            <div class="grid-header">
+                {#each $table.getHeaderGroups() as headerGroup}
+                    <div class="header-row">
+                        {#each headerGroup.headers as header}
+                            <!-- svelte-ignore a11y_no_noninteractive_element_interactions -->
+                            <!-- svelte-ignore a11y_interactive_supports_focus -->
+                            <div
+                                    class="cell header-cell sortable"
+                                    style="width: {header.getSize()}px"
+                                    role="button"
+                                    tabindex="0"
+                                    on:click={header.column.getToggleSortingHandler()}
+                                    on:keydown={(e) => e.key === 'Enter' && header.column.toggleSorting()}
+                            >
+                                {#if !header.isPlaceholder}
+                                    <svelte:component this={flexRender(header.column.columnDef.header, header.getContext())} />
+
+                                    {#if header.column.getIsSorted() === 'asc'}
+                                        <span class="sort-indicator">↑</span>
+                                    {:else if header.column.getIsSorted() === 'desc'}
+                                        <span class="sort-indicator">↓</span>
                                     {/if}
-                                {:else}
-                                    <svelte:component this={flexRender(cell.column.columnDef.cell, cell.getContext())} />
+
+                                    <!-- svelte-ignore a11y_no_noninteractive_element_interactions -->
+                                    <!-- svelte-ignore a11y_click_events_have_key_events -->
+                                    <div
+                                            on:mousedown={header.getResizeHandler()}
+                                            on:touchstart={header.getResizeHandler()}
+                                            on:dblclick={(e) => { e.stopPropagation(); autoSizeColumn(header.column.id); }}
+                                            class="resizer"
+                                            class:isResizing={header.column.getIsResizing()}
+                                            on:click={(e) => e.stopPropagation()}
+                                            on:keydown={(e) => e.key === 'Enter' && e.stopPropagation()}
+                                            role="separator"
+                                            aria-orientation="vertical"
+                                            tabindex="-1"
+                                    ></div>
                                 {/if}
                             </div>
                         {/each}
                     </div>
-                {:else}
-                    <div class="grid-row skeleton" style="transform: translateY({virtualRow.start}px); height: {virtualRow.size}px; min-width: 100%; width: {$table.getTotalSize()}px">
-                        {#each columns as col}
-                            <div class="cell" style="width: {col.size}px"><div class="skeleton-line"></div></div>
-                        {/each}
-                    </div>
-                {/if}
-            {/each}
+                {/each}
+            </div>
+
+            <div class="virtual-inner" style="height: {$virtualizer.getTotalSize()}px; position: relative;">
+                {#each virtualItems as virtualRow (virtualRow.index)}
+                    {@const row = $table.getRowModel().rows[virtualRow.index]}
+                    {#if row}
+                        <div
+                                class="grid-row"
+                                class:selected={$selectedIds.includes(row.original.id)}
+                                style="transform: translateY({virtualRow.start}px); height: {virtualRow.size}px; min-width: 100%; width: {$table.getTotalSize()}px"
+                                role="button" tabindex="0"
+                                on:click={(e) => handleRowClick(e, row.original.id, virtualRow.index)}
+                                on:keydown={(e) => e.key === 'Enter' && handleRowClick(e, row.original.id, virtualRow.index)}
+                        >
+                            {#each row.getVisibleCells() as cell}
+                                <div class="cell" style="width: {cell.column.getSize()}px" title={cell.column.id !== 'cover_url' && cell.getValue() ? String(cell.getValue()) : ''}>
+                                    {#if cell.column.id === 'cover_url'}
+                                        {#if cell.getValue()}
+                                            <img src={String(cell.getValue())} alt="Cover" class="row-cover" loading="lazy" />
+                                        {:else}
+                                            <div class="row-cover-placeholder"></div>
+                                        {/if}
+                                    {:else}
+                                        <svelte:component this={flexRender(cell.column.columnDef.cell, cell.getContext())} />
+                                    {/if}
+                                </div>
+                            {/each}
+                        </div>
+                    {:else}
+                        <div class="grid-row skeleton" style="transform: translateY({virtualRow.start}px); height: {virtualRow.size}px; min-width: 100%; width: {$table.getTotalSize()}px">
+                            {#each columns as col}
+                                <div class="cell" style="width: {col.size}px"><div class="skeleton-line"></div></div>
+                            {/each}
+                        </div>
+                    {/if}
+                {/each}
+            </div>
         </div>
     </div>
 </div>
@@ -355,20 +368,21 @@
     .icon-btn-small:disabled { opacity: 0.3; cursor: not-allowed; }
     .divider { width: 1px; height: 16px; background-color: #ccc; margin: 0 4px; }
 
+    .scroll-container { flex: 1; overflow: auto; position: relative; }
+    .grid-table-inner { position: relative; min-height: 100%; }
+
     .grid-header {
         background-color: #f5f5f5;
         border-bottom: 1px solid #ccc;
         font-weight: 600;
         font-size: 13px;
         color: #333;
-        flex-shrink: 0;
         position: sticky;
         top: 0;
         z-index: 2;
     }
 
     .header-row { display: flex; min-width: 100%; }
-    .scroll-container { flex: 1; overflow: auto; position: relative; }
     .virtual-inner { position: relative; }
 
     .grid-row {
