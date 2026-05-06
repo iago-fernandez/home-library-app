@@ -94,5 +94,28 @@ export const apiClient = {
             throw new Error(`Failed to upload cover: ${errBody}`);
         }
         return response.json();
+    },
+
+    async exportData(format: string, payload: any): Promise<void> {
+        const response = await fetch(`${API_BASE_URL}/books/export/${format}`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload)
+        });
+
+        if (!response.ok) {
+            const errBody = await response.text();
+            throw new Error(`Failed to export data: ${errBody}`);
+        }
+
+        const blob = await response.blob();
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `library_export.${format}`;
+        document.body.appendChild(a);
+        a.click();
+        window.URL.revokeObjectURL(url);
+        document.body.removeChild(a);
     }
 };
