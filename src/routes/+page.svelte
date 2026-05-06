@@ -7,11 +7,13 @@
   import MosaicGrid from '$lib/components/MosaicGrid.svelte';
   import BookForm from '$lib/components/BookForm.svelte';
   import ColumnSettings from '$lib/components/ColumnSettings.svelte';
+  import ExportModal from '$lib/components/ExportModal.svelte';
   import type { CreateBookPayload } from '$lib/types/book';
   import { Plus, Pencil, Trash2, Filter, Settings, X, Search, CheckSquare, Download } from 'lucide-svelte';
 
   let activePanel: 'actions' | 'addBook' | 'editBook' | 'filter' = 'actions';
   let showColumnSettings = false;
+  let showExportModal = false;
   let currentView: 'table' | 'mosaic' = 'table';
 
   type FieldType = 'text' | 'numeric';
@@ -325,7 +327,7 @@
         {#if openMenu === 'Tools'}
           <div class="dropdown-menu">
             <button class="dropdown-item">{$t.menu.importIsbn}</button>
-            <button class="dropdown-item">{$t.menu.exportCsv}</button>
+            <button class="dropdown-item" on:click={() => { showExportModal = true; closeMenus(); }}>{$t.menu.exportCsv}</button>
           </div>
         {/if}
       </div>
@@ -397,7 +399,7 @@
                 <Pencil size={20} strokeWidth={1.5} />
               </button>
 
-              <button class="icon-btn" title={$t.actions.exportSelected} disabled>
+              <button class="icon-btn" title={$t.actions.exportSelected} on:click={() => showExportModal = true}>
                 <Download size={20} strokeWidth={1.5} />
               </button>
 
@@ -417,6 +419,10 @@
             </button>
 
             <div class="toolbar-divider"></div>
+
+            <button class="icon-btn" title="Export" on:click={() => showExportModal = true}>
+              <Download size={20} strokeWidth={1.5} />
+            </button>
 
             <button class="icon-btn" title={$t.actions.toggleMultiSelect} class:active={$multiSelectMode} on:click={bookStore.toggleMultiSelectMode}>
               <CheckSquare size={20} strokeWidth={1.5} />
@@ -530,6 +536,10 @@
 
 {#if showColumnSettings}
   <ColumnSettings onClose={() => showColumnSettings = false} />
+{/if}
+
+{#if showExportModal}
+  <ExportModal on:close={() => showExportModal = false} />
 {/if}
 
 <style>
