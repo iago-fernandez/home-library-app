@@ -57,31 +57,16 @@
     async function executeExport() {
         isExporting = true;
         try {
-            let finalQuery = $filterConfig;
-
-            if (exportScope === 'selected' && $selectedIds.length > 0) {
-                const selectedBooks = $bookStore.filter(b => $selectedIds.includes(b.id));
-                const catalogNumbers = selectedBooks.map(b => b.catalog_number);
-
-                const nodes = catalogNumbers.map(num => ({
-                    type: "CONDITION",
-                    field: "catalog_number",
-                    operator: "_exact",
-                    value: num.toString()
-                }));
-
-                finalQuery = JSON.stringify({ type: "OR", nodes });
-            }
-
             const payload = {
                 filters: {
                     limit: exportScope === 'selected' ? $selectedIds.length : 100000,
                     offset: 0,
                     sort_by: $sortConfig,
                     sort_order: $orderConfig,
-                    query: finalQuery
+                    query: $filterConfig || undefined
                 },
-                columns: columnsToExport
+                columns: columnsToExport,
+                specific_ids: exportScope === 'selected' && $selectedIds.length > 0 ? $selectedIds : null
             };
 
             await apiClient.exportData(selectedFormat, payload);
