@@ -49,6 +49,8 @@ export interface TranslationDictionary {
         columnsHelp: string;
         columns: string;
         noCover: string;
+        dragToReorder: string;
+        coverAlt: string;
     };
     filters: {
         activeFilters: string;
@@ -152,6 +154,15 @@ export interface TranslationDictionary {
         autofill: string;
         autofillLoading: string;
         fetchErrorEmpty: string;
+        fetchPlaceholder: string;
+        coverImage: string;
+        coverPreviewAlt: string;
+        selectFileOrCamera: string;
+        externalUrl: string;
+        statusUnread: string;
+        statusReading: string;
+        statusRead: string;
+        statusDnf: string;
     };
     exportManager: {
         title: string;

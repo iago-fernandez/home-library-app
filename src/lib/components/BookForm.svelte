@@ -142,7 +142,7 @@
                 <input
                         type="text"
                         bind:value={fetchId}
-                        placeholder="Enter ISBN, OCLC, or OLID..."
+                        placeholder={$t.form.fetchPlaceholder}
                         class="fetch-input"
                         on:keydown={(e) => e.key === 'Enter' && handleAutoFill()}
                 />
@@ -177,11 +177,11 @@
         </fieldset>
 
         <fieldset class="form-group">
-            <legend>Cover Image</legend>
+            <legend>{$t.form.coverImage}</legend>
             <div class="cover-upload-container">
                 <div class="cover-preview" class:has-image={!!imagePreviewUrl}>
                     {#if imagePreviewUrl}
-                        <img src={imagePreviewUrl} alt="Cover Preview" />
+                        <img src={imagePreviewUrl} alt={$t.form.coverPreviewAlt} />
                     {:else}
                         <div class="cover-placeholder">
                             <Camera size={32} color="#999" />
@@ -199,10 +199,10 @@
                             style="display: none;"
                     />
                     <button type="button" class="btn-secondary" on:click={triggerFileInput}>
-                        <UploadCloud size={16} /> Select File or Camera
+                        <UploadCloud size={16} /> {$t.form.selectFileOrCamera}
                     </button>
                     <div class="input-row" style="width: 100%;">
-                        <label for="cover_url_manual">Or external URL:</label>
+                        <label for="cover_url_manual">{$t.form.externalUrl}</label>
                         <input type="url" id="cover_url_manual" bind:value={formData.cover_url} on:input={() => { imagePreviewUrl = formData.cover_url || ''; selectedImageFile = undefined; }} />
                     </div>
                 </div>
@@ -421,10 +421,10 @@
                 <div class="input-row">
                     <label for="read_status">{$t.form.readStatus}</label>
                     <select id="read_status" bind:value={formData.read_status} class="form-select">
-                        <option value="unread">Unread</option>
-                        <option value="reading">Reading</option>
-                        <option value="read">Read</option>
-                        <option value="dnf">Did Not Finish</option>
+                        <option value="unread">{$t.form.statusUnread}</option>
+                        <option value="reading">{$t.form.statusReading}</option>
+                        <option value="read">{$t.form.statusRead}</option>
+                        <option value="dnf">{$t.form.statusDnf}</option>
                     </select>
                 </div>
                 <div class="input-row">

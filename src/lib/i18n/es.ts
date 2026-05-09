@@ -50,7 +50,9 @@ export const es: TranslationDictionary = {
         manageColumns: 'Gestionar Columnas',
         columnsHelp: 'Arrastra para reordenar. Marca para mostrar u ocultar.',
         columns: 'Columnas',
-        noCover: 'Sin Portada'
+        noCover: 'Sin Portada',
+        dragToReorder: 'Arrastrar para reordenar',
+        coverAlt: 'Imagen de portada'
     },
     filters: {
         activeFilters: 'Filtros Activos',
@@ -153,7 +155,16 @@ export const es: TranslationDictionary = {
         expectedReturnDate: 'Fecha Esperada de Devolución',
         autofill: 'Obtener Metadatos',
         autofillLoading: 'Buscando...',
-        fetchErrorEmpty: 'No se encontraron datos en OpenLibrary para este identificador.'
+        fetchErrorEmpty: 'No se encontraron datos en OpenLibrary para este identificador.',
+        fetchPlaceholder: 'Introduce ISBN, OCLC u OLID...',
+        coverImage: 'Imagen de Portada',
+        coverPreviewAlt: 'Vista Previa de Portada',
+        selectFileOrCamera: 'Seleccionar Archivo o Cámara',
+        externalUrl: 'O URL externa:',
+        statusUnread: 'No leído',
+        statusReading: 'Leyendo',
+        statusRead: 'Leído',
+        statusDnf: 'No terminado'
     },
     exportManager: {
         title: 'Exportar Datos',

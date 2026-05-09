@@ -65,12 +65,12 @@
 <div class="modal-backdrop" on:click={onClose} role="button" tabindex="-1" on:keydown={(e) => e.key === 'Escape' && onClose()}>
     <div class="modal-content" on:click|stopPropagation role="presentation">
         <div class="modal-header">
-            <h3>{$t.grid.manageColumns || 'Manage Columns'}</h3>
+            <h3>{$t.grid.manageColumns}</h3>
             <button class="icon-btn" on:click={onClose}><X size={20} /></button>
         </div>
 
         <div class="modal-body">
-            <p class="help-text">{$t.grid.columnsHelp || 'Drag to reorder. Check to show or hide.'}</p>
+            <p class="help-text">{$t.grid.columnsHelp}</p>
 
             <ul class="column-list">
                 {#each localColumns as col, index (col.id)}
@@ -82,7 +82,7 @@
                             on:drop={(e) => handleDrop(e, index)}
                             class:dragging={draggedIndex === index}
                     >
-                        <div class="drag-handle" title="Drag to reorder">
+                        <div class="drag-handle" title={$t.grid.dragToReorder}>
                             <GripVertical size={16} color="#999" />
                         </div>
                         <label class="checkbox-label">
@@ -100,8 +100,8 @@
         </div>
 
         <div class="modal-footer">
-            <button class="btn-secondary" on:click={handleReset}>{$t.common.reset || 'Reset to Default'}</button>
-            <button class="btn-primary" on:click={onClose}>{$t.common.close || 'Done'}</button>
+            <button class="btn-secondary" on:click={handleReset}>{$t.common.reset}</button>
+            <button class="btn-primary" on:click={onClose}>{$t.common.close}</button>
         </div>
     </div>
 </div>
