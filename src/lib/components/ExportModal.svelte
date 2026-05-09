@@ -4,6 +4,7 @@
     import { activeColumns, availableColumns } from '$lib/stores/preferences';
     import { apiClient } from '$lib/api/client';
     import { X, ArrowUp, ArrowDown, AlertTriangle } from 'lucide-svelte';
+    import { t } from '$lib/i18n';
 
     const dispatch = createEventDispatcher();
 
@@ -82,14 +83,14 @@
 <div class="modal-backdrop" on:click={() => dispatch('close')} role="presentation">
     <div class="modal-content" on:click|stopPropagation role="presentation">
         <div class="modal-header">
-            <h2>Export Data</h2>
+            <h2>{$t.exportManager.title}</h2>
             <button class="icon-btn" on:click={() => dispatch('close')}><X size={20} /></button>
         </div>
 
         <div class="modal-body">
             <div class="config-section">
                 <div class="config-group">
-                    <h3>Format</h3>
+                    <h3>{$t.exportManager.format}</h3>
                     <div class="button-group">
                         <button class="toggle-btn" class:active={selectedFormat === 'csv'} on:click={() => selectedFormat = 'csv'}>CSV</button>
                         <button class="toggle-btn" class:active={selectedFormat === 'xml'} on:click={() => selectedFormat = 'xml'}>XML</button>
@@ -99,24 +100,24 @@
                     {#if selectedFormat === 'pdf'}
                         <div class="pdf-warning" class:critical={isPdfLimitExceeded}>
                             <AlertTriangle size={16} />
-                            <p>For PDF export, we highly recommend a maximum of 7 columns to maintain document legibility. Current selection: <strong>{columnsToExport.length}</strong>.</p>
+                            <p>{$t.exportManager.pdfWarningPrefix} <strong>{columnsToExport.length}</strong> {$t.exportManager.pdfWarningSuffix}</p>
                         </div>
                     {/if}
                 </div>
 
                 <div class="config-group">
-                    <h3>Scope</h3>
+                    <h3>{$t.exportManager.scope}</h3>
                     <div class="button-group">
-                        <button class="toggle-btn" class:active={exportScope === 'view'} on:click={() => exportScope = 'view'}>Current View</button>
+                        <button class="toggle-btn" class:active={exportScope === 'view'} on:click={() => exportScope = 'view'}>{$t.exportManager.currentView}</button>
                         <button class="toggle-btn" class:active={exportScope === 'selected'} disabled={$selectedIds.length === 0} on:click={() => exportScope = 'selected'}>
-                            Selected ({$selectedIds.length})
+                            {$t.exportManager.selectedScope} ({$selectedIds.length})
                         </button>
                     </div>
                 </div>
             </div>
 
             <div class="columns-section">
-                <h3>Active Columns</h3>
+                <h3>{$t.exportManager.activeColumns}</h3>
                 <div class="columns-list">
                     {#each columnsToExport as colId, index}
                         <div class="column-item">
@@ -130,7 +131,7 @@
                     {/each}
                 </div>
 
-                <h3>Available Columns</h3>
+                <h3>{$t.exportManager.availableColumns}</h3>
                 <div class="available-columns">
                     {#each availableColumnsFiltered.filter(c => !columnsToExport.includes(c.id)) as col}
                         <button class="chip-btn" on:click={() => toggleColumn(col.id)}>+ {col.label}</button>
@@ -139,7 +140,7 @@
             </div>
 
             <div class="preview-section">
-                <h3>Data Matrix Preview</h3>
+                <h3>{$t.exportManager.dataMatrixPreview}</h3>
                 <div class="table-container">
                     <table>
                         <thead>
@@ -164,9 +165,9 @@
         </div>
 
         <div class="modal-footer">
-            <button class="btn-secondary" on:click={() => dispatch('close')}>Cancel</button>
+            <button class="btn-secondary" on:click={() => dispatch('close')}>{$t.common.cancel}</button>
             <button class="btn-primary" on:click={executeExport} disabled={isExporting || columnsToExport.length === 0}>
-                {isExporting ? 'Exporting...' : 'Export Data'}
+                {isExporting ? $t.exportManager.exportingState : $t.exportManager.exportAction}
             </button>
         </div>
     </div>

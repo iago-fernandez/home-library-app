@@ -337,7 +337,7 @@
                                 <div class="cell" style="width: {cell.column.getSize()}px" title={cell.column.id !== 'cover_url' && cell.getValue() ? String(cell.getValue()) : ''}>
                                     {#if cell.column.id === 'cover_url'}
                                         {#if cell.getValue()}
-                                            <img src={getCoverUrl(String(cell.getValue()))} alt="Cover" class="row-cover" loading="lazy" />
+                                            <img src={getCoverUrl(String(cell.getValue()))} alt={$t.grid.coverAlt} class="row-cover" loading="lazy" />
                                         {:else}
                                             <div class="row-cover-placeholder"></div>
                                         {/if}

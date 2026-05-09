@@ -50,7 +50,9 @@ export const en: TranslationDictionary = {
         manageColumns: 'Manage Columns',
         columnsHelp: 'Drag to reorder. Check to show or hide.',
         columns: 'Columns',
-        noCover: 'No Cover'
+        noCover: 'No Cover',
+        dragToReorder: 'Drag to reorder',
+        coverAlt: 'Cover image'
     },
     filters: {
         activeFilters: 'Active Filters',
@@ -153,6 +155,29 @@ export const en: TranslationDictionary = {
         expectedReturnDate: 'Expected Return Date',
         autofill: 'Fetch Metadata',
         autofillLoading: 'Fetching...',
-        fetchErrorEmpty: 'No data found in OpenLibrary for this identifier.'
+        fetchErrorEmpty: 'No data found in OpenLibrary for this identifier.',
+        fetchPlaceholder: 'Enter ISBN, OCLC, or OLID...',
+        coverImage: 'Cover Image',
+        coverPreviewAlt: 'Cover Preview',
+        selectFileOrCamera: 'Select File or Camera',
+        externalUrl: 'Or external URL:',
+        statusUnread: 'Unread',
+        statusReading: 'Reading',
+        statusRead: 'Read',
+        statusDnf: 'Did Not Finish'
+    },
+    exportManager: {
+        title: 'Export Data',
+        format: 'Format',
+        scope: 'Scope',
+        currentView: 'Current View',
+        selectedScope: 'Selected',
+        activeColumns: 'Active Columns',
+        availableColumns: 'Available Columns',
+        dataMatrixPreview: 'Data Matrix Preview',
+        exportingState: 'Exporting...',
+        exportAction: 'Export Data',
+        pdfWarningPrefix: 'For PDF export, we highly recommend a maximum of 7 columns to maintain document legibility. Current selection:',
+        pdfWarningSuffix: 'columns.'
     }
 };
