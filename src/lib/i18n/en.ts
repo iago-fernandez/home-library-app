@@ -154,5 +154,19 @@ export const en: TranslationDictionary = {
         autofill: 'Fetch Metadata',
         autofillLoading: 'Fetching...',
         fetchErrorEmpty: 'No data found in OpenLibrary for this identifier.'
+    },
+    exportManager: {
+        title: 'Export Data',
+        format: 'Format',
+        scope: 'Scope',
+        currentView: 'Current View',
+        selectedScope: 'Selected',
+        activeColumns: 'Active Columns',
+        availableColumns: 'Available Columns',
+        dataMatrixPreview: 'Data Matrix Preview',
+        exportingState: 'Exporting...',
+        exportAction: 'Export Data',
+        pdfWarningPrefix: 'For PDF export, we highly recommend a maximum of 7 columns to maintain document legibility. Current selection:',
+        pdfWarningSuffix: 'columns.'
     }
 };

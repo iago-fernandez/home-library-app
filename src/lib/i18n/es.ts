@@ -154,5 +154,19 @@ export const es: TranslationDictionary = {
         autofill: 'Obtener Metadatos',
         autofillLoading: 'Buscando...',
         fetchErrorEmpty: 'No se encontraron datos en OpenLibrary para este identificador.'
+    },
+    exportManager: {
+        title: 'Exportar Datos',
+        format: 'Formato',
+        scope: 'Alcance',
+        currentView: 'Vista Actual',
+        selectedScope: 'Seleccionados',
+        activeColumns: 'Columnas Activas',
+        availableColumns: 'Columnas Disponibles',
+        dataMatrixPreview: 'Vista Previa de Matriz de Datos',
+        exportingState: 'Exportando...',
+        exportAction: 'Exportar Datos',
+        pdfWarningPrefix: 'Para la exportación en PDF, recomendamos un máximo de 7 columnas para mantener la legibilidad. Selección actual:',
+        pdfWarningSuffix: 'columnas.'
     }
 };

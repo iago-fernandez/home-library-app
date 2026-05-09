@@ -153,4 +153,18 @@ export interface TranslationDictionary {
         autofillLoading: string;
         fetchErrorEmpty: string;
     };
+    exportManager: {
+        title: string;
+        format: string;
+        scope: string;
+        currentView: string;
+        selectedScope: string;
+        activeColumns: string;
+        availableColumns: string;
+        dataMatrixPreview: string;
+        exportingState: string;
+        exportAction: string;
+        pdfWarningPrefix: string;
+        pdfWarningSuffix: string;
+    };
 }
