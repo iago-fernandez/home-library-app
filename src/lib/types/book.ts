@@ -1,5 +1,6 @@
 export interface Book {
     id: string;
+    library_id: string;
     catalog_number: number;
     isbn_13?: string;
     isbn_10?: string;
@@ -58,7 +59,7 @@ export interface Book {
     updated_at: string;
 }
 
-export type CreateBookPayload = Omit<Book, 'id' | 'catalog_number' | 'created_at' | 'updated_at'>;
+export type CreateBookPayload = Omit<Book, 'id' | 'catalog_number' | 'created_at' | 'updated_at'> & { library_id?: string };
 
 export type UpdateBookPayload = Partial<CreateBookPayload>;
 
