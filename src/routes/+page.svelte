@@ -15,6 +15,7 @@
   let showColumnSettings = false;
   let showExportModal = false;
   let currentView: 'table' | 'mosaic' = 'table';
+  let isSubmitting = false;
 
   type FieldType = 'text' | 'numeric';
   type InputHTMLType = 'text' | 'number' | 'date';
@@ -121,6 +122,9 @@
   }
 
   async function handleFormSubmit(payload: CreateBookPayload, imageFile?: File) {
+    if (isSubmitting) return;
+    isSubmitting = true;
+
     try {
       if (imageFile) {
         const uploadResponse = await apiClient.uploadCover(imageFile);
@@ -147,6 +151,8 @@
       activePanel = 'actions';
     } catch (error) {
       console.error(error);
+    } finally {
+      isSubmitting = false;
     }
   }
 
@@ -285,7 +291,9 @@
             <button class="dropdown-item">{$t.menu.newLibrary}</button>
             <button class="dropdown-item">{$t.menu.settings}</button>
             <div class="dropdown-divider"></div>
-            <button class="dropdown-item">{$t.menu.exit}</button>
+            <button class="dropdown-item" on:click={() => { apiClient.logout(); closeMenus(); }}>
+              {$t.menu.exit}
+            </button>
           </div>
         {/if}
       </div>

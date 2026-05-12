@@ -15,6 +15,21 @@ export const en: TranslationDictionary = {
         reset: 'Reset',
         close: 'Close'
     },
+    auth: {
+        createWorkspace: 'Create Workspace',
+        accessWorkspace: 'Access Workspace',
+        profileName: 'Profile Name',
+        securityKey: 'Security Key',
+        confirmKey: 'Confirm Security Key',
+        passwordsMismatch: 'Passwords do not match.',
+        registerError: 'Failed to create profile. Username may be taken.',
+        loginError: 'Invalid profile credentials.',
+        processing: 'Processing...',
+        registerBtn: 'Register',
+        loginBtn: 'Authenticate',
+        toggleToLogin: 'Return to authentication',
+        toggleToRegister: 'Initialize a new profile'
+    },
     menu: {
         file: 'File',
         edit: 'Edit',

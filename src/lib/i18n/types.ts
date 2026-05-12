@@ -13,6 +13,21 @@ export interface TranslationDictionary {
         reset: string;
         close: string;
     };
+    auth: {
+        createWorkspace: string;
+        accessWorkspace: string;
+        profileName: string;
+        securityKey: string;
+        confirmKey: string;
+        passwordsMismatch: string;
+        registerError: string;
+        loginError: string;
+        processing: string;
+        registerBtn: string;
+        loginBtn: string;
+        toggleToLogin: string;
+        toggleToRegister: string;
+    };
     menu: {
         file: string;
         edit: string;
