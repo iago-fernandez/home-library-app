@@ -1,9 +1,50 @@
 import type { Book, CreateBookPayload, UpdateBookPayload, PaginatedResponse, BookMetadataResponse } from '../types/book';
+import type { AuthRequest, AuthResponse } from '../types/auth';
 import { sanitizeBookPayload } from './sanitizer';
+import { authStore } from '../stores/auth';
+import { get } from 'svelte/store';
 
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001';
+const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://raspberry.lan:3001/api';
+const AUTH_BASE_URL = import.meta.env.VITE_AUTH_URL || 'http://raspberry.lan:3001/auth';
+
+function getHeaders(customHeaders: Record<string, string> = {}): Record<string, string> {
+    const state = get(authStore);
+    const headers: Record<string, string> = { ...customHeaders };
+    if (state.token) {
+        headers['Authorization'] = `Bearer ${state.token}`;
+    }
+    return headers;
+}
 
 export const apiClient = {
+    async register(payload: AuthRequest): Promise<AuthResponse> {
+        const response = await fetch(`${AUTH_BASE_URL}/register`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload)
+        });
+        if (!response.ok) throw new Error('Registration failed');
+        const data = await response.json();
+        authStore.set({ token: data.token, user: data.user });
+        return data;
+    },
+
+    async login(payload: AuthRequest): Promise<AuthResponse> {
+        const response = await fetch(`${AUTH_BASE_URL}/login`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload)
+        });
+        if (!response.ok) throw new Error('Login failed');
+        const data = await response.json();
+        authStore.set({ token: data.token, user: data.user });
+        return data;
+    },
+
+    logout() {
+        authStore.set({ token: null, user: null });
+    },
+
     async getBooks(
         limit = 50,
         offset = 0,
@@ -19,7 +60,10 @@ export const apiClient = {
         if (sortOrder) url.searchParams.append('sort_order', sortOrder);
         if (queryJson) url.searchParams.append('query', queryJson);
 
-        const response = await fetch(url.toString(), { method: 'GET' });
+        const response = await fetch(url.toString(), {
+            method: 'GET',
+            headers: getHeaders()
+        });
         if (!response.ok) throw new Error('Failed to fetch books');
         return response.json();
     },
@@ -28,13 +72,10 @@ export const apiClient = {
         const safePayload = sanitizeBookPayload(payload);
         const response = await fetch(`${API_BASE_URL}/books`, {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
+            headers: getHeaders({ 'Content-Type': 'application/json' }),
             body: JSON.stringify(safePayload)
         });
-        if (!response.ok) {
-            const errBody = await response.text();
-            throw new Error(`Failed to create book: ${errBody}`);
-        }
+        if (!response.ok) throw new Error('Failed to create book');
         return response.json();
     },
 
@@ -42,40 +83,46 @@ export const apiClient = {
         const safePayload = sanitizeBookPayload(payload);
         const response = await fetch(`${API_BASE_URL}/books/${id}`, {
             method: 'PUT',
-            headers: { 'Content-Type': 'application/json' },
+            headers: getHeaders({ 'Content-Type': 'application/json' }),
             body: JSON.stringify(safePayload)
         });
-        if (!response.ok) {
-            const errBody = await response.text();
-            throw new Error(`Failed to update book: ${errBody}`);
-        }
+        if (!response.ok) throw new Error('Failed to update book');
         return response.json();
     },
 
     async deleteBook(id: string): Promise<void> {
-        const response = await fetch(`${API_BASE_URL}/books/${id}`, { method: 'DELETE' });
+        const response = await fetch(`${API_BASE_URL}/books/${id}`, {
+            method: 'DELETE',
+            headers: getHeaders()
+        });
         if (!response.ok) throw new Error('Failed to delete book');
     },
 
     async deleteBooksBatch(ids: string[]): Promise<void> {
-        const response = await fetch(`${API_BASE_URL}/books/batch`, {
-            method: 'DELETE',
-            headers: { 'Content-Type': 'application/json' },
+        const response = await fetch(`${API_BASE_URL}/books/batch-delete`, {
+            method: 'POST',
+            headers: getHeaders({ 'Content-Type': 'application/json' }),
             body: JSON.stringify({ ids })
         });
         if (!response.ok) throw new Error('Failed to batch delete');
     },
 
     async lookupMetadata(identifier: string): Promise<BookMetadataResponse> {
-        const response = await fetch(`${API_BASE_URL}/books/lookup/${identifier}`, { method: 'GET' });
+        const response = await fetch(`${API_BASE_URL}/lookup/metadata/${identifier}`, {
+            method: 'GET',
+            headers: getHeaders()
+        });
         if (!response.ok) throw new Error('Failed to lookup metadata');
         return response.json();
     },
 
     async searchMetadata(query: string): Promise<BookMetadataResponse[]> {
-        const url = new URL(`${API_BASE_URL}/books/search-metadata`);
+        const url = new URL(`${API_BASE_URL}/lookup/search`);
         url.searchParams.append('q', query);
-        const response = await fetch(url.toString(), { method: 'GET' });
+        const response = await fetch(url.toString(), {
+            method: 'GET',
+            headers: getHeaders()
+        });
         if (!response.ok) throw new Error('Failed to search metadata');
         return response.json();
     },
@@ -84,29 +131,24 @@ export const apiClient = {
         const formData = new FormData();
         formData.append('cover', file);
 
-        const response = await fetch(`${API_BASE_URL}/books/upload-cover`, {
+        const response = await fetch(`${API_BASE_URL}/upload/cover`, {
             method: 'POST',
+            headers: getHeaders(),
             body: formData
         });
 
-        if (!response.ok) {
-            const errBody = await response.text();
-            throw new Error(`Failed to upload cover: ${errBody}`);
-        }
+        if (!response.ok) throw new Error('Failed to upload cover');
         return response.json();
     },
 
     async exportData(format: string, payload: any): Promise<void> {
-        const response = await fetch(`${API_BASE_URL}/books/export/${format}`, {
+        const response = await fetch(`${API_BASE_URL}/export/${format}`, {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
+            headers: getHeaders({ 'Content-Type': 'application/json' }),
             body: JSON.stringify(payload)
         });
 
-        if (!response.ok) {
-            const errBody = await response.text();
-            throw new Error(`Failed to export data: ${errBody}`);
-        }
+        if (!response.ok) throw new Error('Failed to export data');
 
         const blob = await response.blob();
         const url = window.URL.createObjectURL(blob);
