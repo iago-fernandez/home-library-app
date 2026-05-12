@@ -2,6 +2,7 @@
     import '../app.css';
     import { authStore } from '$lib/stores/auth';
     import { apiClient } from '$lib/api/client';
+    import { t, locale, setLocale } from '$lib/i18n';
 
     let username = '';
     let password = '';
@@ -22,10 +23,11 @@
 
     async function handleAuth(e: Event) {
         e.preventDefault();
-        errorMsg = '';
+        if (isLoading) return;
 
+        errorMsg = '';
         if (isRegistering && password !== confirmPassword) {
-            errorMsg = 'Passwords do not match.';
+            errorMsg = $t.auth.passwordsMismatch;
             return;
         }
 
@@ -37,7 +39,7 @@
                 await apiClient.login({ username, password });
             }
         } catch (err: any) {
-            errorMsg = isRegistering ? 'Failed to create profile. Username may be taken.' : 'Invalid profile credentials.';
+            errorMsg = isRegistering ? $t.auth.registerError : $t.auth.loginError;
         } finally {
             isLoading = false;
         }
@@ -49,6 +51,10 @@
         password = '';
         confirmPassword = '';
     }
+
+    function toggleLanguage() {
+        setLocale($locale === 'en' ? 'es' : 'en');
+    }
 </script>
 
 {#if !isAuthenticated}
@@ -58,12 +64,16 @@
             on:mousemove={handleMouseMove}
             style="--mouse-x: {mouseX}px; --mouse-y: {mouseY}px;"
     >
+        <button class="lang-toggle" on:click={toggleLanguage}>
+            {$locale === 'en' ? 'ES' : 'EN'}
+        </button>
+
         <div class="gateway-container">
-            <h1 class="gateway-title">{isRegistering ? 'Create Workspace' : 'Access Workspace'}</h1>
+            <h1 class="gateway-title">{isRegistering ? $t.auth.createWorkspace : $t.auth.accessWorkspace}</h1>
 
             <form on:submit={handleAuth} class="gateway-form">
                 <div class="input-group">
-                    <label for="username">Profile Name</label>
+                    <label for="username">{$t.auth.profileName}</label>
                     <input
                             id="username"
                             type="text"
@@ -74,7 +84,7 @@
                 </div>
 
                 <div class="input-group">
-                    <label for="password">Security Key</label>
+                    <label for="password">{$t.auth.securityKey}</label>
                     <input
                             id="password"
                             type="password"
@@ -86,7 +96,7 @@
 
                 {#if isRegistering}
                     <div class="input-group">
-                        <label for="confirmPassword">Confirm Security Key</label>
+                        <label for="confirmPassword">{$t.auth.confirmKey}</label>
                         <input
                                 id="confirmPassword"
                                 type="password"
@@ -102,12 +112,12 @@
                 {/if}
 
                 <button type="submit" class="gateway-btn" disabled={isLoading}>
-                    {isLoading ? 'Processing...' : (isRegistering ? 'Register' : 'Authenticate')}
+                    {isLoading ? $t.auth.processing : (isRegistering ? $t.auth.registerBtn : $t.auth.loginBtn)}
                 </button>
             </form>
 
             <button class="gateway-toggle" type="button" on:click={toggleMode}>
-                {isRegistering ? 'Return to authentication' : 'Initialize a new profile'}
+                {isRegistering ? $t.auth.toggleToLogin : $t.auth.toggleToRegister}
             </button>
         </div>
     </div>
@@ -130,6 +140,26 @@
         color: #333;
         font-family: system-ui, -apple-system, sans-serif;
         transition: background-image 0.2s ease-out;
+        position: relative;
+    }
+    .lang-toggle {
+        position: absolute;
+        top: 24px;
+        right: 24px;
+        background: transparent;
+        border: 1px solid #d9d9d9;
+        border-radius: 4px;
+        color: #555;
+        font-size: 12px;
+        font-weight: 600;
+        padding: 6px 12px;
+        cursor: pointer;
+        transition: all 0.2s;
+    }
+    .lang-toggle:hover {
+        background: #e6f7ff;
+        border-color: #0066cc;
+        color: #0066cc;
     }
     .gateway-container {
         width: 100%;
