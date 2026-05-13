@@ -199,14 +199,15 @@ export const en: TranslationDictionary = {
     },
     settings: {
         title: 'System Settings',
-        profileTab: 'Profile',
-        securityTab: 'Security',
-        dangerTab: 'Danger Zone',
+        accountTab: 'Account',
+        preferencesTab: 'Preferences',
+        workspaceTab: 'Workspace',
         changeUsername: 'Change Username',
         updatePassword: 'Update Password',
         deleteAccount: 'Delete Account',
         deleteWarning: 'This action is permanent and will delete all your books and data.',
         confirmDeleteAccount: 'Confirm account deletion',
-        accountUpdated: 'Profile updated successfully'
+        accountUpdated: 'Profile updated successfully',
+        language: 'System Language'
     }
 };

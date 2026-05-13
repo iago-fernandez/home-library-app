@@ -13,7 +13,6 @@
   import { Plus, Pencil, Trash2, Filter, Settings, X, Search, CheckSquare, Download } from 'lucide-svelte';
 
   let activePanel: 'actions' | 'addBook' | 'editBook' | 'filter' = 'actions';
-  let showColumnSettings = false;
   let showExportModal = false;
   let showSettingsModal = false;
   let currentView: 'table' | 'mosaic' = 'table';
@@ -320,14 +319,6 @@
         <button class="menu-btn" class:active={openMenu === 'View'} on:click={() => toggleMenu('View')}>{$t.menu.view}</button>
         {#if openMenu === 'View'}
           <div class="dropdown-menu">
-            <button class="dropdown-item" on:click={() => { showColumnSettings = true; closeMenus(); }}>
-              {$t.grid.manageColumns}
-            </button>
-            <div class="dropdown-divider"></div>
-            <button class="dropdown-item" on:click={() => { setLocale($locale === 'en' ? 'es' : 'en'); closeMenus(); }}>
-              {$t.common.toggleLanguage}
-            </button>
-            <div class="dropdown-divider"></div>
             <button class="dropdown-item">{$t.common.refresh}</button>
             <button class="dropdown-item">{$t.menu.toggleSidebar}</button>
           </div>
@@ -545,10 +536,6 @@
     </aside>
   </main>
 </div>
-
-{#if showColumnSettings}
-  <ColumnSettings onClose={() => showColumnSettings = false} />
-{/if}
 
 {#if showExportModal}
   <ExportModal on:close={() => showExportModal = false} />

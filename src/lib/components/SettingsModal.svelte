@@ -1,12 +1,13 @@
 <script lang="ts">
-    import { t } from '$lib/i18n';
+    import { t, locale, setLocale } from '$lib/i18n';
     import { apiClient } from '$lib/api/client';
     import { authStore } from '$lib/stores/auth';
-    import { X, User, Shield, AlertTriangle } from 'lucide-svelte';
+    import ColumnSettings from './ColumnSettings.svelte';
+    import { X, User, Sliders, Layout } from 'lucide-svelte';
 
     export let onClose: () => void;
 
-    let activeTab: 'profile' | 'security' | 'danger' = 'profile';
+    let activeTab: 'account' | 'preferences' | 'workspace' = 'account';
     let username = $authStore.user?.username || '';
     let password = '';
     let confirmPassword = '';
@@ -62,6 +63,11 @@
             }
         }
     }
+
+    function changeLanguage(event: Event) {
+        const target = event.target as HTMLSelectElement;
+        setLocale(target.value as 'en' | 'es');
+    }
 </script>
 
 <div class="modal-overlay" role="presentation" on:mousedown|self={onClose}>
@@ -75,22 +81,22 @@
 
         <div class="modal-body">
             <nav class="settings-nav">
-                <button class:active={activeTab === 'profile'} on:click={() => activeTab = 'profile'}>
+                <button class:active={activeTab === 'account'} on:click={() => activeTab = 'account'}>
                     <User size={18} />
-                    {$t.settings.profileTab}
+                    {$t.settings.accountTab}
                 </button>
-                <button class:active={activeTab === 'security'} on:click={() => activeTab = 'security'}>
-                    <Shield size={18} />
-                    {$t.settings.securityTab}
+                <button class:active={activeTab === 'preferences'} on:click={() => activeTab = 'preferences'}>
+                    <Sliders size={18} />
+                    {$t.settings.preferencesTab}
                 </button>
-                <button class:active={activeTab === 'danger'} on:click={() => activeTab = 'danger'} class="danger-tab">
-                    <AlertTriangle size={18} />
-                    {$t.settings.dangerTab}
+                <button class:active={activeTab === 'workspace'} on:click={() => activeTab = 'workspace'}>
+                    <Layout size={18} />
+                    {$t.settings.workspaceTab}
                 </button>
             </nav>
 
             <section class="settings-content">
-                {#if activeTab === 'profile'}
+                {#if activeTab === 'account'}
                     <div class="setting-group">
                         <label for="set-username">{$t.settings.changeUsername}</label>
                         <input id="set-username" type="text" bind:value={username} />
@@ -98,7 +104,9 @@
                             {$t.common.save}
                         </button>
                     </div>
-                {:else if activeTab === 'security'}
+
+                    <div class="divider"></div>
+
                     <div class="setting-group">
                         <label for="set-pass">{$t.settings.updatePassword}</label>
                         <input id="set-pass" type="password" bind:value={password} placeholder="New password" />
@@ -107,17 +115,32 @@
                             {$t.common.save}
                         </button>
                     </div>
-                {:else if activeTab === 'danger'}
+
+                    <div class="divider"></div>
+
                     <div class="danger-zone">
                         <p>{$t.settings.deleteWarning}</p>
                         <button class="delete-btn" on:click={handleDeleteAccount}>
                             {$t.settings.deleteAccount}
                         </button>
                     </div>
-                {/if}
 
-                {#if message}
-                    <p class="status-msg" class:error-msg={isError}>{message}</p>
+                    {#if message}
+                        <p class="status-msg" class:error-msg={isError}>{message}</p>
+                    {/if}
+
+                {:else if activeTab === 'preferences'}
+                    <div class="setting-group">
+                        <label for="set-lang">{$t.settings.language}</label>
+                        <select id="set-lang" class="settings-select" on:change={changeLanguage}>
+                            <option value="en" selected={$locale === 'en'}>English</option>
+                            <option value="es" selected={$locale === 'es'}>Español</option>
+                        </select>
+                    </div>
+                {:else if activeTab === 'workspace'}
+                    <div class="workspace-wrapper">
+                        <ColumnSettings />
+                    </div>
                 {/if}
             </section>
         </div>
@@ -138,7 +161,7 @@
 
     .modal-container {
         background: white;
-        width: 600px;
+        width: 750px;
         border-radius: 12px;
         box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
         overflow: hidden;
@@ -167,11 +190,11 @@
 
     .modal-body {
         display: flex;
-        height: 400px;
+        height: 550px;
     }
 
     .settings-nav {
-        width: 180px;
+        width: 200px;
         background: #f8f9fa;
         border-right: 1px solid #eee;
         padding: 12px;
@@ -211,6 +234,7 @@
         display: flex;
         flex-direction: column;
         gap: 20px;
+        overflow-y: auto;
     }
 
     .setting-group {
@@ -219,17 +243,25 @@
         gap: 12px;
     }
 
+    .divider {
+        height: 1px;
+        background-color: #eee;
+        margin: 4px 0;
+    }
+
     label {
         font-size: 13px;
         font-weight: 600;
         color: #444;
     }
 
-    input {
+    input, .settings-select {
         padding: 10px;
         border: 1px solid #ddd;
         border-radius: 6px;
         font-size: 14px;
+        width: 100%;
+        box-sizing: border-box;
     }
 
     .save-btn {
@@ -240,6 +272,7 @@
         border-radius: 6px;
         font-weight: 600;
         cursor: pointer;
+        width: 100%;
     }
 
     .danger-zone {
@@ -274,5 +307,12 @@
 
     .error-msg {
         color: #ff4d4f;
+    }
+
+    .workspace-wrapper {
+        display: flex;
+        flex-direction: column;
+        height: 100%;
+        margin: -24px; /* Compensate for settings-content padding to let ColumnSettings use the space */
     }
 </style>

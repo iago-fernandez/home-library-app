@@ -197,14 +197,15 @@ export interface TranslationDictionary {
     };
     settings: {
         title: string;
-        profileTab: string;
-        securityTab: string;
-        dangerTab: string;
+        accountTab: string;
+        preferencesTab: string;
+        workspaceTab: string;
         changeUsername: string;
         updatePassword: string;
         deleteAccount: string;
         deleteWarning: string;
         confirmDeleteAccount: string;
         accountUpdated: string;
+        language: string;
     };
 }

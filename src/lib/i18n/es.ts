@@ -199,14 +199,15 @@ export const es: TranslationDictionary = {
     },
     settings: {
         title: 'Ajustes del Sistema',
-        profileTab: 'Perfil',
-        securityTab: 'Seguridad',
-        dangerTab: 'Zona de Peligro',
+        accountTab: 'Cuenta',
+        preferencesTab: 'Preferencias',
+        workspaceTab: 'Espacio de Trabajo',
         changeUsername: 'Cambiar Nombre de Usuario',
         updatePassword: 'Actualizar Contraseña',
         deleteAccount: 'Eliminar Cuenta',
         deleteWarning: 'Esta acción es permanente y eliminará todos tus libros y datos.',
         confirmDeleteAccount: 'Confirmar eliminación de cuenta',
-        accountUpdated: 'Perfil actualizado con éxito'
+        accountUpdated: 'Perfil actualizado con éxito',
+        language: 'Idioma del Sistema'
     }
 };
