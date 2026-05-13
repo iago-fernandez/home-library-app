@@ -12,6 +12,8 @@ export interface TranslationDictionary {
         toggleLanguage: string;
         reset: string;
         close: string;
+        confirm: string;
+        dangerZone: string;
     };
     auth: {
         createWorkspace: string;
@@ -192,5 +194,17 @@ export interface TranslationDictionary {
         exportAction: string;
         pdfWarningPrefix: string;
         pdfWarningSuffix: string;
+    };
+    settings: {
+        title: string;
+        profileTab: string;
+        securityTab: string;
+        dangerTab: string;
+        changeUsername: string;
+        updatePassword: string;
+        deleteAccount: string;
+        deleteWarning: string;
+        confirmDeleteAccount: string;
+        accountUpdated: string;
     };
 }

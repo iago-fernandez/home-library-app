@@ -159,5 +159,24 @@ export const apiClient = {
         a.click();
         window.URL.revokeObjectURL(url);
         document.body.removeChild(a);
+    },
+
+    async updateProfile(payload: AuthRequest): Promise<User> {
+        const response = await fetch(`${API_BASE_URL}/users/me`, {
+            method: 'PUT',
+            headers: getHeaders({ 'Content-Type': 'application/json' }),
+            body: JSON.stringify(payload)
+        });
+        if (!response.ok) throw new Error('Failed to update profile');
+        return response.json();
+    },
+
+    async deleteAccount(): Promise<void> {
+        const response = await fetch(`${API_BASE_URL}/users/me`, {
+            method: 'DELETE',
+            headers: getHeaders()
+        });
+        if (!response.ok) throw new Error('Failed to delete account');
+        this.logout();
     }
 };

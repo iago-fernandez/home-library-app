@@ -13,7 +13,9 @@ export const en: TranslationDictionary = {
         refresh: 'Refresh',
         toggleLanguage: 'Switch to Spanish',
         reset: 'Reset',
-        close: 'Close'
+        close: 'Close',
+        confirm: 'Confirm',
+        dangerZone: 'Danger Zone'
     },
     auth: {
         createWorkspace: 'Create Workspace',
@@ -194,5 +196,17 @@ export const en: TranslationDictionary = {
         exportAction: 'Export Data',
         pdfWarningPrefix: 'For PDF export, we highly recommend a maximum of 7 columns to maintain document legibility. Current selection:',
         pdfWarningSuffix: 'columns.'
+    },
+    settings: {
+        title: 'System Settings',
+        profileTab: 'Profile',
+        securityTab: 'Security',
+        dangerTab: 'Danger Zone',
+        changeUsername: 'Change Username',
+        updatePassword: 'Update Password',
+        deleteAccount: 'Delete Account',
+        deleteWarning: 'This action is permanent and will delete all your books and data.',
+        confirmDeleteAccount: 'Confirm account deletion',
+        accountUpdated: 'Profile updated successfully'
     }
 };
