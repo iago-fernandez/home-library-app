@@ -1,5 +1,5 @@
 import type { Book, CreateBookPayload, UpdateBookPayload, PaginatedResponse, BookMetadataResponse } from '../types/book';
-import type { AuthRequest, AuthResponse } from '../types/auth';
+import type { AuthRequest, AuthResponse, User } from '../types/auth';
 import { sanitizeBookPayload } from './sanitizer';
 import { authStore } from '../stores/auth';
 import { get } from 'svelte/store';
@@ -75,7 +75,10 @@ export const apiClient = {
             headers: getHeaders({ 'Content-Type': 'application/json' }),
             body: JSON.stringify(safePayload)
         });
-        if (!response.ok) throw new Error('Failed to create book');
+        if (!response.ok) {
+            const errBody = await response.text();
+            throw new Error(`Failed to create book: ${errBody}`);
+        }
         return response.json();
     },
 
@@ -86,7 +89,10 @@ export const apiClient = {
             headers: getHeaders({ 'Content-Type': 'application/json' }),
             body: JSON.stringify(safePayload)
         });
-        if (!response.ok) throw new Error('Failed to update book');
+        if (!response.ok) {
+            const errBody = await response.text();
+            throw new Error(`Failed to update book: ${errBody}`);
+        }
         return response.json();
     },
 
@@ -159,5 +165,24 @@ export const apiClient = {
         a.click();
         window.URL.revokeObjectURL(url);
         document.body.removeChild(a);
+    },
+
+    async updateProfile(payload: AuthRequest): Promise<User> {
+        const response = await fetch(`${API_BASE_URL}/users/me`, {
+            method: 'PUT',
+            headers: getHeaders({ 'Content-Type': 'application/json' }),
+            body: JSON.stringify(payload)
+        });
+        if (!response.ok) throw new Error('Failed to update profile');
+        return response.json();
+    },
+
+    async deleteAccount(): Promise<void> {
+        const response = await fetch(`${API_BASE_URL}/users/me`, {
+            method: 'DELETE',
+            headers: getHeaders()
+        });
+        if (!response.ok) throw new Error('Failed to delete account');
+        this.logout();
     }
 };

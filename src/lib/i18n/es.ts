@@ -13,7 +13,9 @@ export const es: TranslationDictionary = {
         refresh: 'Actualizar',
         toggleLanguage: 'Cambiar a Inglés',
         reset: 'Restablecer',
-        close: 'Cerrar'
+        close: 'Cerrar',
+        confirm: 'Confirmar',
+        dangerZone: 'Zona de peligro'
     },
     auth: {
         createWorkspace: 'Crear Espacio',
@@ -194,5 +196,18 @@ export const es: TranslationDictionary = {
         exportAction: 'Exportar Datos',
         pdfWarningPrefix: 'Para la exportación a PDF, recomendamos encarecidamente un máximo de 7 columnas para mantener la legibilidad. Selección actual:',
         pdfWarningSuffix: 'columnas.'
+    },
+    settings: {
+        title: 'Ajustes del Sistema',
+        accountTab: 'Cuenta',
+        preferencesTab: 'Preferencias',
+        workspaceTab: 'Espacio de Trabajo',
+        changeUsername: 'Cambiar Nombre de Usuario',
+        updatePassword: 'Actualizar Contraseña',
+        deleteAccount: 'Eliminar Cuenta',
+        deleteWarning: 'Esta acción es permanente y eliminará todos tus libros y datos.',
+        confirmDeleteAccount: 'Confirmar eliminación de cuenta',
+        accountUpdated: 'Perfil actualizado con éxito',
+        language: 'Idioma del Sistema'
     }
 };

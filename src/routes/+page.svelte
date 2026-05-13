@@ -8,12 +8,13 @@
   import BookForm from '$lib/components/BookForm.svelte';
   import ColumnSettings from '$lib/components/ColumnSettings.svelte';
   import ExportModal from '$lib/components/ExportModal.svelte';
+  import SettingsModal from '$lib/components/SettingsModal.svelte';
   import type { CreateBookPayload } from '$lib/types/book';
   import { Plus, Pencil, Trash2, Filter, Settings, X, Search, CheckSquare, Download } from 'lucide-svelte';
 
   let activePanel: 'actions' | 'addBook' | 'editBook' | 'filter' = 'actions';
-  let showColumnSettings = false;
   let showExportModal = false;
+  let showSettingsModal = false;
   let currentView: 'table' | 'mosaic' = 'table';
   let isSubmitting = false;
 
@@ -289,7 +290,9 @@
         {#if openMenu === 'File'}
           <div class="dropdown-menu">
             <button class="dropdown-item">{$t.menu.newLibrary}</button>
-            <button class="dropdown-item">{$t.menu.settings}</button>
+            <button class="dropdown-item" on:click={() => { showSettingsModal = true; closeMenus(); }}>
+              {$t.menu.settings}
+            </button>
             <div class="dropdown-divider"></div>
             <button class="dropdown-item" on:click={() => { apiClient.logout(); closeMenus(); }}>
               {$t.menu.exit}
@@ -316,14 +319,6 @@
         <button class="menu-btn" class:active={openMenu === 'View'} on:click={() => toggleMenu('View')}>{$t.menu.view}</button>
         {#if openMenu === 'View'}
           <div class="dropdown-menu">
-            <button class="dropdown-item" on:click={() => { showColumnSettings = true; closeMenus(); }}>
-              {$t.grid.manageColumns}
-            </button>
-            <div class="dropdown-divider"></div>
-            <button class="dropdown-item" on:click={() => { setLocale($locale === 'en' ? 'es' : 'en'); closeMenus(); }}>
-              {$t.common.toggleLanguage}
-            </button>
-            <div class="dropdown-divider"></div>
             <button class="dropdown-item">{$t.common.refresh}</button>
             <button class="dropdown-item">{$t.menu.toggleSidebar}</button>
           </div>
@@ -441,7 +436,7 @@
             <button class="icon-btn" title={$t.menu.advancedFilter} class:active={activeFilters.filter(r => r.value.trim() !== '').length > 0} on:click={handleFilterClick}>
               <Filter size={20} strokeWidth={1.5} />
             </button>
-            <button class="icon-btn" title={$t.actions.systemSettings}>
+            <button class="icon-btn" title={$t.actions.systemSettings} on:click={() => showSettingsModal = true}>
               <Settings size={20} strokeWidth={1.5} />
             </button>
           {/if}
@@ -542,12 +537,12 @@
   </main>
 </div>
 
-{#if showColumnSettings}
-  <ColumnSettings onClose={() => showColumnSettings = false} />
-{/if}
-
 {#if showExportModal}
   <ExportModal on:close={() => showExportModal = false} />
+{/if}
+
+{#if showSettingsModal}
+  <SettingsModal onClose={() => showSettingsModal = false} />
 {/if}
 
 <style>
@@ -1012,7 +1007,7 @@
   }
 
   .btn-secondary:hover {
-    background-color: #f9f9f9;
+    background: #f9f9f9;
     border-color: #999;
   }
 
