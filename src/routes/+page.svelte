@@ -2,17 +2,17 @@
   import { onMount } from 'svelte';
   import { bookStore } from '$lib/store';
   import { apiClient } from '$lib/api/client';
-  import { t, locale, setLocale } from '$lib/i18n';
+  import { t } from '$lib/i18n';
   import DataGrid from '$lib/components/DataGrid.svelte';
   import MosaicGrid from '$lib/components/MosaicGrid.svelte';
   import BookForm from '$lib/components/BookForm.svelte';
-  import ColumnSettings from '$lib/components/ColumnSettings.svelte';
   import ExportModal from '$lib/components/ExportModal.svelte';
   import SettingsModal from '$lib/components/SettingsModal.svelte';
+  import BatchEditPanel from '$lib/components/BatchEditPanel.svelte';
   import type { CreateBookPayload } from '$lib/types/book';
   import { Plus, Pencil, Trash2, Filter, Settings, X, Search, CheckSquare, Download } from 'lucide-svelte';
 
-  let activePanel: 'actions' | 'addBook' | 'editBook' | 'filter' = 'actions';
+  let activePanel: 'actions' | 'addBook' | 'editBook' | 'filter' | 'batchEdit' = 'actions';
   let showExportModal = false;
   let showSettingsModal = false;
   let currentView: 'table' | 'mosaic' = 'table';
@@ -98,6 +98,8 @@
   function handleEditBookClick() {
     if ($selectedIds.length === 1) {
       activePanel = 'editBook';
+    } else if ($selectedIds.length > 1) {
+      activePanel = 'batchEdit';
     }
   }
 
@@ -388,7 +390,7 @@
       </div>
     </section>
 
-    <aside class="side-panel" class:wide-panel={activePanel === 'addBook' || activePanel === 'editBook' || activePanel === 'filter'} class:toolbar-mode={activePanel === 'actions'}>
+    <aside class="side-panel" class:wide-panel={activePanel === 'addBook' || activePanel === 'editBook' || activePanel === 'filter' || activePanel === 'batchEdit'} class:toolbar-mode={activePanel === 'actions'}>
       {#if activePanel === 'actions'}
         <div class="toolbar">
           {#if $selectedIds.length > 0}
@@ -398,7 +400,7 @@
 
               <div class="toolbar-divider"></div>
 
-              <button class="icon-btn" title={$t.actions.editSelected} disabled={$selectedIds.length !== 1} on:click={handleEditBookClick}>
+              <button class="icon-btn" title={$t.actions.editSelected} on:click={handleEditBookClick}>
                 <Pencil size={20} strokeWidth={1.5} />
               </button>
 
@@ -444,6 +446,10 @@
       {:else if activePanel === 'addBook' || activePanel === 'editBook'}
         <div class="panel-content">
           <BookForm initialData={activePanel === 'editBook' ? selectedBook : null} onCancel={handleFormCancel} onSubmit={handleFormSubmit} />
+        </div>
+      {:else if activePanel === 'batchEdit'}
+        <div class="panel-content">
+          <BatchEditPanel onCancel={handleFormCancel} />
         </div>
       {:else if activePanel === 'filter'}
         <div class="panel-content filter-panel">

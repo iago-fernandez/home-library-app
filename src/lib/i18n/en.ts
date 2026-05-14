@@ -209,5 +209,12 @@ export const en: TranslationDictionary = {
         confirmDeleteAccount: 'Confirm account deletion',
         accountUpdated: 'Profile updated successfully',
         language: 'System Language'
+    },
+    batchEdit: {
+        title: 'Batch Edit',
+        multipleValues: '(Multiple values)',
+        applyChanges: 'Apply Changes',
+        warning: 'Only modified fields will be updated across all selected records.',
+        successMessage: 'Records updated successfully.'
     }
 };

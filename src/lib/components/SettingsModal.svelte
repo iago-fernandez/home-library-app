@@ -224,10 +224,6 @@
         font-weight: 500;
     }
 
-    .settings-nav button.danger-tab:hover {
-        color: #d32f2f;
-    }
-
     .settings-content {
         flex: 1;
         padding: 24px;
