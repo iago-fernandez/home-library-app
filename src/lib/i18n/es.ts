@@ -209,5 +209,12 @@ export const es: TranslationDictionary = {
         confirmDeleteAccount: 'Confirmar eliminación de cuenta',
         accountUpdated: 'Perfil actualizado con éxito',
         language: 'Idioma del Sistema'
+    },
+    batchEdit: {
+        title: 'Edición en Bloque',
+        multipleValues: '(Múltiples valores)',
+        applyChanges: 'Aplicar Cambios',
+        warning: 'Solo los campos modificados se actualizarán en todos los registros seleccionados.',
+        successMessage: 'Registros actualizados correctamente.'
     }
 };

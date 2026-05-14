@@ -1,5 +1,5 @@
 import { writable, get } from 'svelte/store';
-import type { Book, CreateBookPayload } from './types/book';
+import type { Book, CreateBookPayload, UpdateBookPayload } from './types/book';
 import { apiClient } from './api/client';
 
 function createBookStore() {
@@ -173,6 +173,29 @@ function createBookStore() {
             }
         },
 
+        updateBooksBatch: async (ids: string[], payload: UpdateBookPayload) => {
+            try {
+                const updatePromises = ids.map(id => apiClient.updateBook(id, payload));
+                const updatedBooks = await Promise.all(updatePromises);
+
+                update(state => {
+                    const updatedState = [...state];
+                    updatedBooks.forEach(updatedBook => {
+                        const index = updatedState.findIndex(b => b.id === updatedBook.id);
+                        if (index !== -1) {
+                            updatedState[index] = updatedBook;
+                        }
+                    });
+                    return updatedState;
+                });
+
+                selectedIdsList.set([]);
+            } catch (error) {
+                console.error(error);
+                throw error;
+            }
+        },
+
         deleteBook: async (id: string) => {
             let removedBook: Book | undefined;
 
@@ -226,6 +249,7 @@ function createBookStore() {
                 throw error;
             }
         },
+
         toggleSelection: (id: string) => {
             selectedIdsList.update(ids => {
                 if (ids.includes(id)) {

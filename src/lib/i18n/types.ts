@@ -208,4 +208,11 @@ export interface TranslationDictionary {
         accountUpdated: string;
         language: string;
     };
+    batchEdit: {
+        title: string;
+        multipleValues: string;
+        applyChanges: string;
+        warning: string;
+        successMessage: string;
+    };
 }
