@@ -173,9 +173,9 @@ function createBookStore() {
             }
         },
 
-        updateBooksBatch: async (ids: string[], payload: UpdateBookPayload) => {
+        updateBooksBatch: async (ids: string[], partialPayload: Record<string, any>) => {
             try {
-                const updatePromises = ids.map(id => apiClient.updateBook(id, payload));
+                const updatePromises = ids.map(id => apiClient.patchBook(id, partialPayload));
                 const updatedBooks = await Promise.all(updatePromises);
 
                 update(state => {
