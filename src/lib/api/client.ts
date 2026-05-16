@@ -96,6 +96,19 @@ export const apiClient = {
         return response.json();
     },
 
+    async patchBook(id: string, payload: Record<string, any>): Promise<Book> {
+        const response = await fetch(`${API_BASE_URL}/books/${id}`, {
+            method: 'PATCH',
+            headers: getHeaders({ 'Content-Type': 'application/json' }),
+            body: JSON.stringify(payload)
+        });
+        if (!response.ok) {
+            const errBody = await response.text();
+            throw new Error(`Failed to patch book: ${errBody}`);
+        }
+        return response.json();
+    },
+
     async deleteBook(id: string): Promise<void> {
         const response = await fetch(`${API_BASE_URL}/books/${id}`, {
             method: 'DELETE',
