@@ -174,24 +174,28 @@ function createBookStore() {
         },
 
         updateBooksBatch: async (ids: string[], partialPayload: Record<string, any>) => {
+            const previousState = get({ subscribe });
+
+            update(state => state.map(book =>
+                ids.includes(book.id) ? { ...book, ...partialPayload } : book
+            ));
+
             try {
                 const updatePromises = ids.map(id => apiClient.patchBook(id, partialPayload));
                 const updatedBooks = await Promise.all(updatePromises);
 
                 update(state => {
-                    const updatedState = [...state];
+                    const newState = [...state];
                     updatedBooks.forEach(updatedBook => {
-                        const index = updatedState.findIndex(b => b.id === updatedBook.id);
+                        const index = newState.findIndex(b => b.id === updatedBook.id);
                         if (index !== -1) {
-                            updatedState[index] = updatedBook;
+                            newState[index] = updatedBook;
                         }
                     });
-                    return updatedState;
+                    return newState;
                 });
-
-                selectedIdsList.set([]);
             } catch (error) {
-                console.error(error);
+                set(previousState);
                 throw error;
             }
         },
