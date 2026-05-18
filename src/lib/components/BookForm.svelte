@@ -4,7 +4,8 @@
     import { apiClient } from '$lib/api/client';
     import AutoExpandTextarea from './AutoExpandTextarea.svelte';
     import ChipInput from './ChipInput.svelte';
-    import { Search, DownloadCloud, UploadCloud, Camera } from 'lucide-svelte';
+    import BookCover from './BookCover.svelte';
+    import { Search, DownloadCloud, UploadCloud } from 'lucide-svelte';
 
     export let initialData: Book | null = null;
     export let onCancel: () => void;
@@ -180,14 +181,7 @@
             <legend>{$t.form.coverImage}</legend>
             <div class="cover-upload-container">
                 <div class="cover-preview" class:has-image={!!imagePreviewUrl}>
-                    {#if imagePreviewUrl}
-                        <img src={imagePreviewUrl} alt={$t.form.coverPreviewAlt} />
-                    {:else}
-                        <div class="cover-placeholder">
-                            <Camera size={32} color="#999" />
-                            <span>{$t.grid.noCover}</span>
-                        </div>
-                    {/if}
+                    <BookCover src={imagePreviewUrl} alt={$t.form.coverPreviewAlt} />
                 </div>
                 <div class="cover-actions">
                     <input
@@ -629,21 +623,6 @@
     .cover-preview.has-image {
         border-style: solid;
         border-color: #e0e0e0;
-    }
-
-    .cover-preview img {
-        width: 100%;
-        height: 100%;
-        object-fit: cover;
-    }
-
-    .cover-placeholder {
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        gap: 4px;
-        color: #999;
-        font-size: 10px;
     }
 
     .cover-actions {

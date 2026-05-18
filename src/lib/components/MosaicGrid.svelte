@@ -1,17 +1,10 @@
 <script lang="ts">
     import { bookStore } from '$lib/store';
-    import { t } from '$lib/i18n';
+    import BookCover from './BookCover.svelte';
 
     $: books = $bookStore;
     const selectedIds = bookStore.selectedIds;
     const multiSelectMode = bookStore.multiSelectMode;
-    const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001';
-
-    function getCoverUrl(path: string) {
-        if (!path) return null;
-        if (path.startsWith('http')) return path;
-        return `${API_BASE_URL}${path}`;
-    }
 
     function handleSelect(event: MouseEvent | KeyboardEvent, id: string) {
         if (event.ctrlKey || event.metaKey || $multiSelectMode) {
@@ -31,9 +24,6 @@
 
 <div class="mosaic-container">
     {#each books as book (book.id)}
-        <!-- svelte-ignore a11y_click_events_have_key_events -->
-        <!-- svelte-ignore a11y_interactive_supports_focus -->
-        <!-- svelte-ignore a11y_no_noninteractive_element_interactions -->
         <div
                 class="book-card"
                 class:selected={$selectedIds.includes(book.id)}
@@ -43,11 +33,7 @@
                 tabindex="0"
         >
             <div class="cover-wrapper">
-                {#if book.cover_url}
-                    <img src={getCoverUrl(book.cover_url)} alt={book.title} loading="lazy" />
-                {:else}
-                    <div class="no-cover">{$t.grid.noCover}</div>
-                {/if}
+                <BookCover src={book.cover_url} alt={book.title} />
             </div>
             <div class="info">
                 <h4>{book.title}</h4>
@@ -97,22 +83,7 @@
         height: 200px;
         width: 100%;
         flex-shrink: 0;
-        background: #e3e3e3;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        overflow: hidden;
         border-bottom: 1px solid #f0f0f0;
-    }
-    .cover-wrapper img {
-        width: 100%;
-        height: 100%;
-        object-fit: cover;
-    }
-    .no-cover {
-        font-size: 12px;
-        color: #888;
-        font-weight: 500;
     }
     .info {
         padding: 10px;
