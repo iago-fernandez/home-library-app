@@ -16,6 +16,14 @@ function getHeaders(customHeaders: Record<string, string> = {}): Record<string, 
     return headers;
 }
 
+async function apiFetch(url: string, options: RequestInit = {}): Promise<Response> {
+    const response = await fetch(url, options);
+    if (response.status === 401) {
+        authStore.set({ token: null, user: null });
+    }
+    return response;
+}
+
 export const apiClient = {
     async register(payload: AuthRequest): Promise<AuthResponse> {
         const response = await fetch(`${AUTH_BASE_URL}/register`, {
@@ -60,7 +68,7 @@ export const apiClient = {
         if (sortOrder) url.searchParams.append('sort_order', sortOrder);
         if (queryJson) url.searchParams.append('query', queryJson);
 
-        const response = await fetch(url.toString(), {
+        const response = await apiFetch(url.toString(), {
             method: 'GET',
             headers: getHeaders()
         });
@@ -70,7 +78,7 @@ export const apiClient = {
 
     async createBook(payload: CreateBookPayload): Promise<Book> {
         const safePayload = sanitizeBookPayload(payload);
-        const response = await fetch(`${API_BASE_URL}/books`, {
+        const response = await apiFetch(`${API_BASE_URL}/books`, {
             method: 'POST',
             headers: getHeaders({ 'Content-Type': 'application/json' }),
             body: JSON.stringify(safePayload)
@@ -84,7 +92,7 @@ export const apiClient = {
 
     async updateBook(id: string, payload: UpdateBookPayload): Promise<Book> {
         const safePayload = sanitizeBookPayload(payload);
-        const response = await fetch(`${API_BASE_URL}/books/${id}`, {
+        const response = await apiFetch(`${API_BASE_URL}/books/${id}`, {
             method: 'PUT',
             headers: getHeaders({ 'Content-Type': 'application/json' }),
             body: JSON.stringify(safePayload)
@@ -97,7 +105,7 @@ export const apiClient = {
     },
 
     async patchBook(id: string, payload: Record<string, any>): Promise<Book> {
-        const response = await fetch(`${API_BASE_URL}/books/${id}`, {
+        const response = await apiFetch(`${API_BASE_URL}/books/${id}`, {
             method: 'PATCH',
             headers: getHeaders({ 'Content-Type': 'application/json' }),
             body: JSON.stringify(payload)
@@ -110,7 +118,7 @@ export const apiClient = {
     },
 
     async deleteBook(id: string): Promise<void> {
-        const response = await fetch(`${API_BASE_URL}/books/${id}`, {
+        const response = await apiFetch(`${API_BASE_URL}/books/${id}`, {
             method: 'DELETE',
             headers: getHeaders()
         });
@@ -118,7 +126,7 @@ export const apiClient = {
     },
 
     async deleteBooksBatch(ids: string[]): Promise<void> {
-        const response = await fetch(`${API_BASE_URL}/books/batch-delete`, {
+        const response = await apiFetch(`${API_BASE_URL}/books/batch-delete`, {
             method: 'POST',
             headers: getHeaders({ 'Content-Type': 'application/json' }),
             body: JSON.stringify({ ids })
@@ -127,7 +135,7 @@ export const apiClient = {
     },
 
     async lookupMetadata(identifier: string): Promise<BookMetadataResponse> {
-        const response = await fetch(`${API_BASE_URL}/lookup/metadata/${identifier}`, {
+        const response = await apiFetch(`${API_BASE_URL}/lookup/metadata/${identifier}`, {
             method: 'GET',
             headers: getHeaders()
         });
@@ -138,7 +146,7 @@ export const apiClient = {
     async searchMetadata(query: string): Promise<BookMetadataResponse[]> {
         const url = new URL(`${API_BASE_URL}/lookup/search`);
         url.searchParams.append('q', query);
-        const response = await fetch(url.toString(), {
+        const response = await apiFetch(url.toString(), {
             method: 'GET',
             headers: getHeaders()
         });
@@ -150,7 +158,7 @@ export const apiClient = {
         const formData = new FormData();
         formData.append('cover', file);
 
-        const response = await fetch(`${API_BASE_URL}/upload/cover`, {
+        const response = await apiFetch(`${API_BASE_URL}/upload/cover`, {
             method: 'POST',
             headers: getHeaders(),
             body: formData
@@ -161,7 +169,7 @@ export const apiClient = {
     },
 
     async exportData(format: string, payload: any): Promise<void> {
-        const response = await fetch(`${API_BASE_URL}/export/${format}`, {
+        const response = await apiFetch(`${API_BASE_URL}/export/${format}`, {
             method: 'POST',
             headers: getHeaders({ 'Content-Type': 'application/json' }),
             body: JSON.stringify(payload)
@@ -181,7 +189,7 @@ export const apiClient = {
     },
 
     async updateProfile(payload: AuthRequest): Promise<User> {
-        const response = await fetch(`${API_BASE_URL}/users/me`, {
+        const response = await apiFetch(`${API_BASE_URL}/users/me`, {
             method: 'PUT',
             headers: getHeaders({ 'Content-Type': 'application/json' }),
             body: JSON.stringify(payload)
@@ -191,7 +199,7 @@ export const apiClient = {
     },
 
     async deleteAccount(): Promise<void> {
-        const response = await fetch(`${API_BASE_URL}/users/me`, {
+        const response = await apiFetch(`${API_BASE_URL}/users/me`, {
             method: 'DELETE',
             headers: getHeaders()
         });
