@@ -65,8 +65,11 @@ export const en: TranslationDictionary = {
         findPlaceholder: 'Find in loaded rows (Ctrl+F)',
         of: 'of',
         manageColumns: 'Manage Columns',
+        manageAttributes: 'Manage Card Attributes',
         columnsHelp: 'Drag to reorder. Check to show or hide.',
+        attributesHelp: 'Drag to reorder. Check to show on Mosaic cards.',
         columns: 'Columns',
+        attributes: 'Attributes',
         noCover: 'No Cover',
         dragToReorder: 'Drag to reorder',
         coverAlt: 'Cover image'

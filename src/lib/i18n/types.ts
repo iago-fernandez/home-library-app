@@ -63,8 +63,11 @@ export interface TranslationDictionary {
         findPlaceholder: string;
         of: string;
         manageColumns: string;
+        manageAttributes: string;
         columnsHelp: string;
+        attributesHelp: string;
         columns: string;
+        attributes: string;
         noCover: string;
         dragToReorder: string;
         coverAlt: string;

@@ -1,9 +1,9 @@
 import { writable } from 'svelte/store';
 
 const PREF_KEY = 'library_datagrid_columns';
+const MOSAIC_PREF_KEY = 'library_mosaic_attributes';
 
 export const availableColumns = [
-    { id: 'cover_url', label: 'Cover' },
     { id: 'catalog_number', label: 'ID' },
     { id: 'title', label: 'Title' },
     { id: 'subtitle', label: 'Subtitle' },
@@ -63,16 +63,26 @@ const defaultColumns = [
     'publisher'
 ];
 
-function createPreferencesStore() {
-    let initial = defaultColumns;
+const defaultMosaicAttributes = [
+    'authors',
+    'publish_date'
+];
+
+function createStore(storageKey: string, defaultValues: string[], validKeys?: string[]) {
+    let initial = defaultValues;
 
     if (typeof window !== 'undefined') {
-        const stored = localStorage.getItem(PREF_KEY);
+        const stored = localStorage.getItem(storageKey);
         if (stored) {
             try {
-                initial = JSON.parse(stored);
+                const parsed = JSON.parse(stored);
+                if (Array.isArray(parsed)) {
+                    const allowedKeys = validKeys || defaultValues;
+                    initial = parsed.filter(item => allowedKeys.includes(item));
+                    if (initial.length === 0) initial = defaultValues;
+                }
             } catch (e) {
-                initial = defaultColumns;
+                initial = defaultValues;
             }
         }
     }
@@ -83,17 +93,19 @@ function createPreferencesStore() {
         subscribe,
         set: (val: string[]) => {
             if (typeof window !== 'undefined') {
-                localStorage.setItem(PREF_KEY, JSON.stringify(val));
+                localStorage.setItem(storageKey, JSON.stringify(val));
             }
             set(val);
         },
         reset: () => {
             if (typeof window !== 'undefined') {
-                localStorage.setItem(PREF_KEY, JSON.stringify(defaultColumns));
+                localStorage.setItem(storageKey, JSON.stringify(defaultValues));
             }
-            set(defaultColumns);
+            set(defaultValues);
         }
     };
 }
 
-export const activeColumns = createPreferencesStore();
+const validColumnIds = availableColumns.map(c => c.id);
+export const activeColumns = createStore(PREF_KEY, defaultColumns, validColumnIds);
+export const activeMosaicAttributes = createStore(MOSAIC_PREF_KEY, defaultMosaicAttributes, validColumnIds);

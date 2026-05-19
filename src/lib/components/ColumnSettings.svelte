@@ -1,27 +1,44 @@
 <script lang="ts">
     import { t } from '$lib/i18n';
-    import { activeColumns, availableColumns } from '$lib/stores/preferences';
-    import { GripVertical, RotateCcw } from 'lucide-svelte';
+    import { activeColumns, availableColumns, activeMosaicAttributes } from '$lib/stores/preferences';
+    import { GripVertical, RotateCcw, Table, LayoutGrid } from 'lucide-svelte';
+
+    let activeTab: 'table' | 'mosaic' = 'table';
 
     let localColumns = [...availableColumns];
+    let localAttributes = [...availableColumns];
 
     $: isColumnActive = (colId: string) => $activeColumns.includes(colId);
+    $: isAttributeActive = (attrId: string) => $activeMosaicAttributes.includes(attrId);
 
-    function toggleColumn(colId: string) {
-        if ($activeColumns.includes(colId)) {
-            if ($activeColumns.length > 1) {
-                activeColumns.set($activeColumns.filter(id => id !== colId));
+    function toggleItem(id: string) {
+        if (activeTab === 'table') {
+            if ($activeColumns.includes(id)) {
+                if ($activeColumns.length > 1) {
+                    activeColumns.set($activeColumns.filter(cId => cId !== id));
+                }
+            } else {
+                const newActive = localColumns.map(c => c.id).filter(cId => $activeColumns.includes(cId) || cId === id);
+                activeColumns.set(newActive);
             }
         } else {
-            const newActive = localColumns
-                .map(c => c.id)
-                .filter(id => $activeColumns.includes(id) || id === colId);
-            activeColumns.set(newActive);
+            if ($activeMosaicAttributes.includes(id)) {
+                if ($activeMosaicAttributes.length > 1) {
+                    activeMosaicAttributes.set($activeMosaicAttributes.filter(aId => aId !== id));
+                }
+            } else {
+                const newActive = localAttributes.map(c => c.id).filter(aId => $activeMosaicAttributes.includes(aId) || aId === id);
+                activeMosaicAttributes.set(newActive);
+            }
         }
     }
 
     function handleReset() {
-        activeColumns.reset();
+        if (activeTab === 'table') {
+            activeColumns.reset();
+        } else {
+            activeMosaicAttributes.reset();
+        }
     }
 
     let draggedIndex: number | null = null;
@@ -45,34 +62,49 @@
         e.preventDefault();
         if (draggedIndex === null || draggedIndex === targetIndex) return;
 
-        const newCols = [...localColumns];
-        const [removed] = newCols.splice(draggedIndex, 1);
-        newCols.splice(targetIndex, 0, removed);
-        localColumns = newCols;
+        if (activeTab === 'table') {
+            const newCols = [...localColumns];
+            const [removed] = newCols.splice(draggedIndex, 1);
+            newCols.splice(targetIndex, 0, removed);
+            localColumns = newCols;
 
-        const currentActiveIds = new Set($activeColumns);
-        const newActiveOrder = localColumns
-            .map(c => c.id)
-            .filter(id => currentActiveIds.has(id));
+            const currentActiveIds = new Set($activeColumns);
+            activeColumns.set(localColumns.map(c => c.id).filter(id => currentActiveIds.has(id)));
+        } else {
+            const newAttrs = [...localAttributes];
+            const [removed] = newAttrs.splice(draggedIndex, 1);
+            newAttrs.splice(targetIndex, 0, removed);
+            localAttributes = newAttrs;
 
-        activeColumns.set(newActiveOrder);
+            const currentActiveIds = new Set($activeMosaicAttributes);
+            activeMosaicAttributes.set(localAttributes.map(c => c.id).filter(id => currentActiveIds.has(id)));
+        }
         draggedIndex = null;
     }
 </script>
 
 <div class="workspace-panel">
     <div class="panel-header">
-        <div>
-            <h3 class="panel-title">{$t.grid.manageColumns}</h3>
-            <p class="help-text">{$t.grid.columnsHelp}</p>
+        <div class="view-tabs">
+            <button class:active={activeTab === 'table'} on:click={() => activeTab = 'table'}>
+                <Table size={16} /> {$t.grid.columns}
+            </button>
+            <button class:active={activeTab === 'mosaic'} on:click={() => activeTab = 'mosaic'}>
+                <LayoutGrid size={16} /> {$t.grid.attributes}
+            </button>
         </div>
         <button class="reset-btn" on:click={handleReset} title={$t.common.reset}>
             <RotateCcw size={16} />
         </button>
     </div>
 
+    <div class="panel-info">
+        <h3 class="panel-title">{activeTab === 'table' ? $t.grid.manageColumns : $t.grid.manageAttributes}</h3>
+        <p class="help-text">{activeTab === 'table' ? $t.grid.columnsHelp : $t.grid.attributesHelp}</p>
+    </div>
+
     <ul class="column-list">
-        {#each localColumns as col, index (col.id)}
+        {#each (activeTab === 'table' ? localColumns : localAttributes) as item, index (item.id)}
             <li
                     class="column-item"
                     draggable="true"
@@ -87,11 +119,11 @@
                 <label class="checkbox-label">
                     <input
                             type="checkbox"
-                            checked={isColumnActive(col.id)}
-                            on:change={() => toggleColumn(col.id)}
-                            disabled={$activeColumns.length === 1 && isColumnActive(col.id)}
+                            checked={activeTab === 'table' ? isColumnActive(item.id) : isAttributeActive(item.id)}
+                            on:change={() => toggleItem(item.id)}
+                            disabled={(activeTab === 'table' ? $activeColumns.length === 1 && isColumnActive(item.id) : $activeMosaicAttributes.length === 1 && isAttributeActive(item.id))}
                     />
-                    <span>{col.label}</span>
+                    <span>{item.label}</span>
                 </label>
             </li>
         {/each}
@@ -108,7 +140,38 @@
     .panel-header {
         display: flex;
         justify-content: space-between;
-        align-items: flex-start;
+        align-items: center;
+        margin-bottom: 12px;
+        padding-bottom: 12px;
+        border-bottom: 1px solid #eee;
+    }
+
+    .view-tabs {
+        display: flex;
+        gap: 8px;
+    }
+
+    .view-tabs button {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        padding: 6px 12px;
+        background: #f5f5f5;
+        border: 1px solid #ddd;
+        border-radius: 6px;
+        cursor: pointer;
+        font-size: 13px;
+        color: #555;
+    }
+
+    .view-tabs button.active {
+        background: #e6f7ff;
+        border-color: #91d5ff;
+        color: #0066cc;
+        font-weight: 500;
+    }
+
+    .panel-info {
         margin-bottom: 16px;
     }
 
