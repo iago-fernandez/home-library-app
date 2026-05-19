@@ -1,5 +1,6 @@
 <script lang="ts">
     import { bookStore } from '$lib/store';
+    import { activeMosaicAttributes } from '$lib/stores/preferences';
     import BookCover from './BookCover.svelte';
 
     $: books = $bookStore;
@@ -20,6 +21,14 @@
             bookStore.selectedId.set(id);
         }
     }
+
+    function formatAttribute(book: any, attrId: string): string {
+        const val = book[attrId];
+        if (Array.isArray(val)) return val.join(', ');
+        if (typeof val === 'boolean') return val ? 'Yes' : 'No';
+        if (val === null || val === undefined || val === '') return '';
+        return String(val);
+    }
 </script>
 
 <div class="mosaic-container">
@@ -37,7 +46,13 @@
             </div>
             <div class="info">
                 <h4>{book.title}</h4>
-                <p>{book.authors?.join(', ') || ''}</p>
+                <div class="attributes-list">
+                    {#each $activeMosaicAttributes as attrId}
+                        {#if formatAttribute(book, attrId)}
+                            <p class="attr-text" title={formatAttribute(book, attrId)}>{formatAttribute(book, attrId)}</p>
+                        {/if}
+                    {/each}
+                </div>
             </div>
         </div>
     {/each}
@@ -47,7 +62,7 @@
     .mosaic-container {
         display: grid;
         grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
-        grid-auto-rows: 280px;
+        grid-auto-rows: max-content;
         gap: 16px;
         padding: 16px;
         overflow-y: auto;
@@ -66,6 +81,7 @@
         flex-direction: column;
         box-sizing: border-box;
         outline: none;
+        height: 100%;
     }
     .book-card:hover {
         transform: translateY(-4px);
@@ -90,17 +106,23 @@
         flex: 1;
         display: flex;
         flex-direction: column;
-        justify-content: center;
+        justify-content: flex-start;
+        overflow: hidden;
     }
     .info h4 {
-        margin: 0 0 4px 0;
+        margin: 0 0 6px 0;
         font-size: 13px;
         color: #1a1a1a;
         white-space: nowrap;
         overflow: hidden;
         text-overflow: ellipsis;
     }
-    .info p {
+    .attributes-list {
+        display: flex;
+        flex-direction: column;
+        gap: 2px;
+    }
+    .attr-text {
         margin: 0;
         font-size: 11px;
         color: #666;
