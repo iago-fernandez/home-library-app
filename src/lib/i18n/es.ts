@@ -65,8 +65,11 @@ export const es: TranslationDictionary = {
         findPlaceholder: 'Buscar en filas cargadas (Ctrl+F)',
         of: 'de',
         manageColumns: 'Gestionar Columnas',
+        manageAttributes: 'Gestionar Atributos de Tarjeta',
         columnsHelp: 'Arrastra para reordenar. Marca para mostrar u ocultar.',
+        attributesHelp: 'Arrastra para reordenar. Marca para mostrar en tarjetas.',
         columns: 'Columnas',
+        attributes: 'Atributos',
         noCover: 'Sin Portada',
         dragToReorder: 'Arrastrar para reordenar',
         coverAlt: 'Imagen de portada'
