@@ -280,9 +280,45 @@
     if (rule.caseSensitive) text += ' (Aa)';
     return text;
   }
+  function handleGlobalKeydown(e: KeyboardEvent) {
+    if (e.key === 'Escape') {
+      if (openMenu) { closeMenus(); return; }
+      if (showExportModal || showSettingsModal) { showExportModal = false; showSettingsModal = false; return; }
+      if (activePanel !== 'actions') { handleFormCancel(); return; }
+      if ($selectedIds.length > 0) { bookStore.clearSelection(); return; }
+      if ($multiSelectMode) { bookStore.toggleMultiSelectMode(); return; }
+    }
+
+    if (e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement || e.target instanceof HTMLSelectElement) return;
+
+    if ((e.ctrlKey || e.metaKey) && !e.shiftKey && e.key === 'f') {
+      e.preventDefault();
+      bookStore.toggleLocalSearch();
+    }
+    if ((e.ctrlKey || e.metaKey) && e.shiftKey && e.key.toLowerCase() === 'f') {
+      e.preventDefault();
+      handleFilterClick();
+    }
+    if ((e.ctrlKey || e.metaKey) && (e.key === 's' || e.key === ',')) {
+      e.preventDefault();
+      showSettingsModal = true;
+    }
+    if ((e.ctrlKey || e.metaKey) && e.key === 'e') {
+      e.preventDefault();
+      showExportModal = true;
+    }
+    if (e.altKey && e.key.toLowerCase() === 'n') {
+      e.preventDefault();
+      handleAddBookClick();
+    }
+    if (e.key === 'F5') {
+      e.preventDefault();
+      bookStore.loadBooks();
+    }
+  }
 </script>
 
-<svelte:window on:click={handleWindowClick} />
+<svelte:window on:click={handleWindowClick} on:keydown={handleGlobalKeydown} />
 
 <div class="app-container">
   <header class="top-bar" data-tauri-drag-region>
@@ -321,8 +357,7 @@
         <button class="menu-btn" class:active={openMenu === 'View'} on:click={() => toggleMenu('View')}>{$t.menu.view}</button>
         {#if openMenu === 'View'}
           <div class="dropdown-menu">
-            <button class="dropdown-item">{$t.common.refresh}</button>
-            <button class="dropdown-item">{$t.menu.toggleSidebar}</button>
+            <button class="dropdown-item" on:click={() => { bookStore.loadBooks(); closeMenus(); }}>{$t.common.refresh} (F5)</button>
           </div>
         {/if}
       </div>
