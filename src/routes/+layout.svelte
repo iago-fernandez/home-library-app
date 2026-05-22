@@ -6,8 +6,6 @@
 
     let username = '';
     let password = '';
-    let confirmPassword = '';
-    let isRegistering = false;
     let errorMsg = '';
     let isLoading = false;
 
@@ -26,30 +24,14 @@
         if (isLoading) return;
 
         errorMsg = '';
-        if (isRegistering && password !== confirmPassword) {
-            errorMsg = $t.auth.passwordsMismatch;
-            return;
-        }
-
         isLoading = true;
         try {
-            if (isRegistering) {
-                await apiClient.register({ username, password });
-            } else {
-                await apiClient.login({ username, password });
-            }
+            await apiClient.login({ username, password });
         } catch (err: any) {
-            errorMsg = isRegistering ? $t.auth.registerError : $t.auth.loginError;
+            errorMsg = $t.auth.loginError;
         } finally {
             isLoading = false;
         }
-    }
-
-    function toggleMode() {
-        isRegistering = !isRegistering;
-        errorMsg = '';
-        password = '';
-        confirmPassword = '';
     }
 
     function toggleLanguage() {
@@ -69,7 +51,7 @@
         </button>
 
         <div class="gateway-container">
-            <h1 class="gateway-title">{isRegistering ? $t.auth.createWorkspace : $t.auth.accessWorkspace}</h1>
+            <h1 class="gateway-title">{$t.auth.accessWorkspace}</h1>
 
             <form on:submit={handleAuth} class="gateway-form">
                 <div class="input-group">
@@ -94,31 +76,14 @@
                     />
                 </div>
 
-                {#if isRegistering}
-                    <div class="input-group">
-                        <label for="confirmPassword">{$t.auth.confirmKey}</label>
-                        <input
-                                id="confirmPassword"
-                                type="password"
-                                bind:value={confirmPassword}
-                                required
-                                class="gateway-input"
-                        />
-                    </div>
-                {/if}
-
                 {#if errorMsg}
                     <div class="gateway-error">{errorMsg}</div>
                 {/if}
 
                 <button type="submit" class="gateway-btn" disabled={isLoading}>
-                    {isLoading ? $t.auth.processing : (isRegistering ? $t.auth.registerBtn : $t.auth.loginBtn)}
+                    {isLoading ? $t.auth.processing : $t.auth.loginBtn}
                 </button>
             </form>
-
-            <button class="gateway-toggle" type="button" on:click={toggleMode}>
-                {isRegistering ? $t.auth.toggleToLogin : $t.auth.toggleToRegister}
-            </button>
         </div>
     </div>
 {:else}
