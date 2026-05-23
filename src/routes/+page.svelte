@@ -10,13 +10,13 @@
   import ExportModal from '$lib/components/ExportModal.svelte';
   import SettingsModal from '$lib/components/SettingsModal.svelte';
   import BatchEditPanel from '$lib/components/BatchEditPanel.svelte';
+  import { zoomLevel, activeShortcuts, activeViewStore } from '$lib/stores/preferences';
   import type { CreateBookPayload } from '$lib/types/book';
   import { Plus, Pencil, Trash2, Filter, Settings, X, Search, CheckSquare, Download, Table, LayoutGrid, Library } from 'lucide-svelte';
 
   let activePanel: 'actions' | 'addBook' | 'editBook' | 'filter' | 'batchEdit' = 'actions';
   let showExportModal = false;
   let showSettingsModal = false;
-  let currentView: 'table' | 'mosaic' = 'table';
   let isSubmitting = false;
 
   type FieldType = 'text' | 'numeric';
@@ -111,7 +111,7 @@
     }
   }
 
-  async function handleBatchDeleteClick() {
+  async function handleDeleteSelected() {
     if ($selectedIds.length > 0 && confirm(`${$selectedIds.length} ${$t.actions.confirmBatchDelete}`)) {
       try {
         await bookStore.deleteBooksBatch($selectedIds);
@@ -123,6 +123,44 @@
 
   function handleFormCancel() {
     activePanel = 'actions';
+  }
+
+  function handleGlobalKeydown(e: KeyboardEvent) {
+    if (e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement || e.target instanceof HTMLSelectElement) return;
+
+    const keyCombo = [
+      e.ctrlKey ? 'ctrl' : '',
+      e.altKey ? 'alt' : '',
+      e.shiftKey ? 'shift' : '',
+      e.key.toLowerCase()
+    ].filter(Boolean).join('+');
+
+    const sc = $activeShortcuts;
+    if (keyCombo === sc.newBook) {
+      e.preventDefault();
+      activePanel = 'addBook';
+    } else if (keyCombo === sc.search) {
+      e.preventDefault();
+      bookStore.toggleLocalSearch();
+    } else if (keyCombo === sc.toggleMultiSelect) {
+      e.preventDefault();
+      bookStore.toggleMultiSelectMode();
+    } else if (keyCombo === sc.deleteSelected && $selectedIds.length > 0) {
+      e.preventDefault();
+      handleDeleteSelected();
+    } else if (keyCombo === sc.settings) {
+      e.preventDefault();
+      showSettingsModal = true;
+    } else if (keyCombo === sc.export) {
+      e.preventDefault();
+      showExportModal = true;
+    } else if (e.key === 'Escape') {
+        if (openMenu) { closeMenus(); return; }
+        if (showExportModal || showSettingsModal) { showExportModal = false; showSettingsModal = false; return; }
+        if (activePanel !== 'actions') { handleFormCancel(); return; }
+        if ($selectedIds.length > 0) { bookStore.clearSelection(); return; }
+        if ($multiSelectMode) { bookStore.toggleMultiSelectMode(); return; }
+    }
   }
 
   async function handleFormSubmit(payload: CreateBookPayload, imageFile?: File) {
@@ -281,48 +319,17 @@
     if (rule.caseSensitive) text += ' (Aa)';
     return text;
   }
-  function handleGlobalKeydown(e: KeyboardEvent) {
-    if (e.key === 'Escape') {
-      if (openMenu) { closeMenus(); return; }
-      if (showExportModal || showSettingsModal) { showExportModal = false; showSettingsModal = false; return; }
-      if (activePanel !== 'actions') { handleFormCancel(); return; }
-      if ($selectedIds.length > 0) { bookStore.clearSelection(); return; }
-      if ($multiSelectMode) { bookStore.toggleMultiSelectMode(); return; }
-    }
 
-    if (e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement || e.target instanceof HTMLSelectElement) return;
-
-    if ((e.ctrlKey || e.metaKey) && !e.shiftKey && e.key === 'f') {
-      e.preventDefault();
-      bookStore.toggleLocalSearch();
-    }
-    if ((e.ctrlKey || e.metaKey) && e.shiftKey && e.key.toLowerCase() === 'f') {
-      e.preventDefault();
-      handleFilterClick();
-    }
-    if ((e.ctrlKey || e.metaKey) && (e.key === 's' || e.key === ',')) {
-      e.preventDefault();
-      showSettingsModal = true;
-    }
-    if ((e.ctrlKey || e.metaKey) && e.key === 'e') {
-      e.preventDefault();
-      showExportModal = true;
-    }
-    if (e.altKey && e.key.toLowerCase() === 'n') {
-      e.preventDefault();
-      handleAddBookClick();
-    }
-    if (e.key === 'F5') {
-      e.preventDefault();
-      bookStore.loadBooks();
-    }
+  function formatShortcut(key: string | undefined): string {
+    if (!key) return '';
+    return key.replace(/ctrl/i, 'Ctrl').replace(/alt/i, 'Alt').replace(/shift/i, 'Shift').toUpperCase();
   }
 </script>
 
 <svelte:window on:click={handleWindowClick} on:keydown={handleGlobalKeydown} />
 
 <div class="app-container">
-  <header class="top-bar" data-tauri-drag-region>
+  <header class="top-bar" style="background-color: var(--topbar-bg);">
     <nav class="menu-bar">
       <div class="menu-container">
         <button class="menu-btn" class:active={openMenu === 'File'} on:click={() => toggleMenu('File')}>{$t.menu.file}</button>
@@ -330,7 +337,10 @@
           <div class="dropdown-menu">
             <button class="dropdown-item">{$t.menu.newLibrary}</button>
             <button class="dropdown-item" on:click={() => { showSettingsModal = true; closeMenus(); }}>
-              {$t.menu.settings}
+              <div style="display:flex; justify-content:space-between; align-items:center; width:100%; gap:16px;">
+                <span>{$t.menu.settings}</span>
+                <span class="shortcut-hint" style="opacity:0.6; font-size:0.9em;">({formatShortcut($activeShortcuts.settings)})</span>
+              </div>
             </button>
             <div class="dropdown-divider"></div>
             <button class="dropdown-item" on:click={() => { apiClient.logout(); closeMenus(); }}>
@@ -345,11 +355,24 @@
         {#if openMenu === 'Edit'}
           <div class="dropdown-menu">
             <button class="dropdown-item" on:click={() => { bookStore.toggleMultiSelectMode(); closeMenus(); }}>
-              {$multiSelectMode ? $t.menu.exitMultiSelect : $t.menu.enterMultiSelect}
+              <div style="display:flex; justify-content:space-between; align-items:center; width:100%; gap:16px;">
+                <span>{$multiSelectMode ? $t.menu.exitMultiSelect : $t.menu.enterMultiSelect}</span>
+                <span class="shortcut-hint" style="opacity:0.6; font-size:0.9em;">({formatShortcut($activeShortcuts.toggleMultiSelect)})</span>
+              </div>
             </button>
             <div class="dropdown-divider"></div>
-            <button class="dropdown-item" on:click={() => { bookStore.toggleLocalSearch(); closeMenus(); }}>{$t.menu.findInView}</button>
-            <button class="dropdown-item" on:click={() => { handleFilterClick(); closeMenus(); }}>{$t.menu.advancedFilter}</button>
+            <button class="dropdown-item" on:click={() => { bookStore.toggleLocalSearch(); closeMenus(); }}>
+              <div style="display:flex; justify-content:space-between; align-items:center; width:100%; gap:16px;">
+                <span>{$t.menu.findInView}</span>
+                <span class="shortcut-hint" style="opacity:0.6; font-size:0.9em;">({formatShortcut($activeShortcuts.search)})</span>
+              </div>
+            </button>
+            <button class="dropdown-item" on:click={() => { handleFilterClick(); closeMenus(); }}>
+              <div style="display:flex; justify-content:space-between; align-items:center; width:100%; gap:16px;">
+                <span>{$t.menu.advancedFilter}</span>
+                <span class="shortcut-hint" style="opacity:0.6; font-size:0.9em;">({formatShortcut('ctrl+shift+f')})</span>
+              </div>
+            </button>
           </div>
         {/if}
       </div>
@@ -358,13 +381,18 @@
         <button class="menu-btn" class:active={openMenu === 'View'} on:click={() => toggleMenu('View')}>{$t.menu.view}</button>
         {#if openMenu === 'View'}
           <div class="dropdown-menu">
-            <button class="dropdown-item" on:click={() => { bookStore.loadBooks(); closeMenus(); }}>{$t.common.refresh} (F5)</button>
-            <div class="menu-divider" style="height: 1px; background-color: var(--border-color); margin: 4px 0;"></div>
-            <button class="dropdown-item" on:click={() => { currentView = 'table'; closeMenus(); }}>
-              <span style="display:inline-block; width:20px;">{currentView === 'table' ? '●' : '○'}</span> {$t.actions.tableView}
+            <button class="dropdown-item" on:click={() => { bookStore.loadBooks(); closeMenus(); }}>
+              <div style="display:flex; justify-content:space-between; width:100%">
+                <span>{$t.common.refresh}</span>
+                <span class="shortcut-hint" style="opacity:0.6; font-size:0.9em;">(F5)</span>
+              </div>
             </button>
-            <button class="dropdown-item" on:click={() => { currentView = 'mosaic'; closeMenus(); }}>
-              <span style="display:inline-block; width:20px;">{currentView === 'mosaic' ? '●' : '○'}</span> {$t.actions.mosaicView}
+            <div class="menu-divider" style="height: 1px; background-color: var(--border-color); margin: 4px 0;"></div>
+            <button class="dropdown-item" style="display:flex; align-items:center;" on:click={() => { $activeViewStore = 'table'; closeMenus(); }}>
+              <span class="radio-icon" class:selected={$activeViewStore === 'table'}></span> {$t.actions.tableView}
+            </button>
+            <button class="dropdown-item" style="display:flex; align-items:center;" on:click={() => { $activeViewStore = 'mosaic'; closeMenus(); }}>
+              <span class="radio-icon" class:selected={$activeViewStore === 'mosaic'}></span> {$t.actions.mosaicView}
             </button>
           </div>
         {/if}
@@ -375,7 +403,12 @@
         {#if openMenu === 'Tools'}
           <div class="dropdown-menu">
             <button class="dropdown-item">{$t.menu.importIsbn}</button>
-            <button class="dropdown-item" on:click={() => { showExportModal = true; closeMenus(); }}>{$t.menu.exportCsv}</button>
+            <button class="dropdown-item" on:click={() => { showExportModal = true; closeMenus(); }}>
+              <div style="display:flex; justify-content:space-between; width:100%">
+                <span>{$t.menu.exportCsv}</span>
+                <span class="shortcut-hint" style="opacity:0.6; font-size:0.9em;">({formatShortcut($activeShortcuts.export)})</span>
+              </div>
+            </button>
           </div>
         {/if}
       </div>
@@ -390,18 +423,25 @@
         {/if}
       </div>
     </nav>
-    <div style="flex-grow: 1;" data-tauri-drag-region></div>
+    <div style="flex-grow: 1;"></div>
   </header>
 
   <main class="workspace">
     <section class="center-stage">
       <div class="grid-wrapper">
         <div class="view-container">
-          {#if currentView === 'table'}
-            <DataGrid />
-          {:else if currentView === 'mosaic'}
-            <MosaicGrid />
+        {#if $bookStore.length === 0}
+          <div class="empty-state">
+            <Library size={48} color="var(--border-color)" />
+            <p>{$t.common.emptyLibrary}</p>
+          </div>
+        {:else}
+          {#if $activeViewStore === 'table'}
+            <DataGrid books={$bookStore} on:edit={handleEditBookClick} />
+          {:else if $activeViewStore === 'mosaic'}
+            <MosaicGrid books={$bookStore} on:edit={handleEditBookClick} />
           {/if}
+        {/if}
         </div>
 
         {#if activeFilters.filter(r => r.value.trim() !== '').length > 0}
@@ -477,18 +517,20 @@
             </button>
 
             <div style="flex-grow: 1;"></div>
-
-            <div class="view-controls">
-              <div class="view-toggle">
-                <button class="icon-btn" title={$t.actions.tableView} class:active={currentView === 'table'} on:click={() => currentView = 'table'}>
-                  <Table size={18} />
-                </button>
-                <button class="icon-btn" title={$t.actions.mosaicView} class:active={currentView === 'mosaic'} on:click={() => currentView = 'mosaic'}>
-                  <LayoutGrid size={18} />
-                </button>
-              </div>
-            </div>
           {/if}
+
+          <div style="flex-grow: 1;"></div>
+
+          <div class="view-controls">
+            <div class="view-toggle">
+              <button class="icon-btn" title={$t.actions.tableView} class:active={$activeViewStore === 'table'} on:click={() => $activeViewStore = 'table'}>
+                <Table size={18} />
+              </button>
+              <button class="icon-btn" title={$t.actions.mosaicView} class:active={$activeViewStore === 'mosaic'} on:click={() => $activeViewStore = 'mosaic'}>
+                <LayoutGrid size={18} />
+              </button>
+            </div>
+          </div>
         </div>
       {:else if activePanel === 'addBook' || activePanel === 'editBook'}
         <div class="panel-content">
@@ -624,8 +666,8 @@
 
   .top-bar {
     height: 48px;
-    background-color: #334155; /* Slate 700 - Dark grayish blue */
-    border-bottom: 1px solid #1E293B; /* Slate 800 */
+    background-color: var(--topbar-bg, #334155);
+    border-bottom: 1px solid var(--topbar-border, #1E293B);
     display: flex;
     align-items: center;
     padding: 0 16px;
@@ -671,6 +713,7 @@
     padding: 6px;
     border-radius: 8px;
     animation: fadeIn 0.15s ease-out;
+    white-space: nowrap;
   }
 
   @keyframes fadeIn {
@@ -703,6 +746,28 @@
     margin: 4px 0;
   }
 
+  .radio-icon {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    border: 2px solid var(--text-main);
+    margin-right: 12px;
+    box-sizing: border-box;
+  }
+  .radio-icon.selected {
+    border-color: var(--primary-color);
+  }
+  .radio-icon.selected::after {
+    content: '';
+    width: 8px;
+    height: 8px;
+    background-color: var(--primary-color);
+    border-radius: 50%;
+  }
+
   .workspace {
     display: flex;
     flex: 1;
@@ -715,16 +780,6 @@
     display: flex;
     flex-direction: column;
     overflow: hidden;
-  }
-
-  .sidebar {
-    width: 300px;
-    background-color: var(--bg-color);
-    border-left: 1px solid var(--border-color);
-    display: flex;
-    flex-direction: column;
-    overflow: hidden;
-    flex-shrink: 0;
   }
 
   .active-filters-bar {
@@ -744,6 +799,22 @@
     font-weight: 600;
     color: var(--text-muted);
     white-space: nowrap;
+  }
+
+  .btn-clear-chips {
+    background: none;
+    border: none;
+    color: var(--text-muted);
+    font-size: 12px;
+    cursor: pointer;
+    padding: 4px 8px;
+    border-radius: 4px;
+    transition: all 0.2s;
+  }
+
+  .btn-clear-chips:hover {
+    background-color: var(--panel-bg);
+    color: var(--text-main);
   }
 
   .filter-chips {
@@ -890,27 +961,6 @@
     width: 100%;
   }
 
-  .batch-count {
-    background-color: var(--primary-color);
-    color: white;
-    font-size: 12px;
-    font-weight: bold;
-    border-radius: 12px;
-    padding: 2px 8px;
-    margin-bottom: 2px;
-  }
-
-  .batch-label {
-    font-size: 9px;
-    color: var(--text-muted);
-    text-transform: uppercase;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: clip;
-    max-width: 44px;
-    text-align: center;
-  }
-
   .icon-btn {
     width: 36px;
     height: 36px;
@@ -1031,27 +1081,6 @@
     align-items: center;
   }
 
-  .rule-select {
-    flex: 1;
-    padding: 4px;
-    font-size: 12px;
-    border: 1px solid var(--border-color);
-    border-radius: 4px;
-    background-color: var(--bg-color);
-    color: var(--text-main);
-    accent-color: var(--primary-color);
-  }
-  
-  .rule-select option {
-    background-color: var(--panel-bg);
-    color: var(--text-main);
-  }
-  
-  .rule-select option:checked {
-    background-color: var(--primary-color) !important;
-    color: white !important;
-  }
-
   .rule-input {
     flex: 1;
     padding: 6px 8px;
@@ -1121,7 +1150,7 @@
   }
 
   .rule-toggle-btn.active-cs:hover {
-    background-color: #3730A3; /* Indigo 800 - dark blue */
+    background-color: var(--primary-hover);
     color: white;
   }
 
@@ -1159,10 +1188,6 @@
     font-size: 13px;
     font-weight: 500;
     color: var(--text-main);
-  }
-
-  .match-select {
-    max-width: 150px;
   }
 
   .view-container {
