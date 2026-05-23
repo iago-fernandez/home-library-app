@@ -5,6 +5,7 @@
     import AutoExpandTextarea from './AutoExpandTextarea.svelte';
     import ChipInput from './ChipInput.svelte';
     import BookCover from './BookCover.svelte';
+    import DropdownSelect from './DropdownSelect.svelte';
     import { Search, DownloadCloud, UploadCloud } from 'lucide-svelte';
 
     export let initialData: Book | null = null;
@@ -126,7 +127,7 @@
     }
 </script>
 
-<form class="book-form" on:submit|preventDefault={handleSubmit}>
+<form class="book-form" novalidate on:submit|preventDefault={handleSubmit}>
     <div class="form-header">
         <h3>{initialData ? $t.form.editBook : $t.form.addNewBook}</h3>
         <div class="header-actions">
@@ -414,12 +415,18 @@
             <div class="input-grid">
                 <div class="input-row">
                     <label for="read_status">{$t.form.readStatus}</label>
-                    <select id="read_status" bind:value={formData.read_status} class="form-select">
-                        <option value="unread">{$t.form.statusUnread}</option>
-                        <option value="reading">{$t.form.statusReading}</option>
-                        <option value="read">{$t.form.statusRead}</option>
-                        <option value="dnf">{$t.form.statusDnf}</option>
-                    </select>
+                    <DropdownSelect
+                        id="read_status"
+                        bind:value={formData.read_status}
+                        customClass="form-select"
+                        placeholder={$t.common.notSet}
+                        options={[
+                            { value: 'unread', label: $t.form.statusUnread },
+                            { value: 'reading', label: $t.form.statusReading },
+                            { value: 'read', label: $t.form.statusRead },
+                            { value: 'dnf', label: $t.form.statusDnf }
+                        ]}
+                    />
                 </div>
                 <div class="input-row">
                     <label for="rating">{$t.form.rating}</label>
@@ -473,7 +480,7 @@
         display: flex;
         flex-direction: column;
         height: 100%;
-        background-color: #f0f0f0;
+        background-color: transparent;
     }
 
     .form-header {
@@ -481,14 +488,14 @@
         justify-content: space-between;
         align-items: center;
         padding-bottom: 16px;
-        border-bottom: 1px solid #ccc;
+        border-bottom: 1px solid var(--border-color);
         margin-bottom: 16px;
     }
 
     .form-header h3 {
         margin: 0;
         font-size: 16px;
-        color: #1a1a1a;
+        color: var(--text-main);
     }
 
     .header-actions {
@@ -501,17 +508,18 @@
         font-size: 13px;
         cursor: pointer;
         border-radius: 4px;
-        border: 1px solid #ccc;
+        border: 1px solid var(--button-border);
     }
 
     .btn-cancel {
-        background-color: #ffffff;
+        background-color: var(--button-bg);
+        color: var(--text-main);
     }
 
     .btn-submit {
-        background-color: #0066cc;
+        background-color: var(--primary-color);
         color: #ffffff;
-        border-color: #005bb5;
+        border-color: var(--primary-color);
         font-weight: 500;
     }
 
@@ -520,15 +528,15 @@
         align-items: center;
         justify-content: center;
         gap: 6px;
-        background-color: #ffffff;
-        color: #333;
-        border: 1px solid #ccc;
+        background-color: var(--button-bg);
+        color: var(--text-main);
+        border: 1px solid var(--button-border);
         font-weight: 500;
     }
 
     .btn-secondary:hover {
-        background-color: #f9f9f9;
-        border-color: #999;
+        background-color: var(--button-hover);
+        border-color: var(--accent-color);
     }
 
     .smart-fetch-row {
@@ -541,24 +549,26 @@
     .fetch-input {
         flex: 1;
         padding: 8px 12px;
-        border: 1px solid #0066cc;
+        border: 1px solid var(--primary-color);
         border-radius: 4px;
         font-size: 13px;
+        background-color: var(--panel-bg);
+        color: var(--text-main);
     }
 
     .btn-autofill {
         display: flex;
         align-items: center;
         gap: 6px;
-        background-color: #0066cc;
+        background-color: var(--primary-color);
         color: #ffffff;
-        border: 1px solid #005bb5;
+        border: 1px solid var(--primary-hover);
         font-weight: 500;
         white-space: nowrap;
     }
 
     .btn-autofill:hover:not(:disabled) {
-        background-color: #005bb5;
+        background-color: var(--primary-hover);
     }
 
     .btn-autofill:disabled {
@@ -587,12 +597,12 @@
     legend {
         font-weight: 600;
         font-size: 12px;
-        color: #0066cc;
+        color: var(--primary-color);
         text-transform: uppercase;
         letter-spacing: 0.5px;
         margin-bottom: 8px;
         padding-bottom: 4px;
-        border-bottom: 1px solid #d0d0d0;
+        border-bottom: 1px solid var(--border-color);
         width: 100%;
     }
 
@@ -600,18 +610,18 @@
         display: flex;
         gap: 16px;
         align-items: center;
-        background-color: #ffffff;
+        background-color: var(--panel-bg);
         padding: 12px;
         border-radius: 6px;
-        border: 1px solid #ccc;
+        border: 1px solid var(--border-color);
     }
 
     .cover-preview {
         width: 80px;
         height: 120px;
-        background-color: #f5f5f5;
+        background-color: var(--bg-color);
         border-radius: 4px;
-        border: 1px dashed #aaa;
+        border: 1px dashed var(--accent-color);
         display: flex;
         flex-direction: column;
         align-items: center;
@@ -622,7 +632,7 @@
 
     .cover-preview.has-image {
         border-style: solid;
-        border-color: #e0e0e0;
+        border-color: var(--border-color);
     }
 
     .cover-actions {
@@ -658,27 +668,29 @@
     label {
         font-size: 13px;
         font-weight: 500;
-        color: #333;
+        color: var(--text-main);
     }
 
-    input, .form-select {
+    input {
         width: 100%;
         padding: 8px;
-        border: 1px solid #ccc;
+        border: 1px solid var(--input-border);
         border-radius: 4px;
         font-family: inherit;
         font-size: 13px;
         box-sizing: border-box;
-        background-color: #ffffff;
+        background-color: var(--panel-bg);
+        color: var(--text-main);
     }
 
-    input:focus, .form-select:focus {
+    input:focus {
         outline: none;
-        border-color: #0066cc;
+        border-color: var(--input-focus);
+        box-shadow: 0 0 0 2px var(--focus-ring);
     }
 
     .fetch-error-message {
-        color: #cc0000;
+        color: var(--danger-color);
         font-size: 12px;
         margin-top: -12px;
         margin-bottom: 12px;

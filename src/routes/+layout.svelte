@@ -96,13 +96,13 @@
         justify-content: center;
         align-items: center;
         min-height: 100vh;
-        background-color: #f8f9fa;
+        background-color: var(--bg-color);
         background-image: radial-gradient(
                 circle 800px at var(--mouse-x, 50%) var(--mouse-y, 50%),
-                #e6f7ff 0%,
-                #f8f9fa 100%
+                var(--secondary-color) 0%,
+                var(--bg-color) 100%
         );
-        color: #333;
+        color: var(--text-main);
         font-family: system-ui, -apple-system, sans-serif;
         transition: background-image 0.2s ease-out;
         position: relative;
@@ -112,9 +112,9 @@
         top: 24px;
         right: 24px;
         background: transparent;
-        border: 1px solid #d9d9d9;
+        border: 1px solid var(--border-color);
         border-radius: 4px;
-        color: #555;
+        color: var(--text-muted);
         font-size: 12px;
         font-weight: 600;
         padding: 6px 12px;
@@ -122,9 +122,9 @@
         transition: all 0.2s;
     }
     .lang-toggle:hover {
-        background: #e6f7ff;
-        border-color: #0066cc;
-        color: #0066cc;
+        background: var(--bg-color);
+        border-color: var(--primary-color);
+        color: var(--primary-color);
     }
     .gateway-container {
         width: 100%;
@@ -171,12 +171,12 @@
     }
     .gateway-input:focus {
         outline: none;
-        border-color: #0066cc;
-        box-shadow: 0 0 0 2px rgba(0, 102, 204, 0.1);
-        background: #ffffff;
+        border-color: var(--input-focus);
+        box-shadow: 0 0 0 2px var(--focus-ring);
+        background: var(--panel-bg);
     }
     .gateway-btn {
-        background-color: #0066cc;
+        background-color: var(--primary-color);
         color: #fff;
         font-size: 15px;
         font-weight: 600;
@@ -188,7 +188,7 @@
         transition: background-color 0.2s;
     }
     .gateway-btn:hover:not(:disabled) {
-        background-color: #0052a3;
+        background-color: var(--primary-hover);
     }
     .gateway-btn:disabled {
         opacity: 0.6;
@@ -213,7 +213,7 @@
         transition: color 0.2s;
     }
     .gateway-toggle:hover {
-        color: #0066cc;
+        color: var(--primary-color);
         text-decoration: underline;
     }
 </style>

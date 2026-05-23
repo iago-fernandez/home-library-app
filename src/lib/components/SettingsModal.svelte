@@ -3,6 +3,7 @@
     import { apiClient } from '$lib/api/client';
     import { authStore } from '$lib/stores/auth';
     import ColumnSettings from './ColumnSettings.svelte';
+    import DropdownSelect from './DropdownSelect.svelte';
     import { X, User, Sliders, Layout } from 'lucide-svelte';
 
     export let onClose: () => void;
@@ -64,9 +65,8 @@
         }
     }
 
-    function changeLanguage(event: Event) {
-        const target = event.target as HTMLSelectElement;
-        setLocale(target.value as 'en' | 'es');
+    function changeLanguage(event: { target: { value: string } }) {
+        setLocale(event.target.value as 'en' | 'es' | 'gl');
     }
 </script>
 
@@ -95,7 +95,7 @@
                 </button>
             </nav>
 
-            <section class="settings-content">
+            <section class="settings-content" class:no-padding={activeTab === 'workspace'}>
                 {#if activeTab === 'account'}
                     <div class="setting-group">
                         <label for="set-username">{$t.settings.changeUsername}</label>
@@ -132,10 +132,16 @@
                 {:else if activeTab === 'preferences'}
                     <div class="setting-group">
                         <label for="set-lang">{$t.settings.language}</label>
-                        <select id="set-lang" class="settings-select" on:change={changeLanguage}>
-                            <option value="en" selected={$locale === 'en'}>English</option>
-                            <option value="es" selected={$locale === 'es'}>Español</option>
-                        </select>
+                        <DropdownSelect
+                            id="set-lang"
+                            customClass="settings-select"
+                            value={$locale}
+                            on:change={(e) => changeLanguage({ target: { value: e.detail.value } })}
+                            options={[
+                                { value: 'en', label: 'English' },
+                                { value: 'es', label: 'Español' }
+                            ]}
+                        />
                     </div>
                 {:else if activeTab === 'workspace'}
                     <div class="workspace-wrapper">
@@ -160,7 +166,7 @@
     }
 
     .modal-container {
-        background: white;
+        background: var(--panel-bg);
         width: 750px;
         border-radius: 12px;
         box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
@@ -169,7 +175,7 @@
 
     .modal-header {
         padding: 16px 24px;
-        border-bottom: 1px solid #eee;
+        border-bottom: 1px solid var(--border-color);
         display: flex;
         justify-content: space-between;
         align-items: center;
@@ -179,13 +185,17 @@
         margin: 0;
         font-size: 18px;
         font-weight: 600;
+        color: var(--text-main);
     }
 
     .close-btn {
         background: none;
         border: none;
         cursor: pointer;
-        color: #666;
+        color: var(--text-muted);
+    }
+    .close-btn:hover {
+        color: var(--text-main);
     }
 
     .modal-body {
@@ -194,105 +204,150 @@
     }
 
     .settings-nav {
-        width: 200px;
-        background: #f8f9fa;
-        border-right: 1px solid #eee;
-        padding: 12px;
+        width: 220px;
+        background: #F8FAFC; /* Slate 50 */
+        border-right: 1px solid var(--border-color);
+        padding: 16px 12px;
         display: flex;
         flex-direction: column;
-        gap: 4px;
+        gap: 6px;
     }
 
     .settings-nav button {
         display: flex;
         align-items: center;
-        gap: 10px;
-        padding: 10px;
+        gap: 12px;
+        padding: 10px 14px;
         border: none;
-        background: none;
+        background: transparent;
         width: 100%;
         text-align: left;
-        border-radius: 6px;
+        border-radius: 8px;
         font-size: 14px;
+        font-weight: 500;
         cursor: pointer;
-        color: #555;
+        color: var(--text-muted);
+        transition: all 0.2s ease;
+    }
+
+    .settings-nav button:hover {
+        background: #E2E8F0; /* Slate 200 */
+        color: var(--text-main);
     }
 
     .settings-nav button.active {
-        background: #e6f7ff;
-        color: #0066cc;
-        font-weight: 500;
+        background: var(--primary-color);
+        color: #ffffff;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
     }
 
     .settings-content {
         flex: 1;
-        padding: 24px;
+        padding: 32px;
         display: flex;
         flex-direction: column;
-        gap: 20px;
+        gap: 24px;
         overflow-y: auto;
+        background: var(--panel-bg);
+    }
+    
+    .settings-content.no-padding {
+        padding: 0;
     }
 
     .setting-group {
         display: flex;
         flex-direction: column;
-        gap: 12px;
+        gap: 8px;
     }
 
     .divider {
         height: 1px;
-        background-color: #eee;
-        margin: 4px 0;
+        background-color: var(--border-color);
+        margin: 8px 0;
     }
 
     label {
         font-size: 13px;
         font-weight: 600;
-        color: #444;
+        color: var(--text-main);
+        margin-bottom: 2px;
     }
 
     input, .settings-select {
-        padding: 10px;
-        border: 1px solid #ddd;
-        border-radius: 6px;
+        padding: 10px 14px;
+        border: 1px solid #CBD5E1; /* Slate 300 */
+        border-radius: 8px;
         font-size: 14px;
         width: 100%;
         box-sizing: border-box;
+        background-color: var(--panel-bg);
+        color: var(--text-main);
+        transition: border-color 0.2s, box-shadow 0.2s;
+    }
+    input:focus, .settings-select:focus {
+        outline: none;
+        border-color: var(--primary-color);
+        box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.15); /* Primary color ring */
     }
 
     .save-btn {
-        background: #0066cc;
+        background: var(--primary-color);
         color: white;
         border: none;
-        padding: 10px;
-        border-radius: 6px;
-        font-weight: 600;
+        padding: 10px 16px;
+        border-radius: 8px;
+        font-weight: 500;
+        font-size: 14px;
         cursor: pointer;
-        width: 100%;
+        width: fit-content;
+        margin-top: 4px;
+        transition: background-color 0.2s, transform 0.1s;
+        align-self: flex-end;
+    }
+    .save-btn:hover:not(:disabled) {
+        background: var(--primary-hover);
+    }
+    .save-btn:active:not(:disabled) {
+        transform: scale(0.98);
+    }
+    .save-btn:disabled {
+        opacity: 0.6;
+        cursor: not-allowed;
     }
 
     .danger-zone {
-        background: #fff1f0;
-        border: 1px solid #ffa39e;
-        padding: 16px;
-        border-radius: 6px;
+        background: #FEF2F2; /* Red 50 */
+        border: 1px solid #FECACA; /* Red 200 */
+        padding: 20px;
+        border-radius: 10px;
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
     }
 
     .danger-zone p {
-        margin: 0 0 16px 0;
+        margin: 0;
         font-size: 13px;
-        color: #cf1322;
+        color: #B91C1C; /* Red 700 */
+        line-height: 1.5;
     }
 
     .delete-btn {
-        background: #ff4d4f;
+        background: #EF4444; /* Red 500 */
         color: white;
         border: none;
-        padding: 10px;
-        border-radius: 6px;
-        font-weight: 600;
+        padding: 10px 16px;
+        border-radius: 8px;
+        font-weight: 500;
+        font-size: 14px;
         cursor: pointer;
-        width: 100%;
+        width: fit-content;
+        transition: background-color 0.2s;
+        align-self: flex-end;
+    }
+    .delete-btn:hover {
+        background: #DC2626; /* Red 600 */
     }
 
     .status-msg {
@@ -309,6 +364,5 @@
         display: flex;
         flex-direction: column;
         height: 100%;
-        margin: -24px; /* Compensate for settings-content padding to let ColumnSettings use the space */
     }
 </style>

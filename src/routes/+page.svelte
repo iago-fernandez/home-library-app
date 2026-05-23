@@ -5,12 +5,13 @@
   import { t } from '$lib/i18n';
   import DataGrid from '$lib/components/DataGrid.svelte';
   import MosaicGrid from '$lib/components/MosaicGrid.svelte';
+  import DropdownSelect from '$lib/components/DropdownSelect.svelte';
   import BookForm from '$lib/components/BookForm.svelte';
   import ExportModal from '$lib/components/ExportModal.svelte';
   import SettingsModal from '$lib/components/SettingsModal.svelte';
   import BatchEditPanel from '$lib/components/BatchEditPanel.svelte';
   import type { CreateBookPayload } from '$lib/types/book';
-  import { Plus, Pencil, Trash2, Filter, Settings, X, Search, CheckSquare, Download } from 'lucide-svelte';
+  import { Plus, Pencil, Trash2, Filter, Settings, X, Search, CheckSquare, Download, Table, LayoutGrid, Library } from 'lucide-svelte';
 
   let activePanel: 'actions' | 'addBook' | 'editBook' | 'filter' | 'batchEdit' = 'actions';
   let showExportModal = false;
@@ -358,6 +359,13 @@
         {#if openMenu === 'View'}
           <div class="dropdown-menu">
             <button class="dropdown-item" on:click={() => { bookStore.loadBooks(); closeMenus(); }}>{$t.common.refresh} (F5)</button>
+            <div class="menu-divider" style="height: 1px; background-color: var(--border-color); margin: 4px 0;"></div>
+            <button class="dropdown-item" on:click={() => { currentView = 'table'; closeMenus(); }}>
+              <span style="display:inline-block; width:20px;">{currentView === 'table' ? '●' : '○'}</span> {$t.actions.tableView}
+            </button>
+            <button class="dropdown-item" on:click={() => { currentView = 'mosaic'; closeMenus(); }}>
+              <span style="display:inline-block; width:20px;">{currentView === 'mosaic' ? '●' : '○'}</span> {$t.actions.mosaicView}
+            </button>
           </div>
         {/if}
       </div>
@@ -382,39 +390,12 @@
         {/if}
       </div>
     </nav>
+    <div style="flex-grow: 1;" data-tauri-drag-region></div>
   </header>
 
   <main class="workspace">
     <section class="center-stage">
-      {#if activeFilters.filter(r => r.value.trim() !== '').length > 0}
-        <div class="active-filters-bar">
-          <span class="active-filters-label">{$t.filters.activeFilters} {matchType === 'OR' ? '(Any)' : '(All)'}:</span>
-          <div class="filter-chips">
-            {#each activeFilters.filter(r => r.value.trim() !== '') as rule (rule.id)}
-              <div class="filter-chip">
-                <button class="chip-text-btn" on:click={handleFilterClick}>{formatRuleForDisplay(rule)}</button>
-                <button class="chip-remove" on:click={() => removeFilterRule(rule.id)}>
-                  <X size={12} strokeWidth={2} />
-                </button>
-              </div>
-            {/each}
-          </div>
-          <button class="btn-clear-chips" on:click={clearFilters}>{$t.filters.clearAll}</button>
-        </div>
-      {/if}
       <div class="grid-wrapper">
-        {#if $multiSelectMode}
-          <div class="multi-select-banner">
-            {$t.actions.multiSelectActive}
-            <button class="btn-exit-mode" on:click={bookStore.toggleMultiSelectMode}>{$t.actions.exit}</button>
-          </div>
-        {/if}
-
-        <div class="view-selector">
-          <button class:active={currentView === 'table'} on:click={() => currentView = 'table'}>Tabla</button>
-          <button class:active={currentView === 'mosaic'} on:click={() => currentView = 'mosaic'}>Mosaico</button>
-        </div>
-
         <div class="view-container">
           {#if currentView === 'table'}
             <DataGrid />
@@ -422,6 +403,30 @@
             <MosaicGrid />
           {/if}
         </div>
+
+        {#if activeFilters.filter(r => r.value.trim() !== '').length > 0}
+          <div class="active-filters-bar">
+            <span class="active-filters-label">{$t.filters.activeFilters} {matchType === 'OR' ? '(Any)' : '(All)'}:</span>
+            <div class="filter-chips">
+              {#each activeFilters.filter(r => r.value.trim() !== '') as rule (rule.id)}
+                <div class="filter-chip">
+                  <button class="chip-text-btn" on:click={handleFilterClick}>{formatRuleForDisplay(rule)}</button>
+                  <button class="chip-remove" on:click={() => removeFilterRule(rule.id)}>
+                    <X size={12} strokeWidth={2} />
+                  </button>
+                </div>
+              {/each}
+            </div>
+            <button class="btn-clear-chips" on:click={clearFilters}>{$t.filters.clearAll}</button>
+          </div>
+        {/if}
+
+        {#if $multiSelectMode}
+          <div class="multi-select-banner">
+            <span>{$t.actions.multiSelectActive} ({$selectedIds.length} {$t.common.selected})</span>
+            <button class="btn-exit-mode" on:click={bookStore.toggleMultiSelectMode}>{$t.actions.exit}</button>
+          </div>
+        {/if}
       </div>
     </section>
 
@@ -430,10 +435,7 @@
         <div class="toolbar">
           {#if $selectedIds.length > 0}
             <div class="batch-actions-container">
-              <span class="batch-count">{$selectedIds.length}</span>
-              <span class="batch-label">{$t.common.selected}</span>
-
-              <div class="toolbar-divider"></div>
+              <div class="toolbar-divider" style="display: none;"></div>
 
               <button class="icon-btn" title={$t.actions.editSelected} on:click={handleEditBookClick}>
                 <Pencil size={20} strokeWidth={1.5} />
@@ -460,7 +462,7 @@
 
             <div class="toolbar-divider"></div>
 
-            <button class="icon-btn" title="Export" on:click={() => showExportModal = true}>
+            <button class="icon-btn" title={$t.actions.export} on:click={() => showExportModal = true}>
               <Download size={20} strokeWidth={1.5} />
             </button>
 
@@ -473,9 +475,19 @@
             <button class="icon-btn" title={$t.menu.advancedFilter} class:active={activeFilters.filter(r => r.value.trim() !== '').length > 0} on:click={handleFilterClick}>
               <Filter size={20} strokeWidth={1.5} />
             </button>
-            <button class="icon-btn" title={$t.actions.systemSettings} on:click={() => showSettingsModal = true}>
-              <Settings size={20} strokeWidth={1.5} />
-            </button>
+
+            <div style="flex-grow: 1;"></div>
+
+            <div class="view-controls">
+              <div class="view-toggle">
+                <button class="icon-btn" title={$t.actions.tableView} class:active={currentView === 'table'} on:click={() => currentView = 'table'}>
+                  <Table size={18} />
+                </button>
+                <button class="icon-btn" title={$t.actions.mosaicView} class:active={currentView === 'mosaic'} on:click={() => currentView = 'mosaic'}>
+                  <LayoutGrid size={18} />
+                </button>
+              </div>
+            </div>
           {/if}
         </div>
       {:else if activePanel === 'addBook' || activePanel === 'editBook'}
@@ -502,10 +514,17 @@
             {#if activeFilters.length > 1}
               <div class="match-type-toggle">
                 <span class="match-label">{$t.filters.match}</span>
-                <select bind:value={matchType} on:change={triggerDebouncedFilter} class="rule-select match-select">
-                  <option value="AND">{$t.filters.matchAll}</option>
-                  <option value="OR">{$t.filters.matchAny}</option>
-                </select>
+                <div style="width: 120px;">
+                  <DropdownSelect
+                    options={[
+                      { value: 'AND', label: $t.filters.matchAll },
+                      { value: 'OR', label: $t.filters.matchAny }
+                    ]}
+                    bind:value={matchType}
+                    on:change={triggerDebouncedFilter}
+                    customClass="rule-select match-select"
+                  />
+                </div>
               </div>
             {/if}
 
@@ -513,21 +532,24 @@
               <div class="filter-rule">
                 <div class="rule-controls">
                   <button
-                          class="rule-toggle-btn {rule.isNot ? 'active-not' : ''}"
+                          class="rule-toggle-btn"
+                          class:active-not={rule.isNot}
                           on:click={() => { rule.isNot = !rule.isNot; handleControlChange(); }}
                           title={$t.filters.invertRule}>
                     NOT
                   </button>
-                  <select bind:value={rule.field} class="rule-select" on:change={() => handleFieldChange(rule)}>
-                    {#each availableFields as field}
-                      <option value={field.value}>{field.label}</option>
-                    {/each}
-                  </select>
-                  <select bind:value={rule.operator} class="rule-select" on:change={handleControlChange}>
-                    {#each operatorDefinitions[rule.type] as op}
-                      <option value={op.value}>{op.label}</option>
-                    {/each}
-                  </select>
+                  <DropdownSelect
+                    options={availableFields}
+                    bind:value={rule.field}
+                    on:change={() => handleFieldChange(rule)}
+                    customClass="rule-select"
+                  />
+                  <DropdownSelect
+                    options={operatorDefinitions[rule.type]}
+                    bind:value={rule.operator}
+                    on:change={handleControlChange}
+                    customClass="rule-select"
+                  />
                   <button class="icon-btn-small btn-remove-rule" on:click={() => removeFilterRule(rule.id)}>
                     <X size={14} />
                   </button>
@@ -543,7 +565,8 @@
                             on:input={triggerDebouncedFilter}
                     />
                     <button
-                            class="rule-toggle-btn {rule.caseSensitive ? 'active-cs' : ''}"
+                            class="rule-toggle-btn"
+                            class:active-cs={rule.caseSensitive}
                             on:click={() => { rule.caseSensitive = !rule.caseSensitive; handleControlChange(); }}
                             title={$t.filters.caseSensitive}>
                       Aa
@@ -594,19 +617,20 @@
   }
 
   .icon-btn.active {
-    background-color: #e6f7ff;
-    color: #0066cc;
-    border-color: #91d5ff;
+    background-color: var(--secondary-color);
+    color: var(--primary-color);
+    border-color: var(--primary-color);
   }
 
   .top-bar {
-    height: 36px;
-    background-color: #e3e3e3;
-    border-bottom: 1px solid #ccc;
+    height: 48px;
+    background-color: #334155; /* Slate 700 - Dark grayish blue */
+    border-bottom: 1px solid #1E293B; /* Slate 800 */
     display: flex;
     align-items: center;
-    padding: 0 8px;
+    padding: 0 16px;
     flex-shrink: 0;
+    z-index: 100;
   }
 
   .menu-bar {
@@ -621,49 +645,61 @@
   .menu-btn {
     background: transparent;
     border: none;
-    padding: 4px 10px;
+    padding: 6px 12px;
     font-size: 13px;
+    font-weight: 500;
     cursor: pointer;
-    border-radius: 4px;
-    color: #333;
+    border-radius: 6px;
+    color: #F8FAFC; /* Slate 50 - Off white */
+    transition: all 0.2s ease;
   }
 
   .menu-btn:hover, .menu-btn.active {
-    background-color: #d0d0d0;
+    background-color: #475569; /* Slate 600 */
+    color: #FFFFFF;
   }
 
   .dropdown-menu {
     position: absolute;
-    top: 100%;
+    top: calc(100% + 4px);
     left: 0;
-    background-color: #ffffff;
-    border: 1px solid #ccc;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
-    min-width: 180px;
+    background-color: var(--panel-bg);
+    border: 1px solid var(--border-color);
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+    min-width: 200px;
     z-index: 1000;
-    padding: 4px 0;
-    border-radius: 4px;
+    padding: 6px;
+    border-radius: 8px;
+    animation: fadeIn 0.15s ease-out;
+  }
+
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(-4px); }
+    to { opacity: 1; transform: translateY(0); }
   }
 
   .dropdown-item {
     display: block;
     width: 100%;
     text-align: left;
-    padding: 6px 16px;
+    padding: 8px 16px;
     background: transparent;
     border: none;
     font-size: 13px;
-    color: #333;
+    color: var(--text-main);
     cursor: pointer;
+    border-radius: 4px;
+    transition: background-color 0.15s ease;
+    margin-bottom: 2px;
   }
 
   .dropdown-item:hover {
-    background-color: #e0e0e0;
+    background-color: var(--bg-color);
   }
 
   .dropdown-divider {
     height: 1px;
-    background-color: #e0e0e0;
+    background-color: var(--border-color);
     margin: 4px 0;
   }
 
@@ -675,10 +711,20 @@
 
   .center-stage {
     flex: 1;
-    background-color: #ffffff;
+    background-color: var(--bg-color);
     display: flex;
     flex-direction: column;
     overflow: hidden;
+  }
+
+  .sidebar {
+    width: 300px;
+    background-color: var(--bg-color);
+    border-left: 1px solid var(--border-color);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    flex-shrink: 0;
   }
 
   .active-filters-bar {
@@ -686,8 +732,8 @@
     align-items: center;
     gap: 12px;
     padding: 8px 12px;
-    background-color: #f8f9fa;
-    border-bottom: 1px solid #e0e0e0;
+    background-color: var(--bg-color);
+    border-top: 1px solid var(--border-color);
     min-height: 40px;
     flex-wrap: wrap;
     flex-shrink: 0;
@@ -696,7 +742,7 @@
   .active-filters-label {
     font-size: 12px;
     font-weight: 600;
-    color: #555;
+    color: var(--text-muted);
     white-space: nowrap;
   }
 
@@ -710,12 +756,12 @@
   .filter-chip {
     display: flex;
     align-items: center;
-    background-color: #e3f2fd;
-    border: 1px solid #bbdefb;
+    background-color: var(--secondary-color);
+    border: 1px solid var(--border-color);
     border-radius: 16px;
     padding: 2px 4px 2px 10px;
     font-size: 12px;
-    color: #0d47a1;
+    color: var(--primary-color);
   }
 
   .chip-text-btn {
@@ -736,19 +782,19 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    background: #bbdefb;
+    background: var(--border-color);
     border: none;
     border-radius: 50%;
     width: 18px;
     height: 18px;
-    color: #0d47a1;
+    color: var(--primary-color);
     cursor: pointer;
     padding: 0;
   }
 
   .chip-remove:hover {
-    background: #90caf9;
-    color: #b71c1c;
+    background: var(--accent-color);
+    color: white;
   }
 
   .grid-wrapper {
@@ -757,37 +803,53 @@
     position: relative;
     display: flex;
     flex-direction: column;
+    background-color: var(--panel-bg);
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    margin: 16px 16px 16px 16px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.02);
   }
 
   .multi-select-banner {
-    background-color: #e6f7ff;
-    color: #0066cc;
-    font-size: 12px;
-    font-weight: bold;
-    padding: 4px 12px;
+    position: absolute;
+    bottom: 24px;
+    left: 50%;
+    transform: translateX(-50%);
+    background-color: var(--primary-color);
+    color: white;
+    padding: 8px 16px;
+    border-radius: 24px;
+    box-shadow: 0 4px 12px rgba(79, 70, 229, 0.4);
     display: flex;
-    justify-content: space-between;
     align-items: center;
-    border-bottom: 1px solid #91d5ff;
+    gap: 16px;
+    z-index: 50;
+    font-size: 13px;
+    font-weight: 600;
   }
 
   .btn-exit-mode {
-    background: #0066cc;
-    color: white;
+    background: white;
+    color: var(--primary-color);
     border: none;
-    border-radius: 4px;
-    padding: 2px 8px;
-    font-size: 11px;
+    border-radius: 6px;
+    padding: 4px 12px;
+    font-size: 12px;
     cursor: pointer;
+    font-weight: 600;
+    transition: background-color 0.2s, transform 0.1s;
   }
 
   .btn-exit-mode:hover {
-    background: #0052a3;
+    background: #f1f5f9; /* Slate 100 */
+  }
+  .btn-exit-mode:active {
+    transform: scale(0.95);
   }
 
   .side-panel {
-    background-color: #f0f0f0;
-    border-left: 1px solid #ccc;
+    background-color: var(--panel-bg);
+    border-left: 1px solid var(--border-color);
     transition: width 0.2s cubic-bezier(0.4, 0, 0.2, 1);
     display: flex;
     flex-direction: column;
@@ -816,6 +878,7 @@
     flex-direction: column;
     gap: 8px;
     width: 100%;
+    height: 100%;
     align-items: center;
   }
 
@@ -828,7 +891,7 @@
   }
 
   .batch-count {
-    background-color: #0066cc;
+    background-color: var(--primary-color);
     color: white;
     font-size: 12px;
     font-weight: bold;
@@ -838,10 +901,14 @@
   }
 
   .batch-label {
-    font-size: 10px;
-    color: #666;
+    font-size: 9px;
+    color: var(--text-muted);
     text-transform: uppercase;
-    letter-spacing: 0.5px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: clip;
+    max-width: 44px;
+    text-align: center;
   }
 
   .icon-btn {
@@ -854,33 +921,33 @@
     border: 1px solid transparent;
     border-radius: 6px;
     cursor: pointer;
-    color: #444;
+    color: var(--text-main);
     transition: all 0.1s;
   }
 
   .icon-btn.primary {
-    background-color: #0066cc;
+    background-color: var(--primary-color);
     color: white;
   }
 
   .icon-btn.primary:hover {
-    background-color: #0052a3;
+    background-color: var(--primary-hover);
   }
 
   .icon-btn.danger {
-    color: #d32f2f;
+    color: var(--danger-color);
   }
 
   .icon-btn.danger:hover:not(:disabled) {
-    background-color: #ffebee;
-    border-color: #ffcdd2;
-    color: #b71c1c;
+    background-color: var(--bg-color);
+    border-color: var(--danger-color);
+    color: var(--danger-color);
   }
 
   .icon-btn:hover:not(:disabled):not(.danger):not(.primary) {
-    background-color: #e0e0e0;
-    border-color: #ccc;
-    color: #1a1a1a;
+    background-color: var(--bg-color);
+    border-color: var(--border-color);
+    color: var(--primary-color);
   }
 
   .icon-btn:disabled {
@@ -891,7 +958,7 @@
   .toolbar-divider {
     width: 24px;
     height: 1px;
-    background-color: #ccc;
+    background-color: var(--border-color);
     margin: 4px 0;
   }
 
@@ -901,13 +968,13 @@
     align-items: center;
     margin-bottom: 24px;
     padding-bottom: 12px;
-    border-bottom: 1px solid #ccc;
+    border-bottom: 1px solid var(--border-color);
   }
 
   .panel-header h3 {
     margin: 0;
     font-size: 16px;
-    color: #1a1a1a;
+    color: var(--text-main);
   }
 
   .header-actions {
@@ -924,7 +991,7 @@
   .btn-clear {
     background: none;
     border: none;
-    color: #666;
+    color: var(--text-muted);
     font-size: 12px;
     cursor: pointer;
     padding: 4px 8px;
@@ -932,8 +999,8 @@
   }
 
   .btn-clear:hover {
-    background-color: #e0e0e0;
-    color: #1a1a1a;
+    background-color: var(--bg-color);
+    color: var(--text-main);
   }
 
   .filter-rules-container {
@@ -943,8 +1010,8 @@
   }
 
   .filter-rule {
-    background-color: #ffffff;
-    border: 1px solid #ccc;
+    background-color: var(--panel-bg);
+    border: 1px solid var(--border-color);
     border-radius: 6px;
     padding: 8px;
     display: flex;
@@ -968,23 +1035,38 @@
     flex: 1;
     padding: 4px;
     font-size: 12px;
-    border: 1px solid #e0e0e0;
+    border: 1px solid var(--border-color);
     border-radius: 4px;
-    background-color: #f9f9f9;
+    background-color: var(--bg-color);
+    color: var(--text-main);
+    accent-color: var(--primary-color);
+  }
+  
+  .rule-select option {
+    background-color: var(--panel-bg);
+    color: var(--text-main);
+  }
+  
+  .rule-select option:checked {
+    background-color: var(--primary-color) !important;
+    color: white !important;
   }
 
   .rule-input {
     flex: 1;
     padding: 6px 8px;
-    border: 1px solid #e0e0e0;
+    border: 1px solid var(--border-color);
     border-radius: 4px;
     font-size: 13px;
     box-sizing: border-box;
+    background-color: var(--panel-bg);
+    color: var(--text-main);
   }
 
   .rule-input:focus {
     outline: none;
-    border-color: #0066cc;
+    border-color: var(--input-focus);
+    box-shadow: 0 0 0 2px var(--focus-ring);
   }
 
   .icon-btn-small {
@@ -992,7 +1074,7 @@
     border: none;
     cursor: pointer;
     padding: 4px;
-    color: #666;
+    color: var(--text-muted);
     display: flex;
     align-items: center;
     justify-content: center;
@@ -1000,36 +1082,47 @@
   }
 
   .icon-btn-small:hover {
-    background-color: #f0f0f0;
-    color: #d32f2f;
+    background-color: var(--bg-color);
+    color: var(--danger-color);
   }
 
   .rule-toggle-btn {
-    background: #f5f5f5;
-    border: 1px solid #e0e0e0;
+    background-color: var(--bg-color);
+    border: 1px solid var(--border-color);
     border-radius: 4px;
     padding: 4px 8px;
     font-size: 11px;
     font-weight: 600;
-    color: #666;
+    color: var(--text-muted);
     cursor: pointer;
     transition: all 0.1s;
   }
 
   .rule-toggle-btn:hover {
-    background: #e0e0e0;
+    background-color: var(--border-color);
+    color: var(--text-main);
   }
 
   .rule-toggle-btn.active-not {
-    background-color: #ffebee;
-    color: #c62828;
-    border-color: #ef9a9a;
+    background-color: var(--danger-color);
+    color: white;
+    border-color: var(--danger-color);
+  }
+
+  .rule-toggle-btn.active-not:hover {
+    background-color: #B91C1C; /* Darker red */
+    color: white;
   }
 
   .rule-toggle-btn.active-cs {
-    background-color: #e3f2fd;
-    color: #1565c0;
-    border-color: #90caf9;
+    background-color: var(--primary-color);
+    color: white;
+    border-color: var(--primary-color);
+  }
+
+  .rule-toggle-btn.active-cs:hover {
+    background-color: #3730A3; /* Indigo 800 - dark blue */
+    color: white;
   }
 
   .btn-secondary {
@@ -1038,9 +1131,9 @@
     justify-content: center;
     gap: 6px;
     padding: 6px 12px;
-    background-color: #ffffff;
-    color: #333;
-    border: 1px dashed #ccc;
+    background-color: var(--button-bg);
+    color: var(--text-main);
+    border: 1px dashed var(--button-border);
     border-radius: 4px;
     font-size: 12px;
     cursor: pointer;
@@ -1048,8 +1141,8 @@
   }
 
   .btn-secondary:hover {
-    background: #f9f9f9;
-    border-color: #999;
+    background: var(--button-hover);
+    border-color: var(--accent-color);
   }
 
   .match-type-toggle {
@@ -1057,42 +1150,19 @@
     align-items: center;
     gap: 8px;
     padding: 8px;
-    background-color: #f5f5f5;
+    background-color: var(--bg-color);
     border-radius: 6px;
-    border: 1px solid #e0e0e0;
+    border: 1px solid var(--border-color);
   }
 
   .match-label {
     font-size: 13px;
     font-weight: 500;
-    color: #333;
+    color: var(--text-main);
   }
 
   .match-select {
     max-width: 150px;
-  }
-
-  .view-selector {
-    display: flex;
-    gap: 4px;
-    padding: 8px 16px;
-    background-color: #f5f5f5;
-    border-bottom: 1px solid #e0e0e0;
-  }
-
-  .view-selector button {
-    padding: 4px 12px;
-    border: 1px solid #ccc;
-    background: #fff;
-    cursor: pointer;
-    font-size: 12px;
-    border-radius: 4px;
-  }
-
-  .view-selector button.active {
-    background: #0066cc;
-    color: white;
-    border-color: #005bb5;
   }
 
   .view-container {

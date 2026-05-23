@@ -4,6 +4,7 @@
     import { Info } from 'lucide-svelte';
     import AutoExpandTextarea from './AutoExpandTextarea.svelte';
     import ChipInput from './ChipInput.svelte';
+    import DropdownSelect from './DropdownSelect.svelte';
 
     export let onCancel: () => void;
 
@@ -164,7 +165,7 @@
     }
 </script>
 
-<form class="book-form" on:submit|preventDefault={handleSave} on:input={evaluateModifications} on:change={evaluateModifications}>
+<form class="book-form" novalidate on:submit|preventDefault={handleSave} on:input={evaluateModifications} on:change={evaluateModifications}>
     <div class="form-header">
         <h3>{$t.batchEdit.title} ({$selectedIds.length})</h3>
         <div class="header-actions">
@@ -175,7 +176,7 @@
 
     <div class="form-scroll-area">
         <div class="info-banner">
-            <Info size={16} color="#1890ff" />
+            <Info size={16} color="var(--primary-color)" />
             <p>{$t.batchEdit.warning}</p>
         </div>
 
@@ -378,15 +379,19 @@
             <div class="input-grid">
                 <div class="input-row" class:modified={isModified['read_status']}>
                     <label for="read_status">{$t.form.readStatus}</label>
-                    <select id="read_status" class="form-select" class:mixed-input={isMixed['read_status']} bind:value={formData.read_status}>
-                        {#if isMixed['read_status']}
-                            <option value="" disabled selected hidden>{$t.batchEdit.multipleValues}</option>
-                        {/if}
-                        <option value="unread">{$t.form.statusUnread}</option>
-                        <option value="reading">{$t.form.statusReading}</option>
-                        <option value="read">{$t.form.statusRead}</option>
-                        <option value="dnf">{$t.form.statusDnf}</option>
-                    </select>
+                    <DropdownSelect
+                        id="read_status"
+                        customClass="form-select {isMixed['read_status'] ? 'mixed-input' : ''}"
+                        bind:value={formData.read_status}
+                        placeholder={isMixed['read_status'] ? $t.batchEdit.multipleValues : $t.common.notSet}
+                        options={[
+                            { value: '', label: $t.common.notSet },
+                            { value: 'unread', label: $t.form.statusUnread },
+                            { value: 'reading', label: $t.form.statusReading },
+                            { value: 'read', label: $t.form.statusRead },
+                            { value: 'dnf', label: $t.form.statusDnf }
+                        ]}
+                    />
                 </div>
                 <div class="input-row" class:modified={isModified['rating']}>
                     <label for="rating">{$t.form.rating}</label>
@@ -438,7 +443,7 @@
         display: flex;
         flex-direction: column;
         height: 100%;
-        background-color: #f0f0f0;
+        background-color: transparent;
     }
 
     .form-header {
@@ -446,14 +451,14 @@
         justify-content: space-between;
         align-items: center;
         padding-bottom: 16px;
-        border-bottom: 1px solid #ccc;
+        border-bottom: 1px solid var(--border-color);
         margin-bottom: 16px;
     }
 
     .form-header h3 {
         margin: 0;
         font-size: 16px;
-        color: #1a1a1a;
+        color: var(--text-main);
     }
 
     .header-actions {
@@ -466,18 +471,18 @@
         font-size: 13px;
         cursor: pointer;
         border-radius: 4px;
-        border: 1px solid #ccc;
+        border: 1px solid var(--button-border);
     }
 
     .btn-cancel {
-        background-color: #ffffff;
-        color: #333;
+        background-color: var(--button-bg);
+        color: var(--text-main);
     }
 
     .btn-submit {
-        background-color: #0066cc;
+        background-color: var(--primary-color);
         color: #ffffff;
-        border-color: #005bb5;
+        border-color: var(--primary-color);
         font-weight: 500;
     }
 
@@ -494,8 +499,8 @@
         display: flex;
         align-items: flex-start;
         gap: 10px;
-        background-color: #e6f7ff;
-        border: 1px solid #91d5ff;
+        background-color: var(--secondary-color);
+        border: 1px solid var(--border-color);
         padding: 12px;
         border-radius: 6px;
         margin-bottom: -16px;
@@ -504,7 +509,7 @@
     .info-banner p {
         margin: 0;
         font-size: 12px;
-        color: #0050b3;
+        color: var(--primary-hover);
         line-height: 1.4;
         margin-top: 1px;
     }
@@ -521,12 +526,12 @@
     legend {
         font-weight: 600;
         font-size: 12px;
-        color: #0066cc;
+        color: var(--primary-color);
         text-transform: uppercase;
         letter-spacing: 0.5px;
         margin-bottom: 8px;
         padding-bottom: 4px;
-        border-bottom: 1px solid #d0d0d0;
+        border-bottom: 1px solid var(--border-color);
         width: 100%;
     }
 
@@ -541,7 +546,7 @@
     }
 
     .input-row.modified {
-        border-left-color: #0066cc;
+        border-left-color: var(--primary-color);
     }
 
     .input-grid {
@@ -563,27 +568,29 @@
     label {
         font-size: 13px;
         font-weight: 500;
-        color: #333;
+        color: var(--text-main);
     }
 
     input, .form-select {
         width: 100%;
         padding: 8px;
-        border: 1px solid #ccc;
+        border: 1px solid var(--input-border);
         border-radius: 4px;
         font-family: inherit;
         font-size: 13px;
         box-sizing: border-box;
-        background-color: #ffffff;
+        background-color: var(--panel-bg);
+        color: var(--text-main);
         transition: all 0.2s;
     }
 
     input:focus, .form-select:focus {
         outline: none;
-        border-color: #0066cc;
+        border-color: var(--input-focus);
+        box-shadow: 0 0 0 2px var(--focus-ring);
     }
 
     .mixed-input {
-        color: #666;
+        color: var(--text-muted);
     }
 </style>

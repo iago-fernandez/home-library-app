@@ -3,7 +3,7 @@
     import { bookStore } from '$lib/store';
     import { activeColumns, availableColumns } from '$lib/stores/preferences';
     import { apiClient } from '$lib/api/client';
-    import { X, ArrowUp, ArrowDown, AlertTriangle } from 'lucide-svelte';
+    import { X, AlertTriangle, GripVertical } from 'lucide-svelte';
     import { t } from '$lib/i18n';
 
     const dispatch = createEventDispatcher();
@@ -78,6 +78,35 @@
             isExporting = false;
         }
     }
+
+    let draggedIndex: number | null = null;
+
+    function handleDragStart(e: DragEvent, index: number) {
+        draggedIndex = index;
+        if (e.dataTransfer) {
+            e.dataTransfer.effectAllowed = 'move';
+            e.dataTransfer.setData('text/plain', index.toString());
+        }
+    }
+
+    function handleDragOver(e: DragEvent) {
+        e.preventDefault();
+        if (e.dataTransfer) {
+            e.dataTransfer.dropEffect = 'move';
+        }
+    }
+
+    function handleDrop(e: DragEvent, targetIndex: number) {
+        e.preventDefault();
+        if (draggedIndex === null || draggedIndex === targetIndex) return;
+
+        const newCols = [...columnsToExport];
+        const [removed] = newCols.splice(draggedIndex, 1);
+        newCols.splice(targetIndex, 0, removed);
+        columnsToExport = newCols;
+        
+        draggedIndex = null;
+    }
 </script>
 
 <div class="modal-backdrop" on:click={() => dispatch('close')} role="presentation">
@@ -120,13 +149,17 @@
                 <h3>{$t.exportManager.activeColumns}</h3>
                 <div class="columns-list">
                     {#each columnsToExport as colId, index}
-                        <div class="column-item">
-                            <span class="drag-handle">{getColumnLabel(colId)}</span>
-                            <div class="column-actions">
-                                <button class="icon-btn-small" disabled={index === 0} on:click={() => moveColumn(index, -1)}><ArrowUp size={14} /></button>
-                                <button class="icon-btn-small" disabled={index === columnsToExport.length - 1} on:click={() => moveColumn(index, 1)}><ArrowDown size={14} /></button>
-                                <button class="icon-btn-small remove" on:click={() => toggleColumn(colId)}><X size={14} /></button>
+                        <div class="column-item"
+                             draggable="true"
+                             on:dragstart={(e) => handleDragStart(e, index)}
+                             on:dragover={handleDragOver}
+                             on:drop={(e) => handleDrop(e, index)}
+                             class:dragging={draggedIndex === index}>
+                            <div class="drag-handle" title={$t.grid?.dragToReorder || 'Drag to reorder'}>
+                                <GripVertical size={16} />
+                                {getColumnLabel(colId)}
                             </div>
+                            <button class="icon-btn-small remove" on:click={() => toggleColumn(colId)}><X size={14} /></button>
                         </div>
                     {/each}
                 </div>
@@ -188,7 +221,7 @@
     }
 
     .modal-content {
-        background: #ffffff;
+        background: var(--panel-bg);
         width: 900px;
         max-width: 95vw;
         height: 80vh;
@@ -203,28 +236,28 @@
         justify-content: space-between;
         align-items: center;
         padding: 16px 24px;
-        border-bottom: 1px solid #e0e0e0;
+        border-bottom: 1px solid var(--border-color);
     }
 
     .modal-header h2 {
         margin: 0;
         font-size: 18px;
-        color: #1a1a1a;
+        color: var(--text-main);
     }
 
     .icon-btn {
         background: none;
         border: none;
         cursor: pointer;
-        color: #666;
+        color: var(--text-muted);
         display: flex;
         padding: 4px;
         border-radius: 4px;
     }
 
     .icon-btn:hover {
-        background: #f5f5f5;
-        color: #1a1a1a;
+        background: var(--bg-color);
+        color: var(--text-main);
     }
 
     .modal-body {
@@ -245,7 +278,7 @@
     .config-group h3, .columns-section h3, .preview-section h3 {
         margin: 0 0 12px 0;
         font-size: 14px;
-        color: #444;
+        color: var(--text-main);
         text-transform: uppercase;
         letter-spacing: 0.5px;
     }
@@ -258,18 +291,19 @@
     .toggle-btn {
         flex: 1;
         padding: 8px;
-        border: 1px solid #d9d9d9;
-        background: #f9f9f9;
+        border: 1px solid var(--button-border);
+        background: var(--button-bg);
         border-radius: 4px;
         cursor: pointer;
         font-size: 13px;
+        color: var(--text-main);
         transition: all 0.2s;
     }
 
     .toggle-btn.active {
-        background: #0066cc;
+        background: var(--primary-color);
         color: white;
-        border-color: #0066cc;
+        border-color: var(--primary-color);
     }
 
     .toggle-btn:disabled {
@@ -278,16 +312,22 @@
     }
 
     .pdf-warning {
-        background-color: #fff8e1;
-        border-left: 4px solid #ffc107;
-        padding: 12px;
-        margin-top: 16px;
-        font-size: 12px;
-        color: #663c00;
+        background-color: #FEF3C7; /* Amber 100 */
+        border: 1px solid #FCD34D; /* Amber 300 */
+        padding: 6px 10px;
+        margin-top: 12px;
+        font-size: 11px;
+        font-weight: 500;
+        color: #92400E; /* Amber 800 */
         display: flex;
-        gap: 8px;
-        align-items: flex-start;
-        border-radius: 0 4px 4px 0;
+        gap: 12px;
+        align-items: center;
+        border-radius: 8px;
+    }
+    
+    .pdf-warning :global(svg) {
+        color: #D97706; /* Amber 600 */
+        flex-shrink: 0;
     }
 
     .pdf-warning p {
@@ -296,9 +336,13 @@
     }
 
     .pdf-warning.critical {
-        background-color: #ffebee;
-        border-left-color: #f44336;
-        color: #b71c1c;
+        background-color: #FEE2E2; /* Red 100 */
+        border-color: #FCA5A5; /* Red 300 */
+        color: #991B1B; /* Red 800 */
+    }
+    
+    .pdf-warning.critical :global(svg) {
+        color: #DC2626; /* Red 600 */
     }
 
     .columns-list {
@@ -313,33 +357,48 @@
         justify-content: space-between;
         align-items: center;
         padding: 8px 12px;
-        background: #f5f5f5;
-        border: 1px solid #e0e0e0;
+        background: var(--panel-bg);
+        border: 1px solid var(--border-color);
         border-radius: 4px;
         font-size: 13px;
+        color: var(--text-main);
+        transition: transform 0.2s, box-shadow 0.2s;
     }
 
-    .column-actions {
+    .column-item.dragging {
+        opacity: 0.5;
+        background-color: var(--secondary-color);
+        border-style: dashed;
+    }
+
+    .drag-handle {
         display: flex;
-        gap: 4px;
+        align-items: center;
+        gap: 8px;
+        cursor: grab;
+        color: var(--text-main);
+    }
+
+    .drag-handle:active {
+        cursor: grabbing;
     }
 
     .icon-btn-small {
         background: none;
         border: none;
         cursor: pointer;
-        color: #666;
+        color: var(--text-muted);
         padding: 2px;
         border-radius: 2px;
     }
 
     .icon-btn-small:hover:not(:disabled) {
-        background: #e0e0e0;
-        color: #1a1a1a;
+        background: var(--bg-color);
+        color: var(--text-main);
     }
 
     .icon-btn-small.remove:hover {
-        color: #d32f2f;
+        color: var(--danger-color);
     }
 
     .icon-btn-small:disabled {
@@ -354,31 +413,31 @@
     }
 
     .chip-btn {
-        background: #ffffff;
-        border: 1px dashed #ccc;
+        background: var(--button-bg);
+        border: 1px dashed var(--button-border);
         padding: 4px 10px;
         border-radius: 16px;
         font-size: 12px;
         cursor: pointer;
-        color: #555;
+        color: var(--text-muted);
     }
 
     .chip-btn:hover {
-        background: #f0f8ff;
-        border-color: #0066cc;
-        color: #0066cc;
+        background: var(--secondary-color);
+        border-color: var(--primary-color);
+        color: var(--primary-color);
     }
 
     .preview-section {
         grid-column: 1 / -1;
         margin-top: 12px;
-        border-top: 1px solid #e0e0e0;
+        border-top: 1px solid var(--border-color);
         padding-top: 24px;
     }
 
     .table-container {
         overflow-x: auto;
-        border: 1px solid #e0e0e0;
+        border: 1px solid var(--border-color);
         border-radius: 4px;
     }
 
@@ -391,17 +450,18 @@
 
     th, td {
         padding: 8px 12px;
-        border-bottom: 1px solid #f0f0f0;
+        border-bottom: 1px solid var(--border-color);
         white-space: nowrap;
         max-width: 200px;
         overflow: hidden;
         text-overflow: ellipsis;
+        color: var(--text-main);
     }
 
     th {
-        background: #f9f9f9;
+        background: var(--bg-color);
         font-weight: 600;
-        color: #333;
+        color: var(--text-main);
     }
 
     .modal-footer {
@@ -409,28 +469,29 @@
         justify-content: flex-end;
         gap: 12px;
         padding: 16px 24px;
-        border-top: 1px solid #e0e0e0;
-        background: #fafafa;
+        border-top: 1px solid var(--border-color);
+        background: var(--panel-bg);
     }
 
     .btn-secondary {
         padding: 8px 16px;
-        border: 1px solid #ccc;
-        background: white;
+        border: 1px solid var(--button-border);
+        background: var(--button-bg);
+        color: var(--text-main);
         border-radius: 4px;
         cursor: pointer;
         font-size: 14px;
     }
 
     .btn-secondary:hover {
-        background: #f9f9f9;
-        border-color: #999;
+        background: var(--button-hover);
+        border-color: var(--accent-color);
     }
 
     .btn-primary {
         padding: 8px 16px;
         border: none;
-        background: #0066cc;
+        background: var(--primary-color);
         color: white;
         border-radius: 4px;
         cursor: pointer;

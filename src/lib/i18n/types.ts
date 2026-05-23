@@ -104,6 +104,9 @@ export interface TranslationDictionary {
         exit: string;
         confirmDelete: string;
         confirmBatchDelete: string;
+        tableView: string;
+        mosaicView: string;
+        export: string;
     };
     form: {
         addNewBook: string;

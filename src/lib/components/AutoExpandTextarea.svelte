@@ -42,6 +42,7 @@
 
     textarea:focus {
         outline: none;
-        border-color: #0066cc;
+        border-color: var(--input-focus);
+        box-shadow: 0 0 0 2px var(--focus-ring);
     }
 </style>
