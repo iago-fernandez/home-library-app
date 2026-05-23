@@ -1,6 +1,6 @@
 <script lang="ts">
     import { bookStore } from '$lib/store';
-    import { activeMosaicAttributes } from '$lib/stores/preferences';
+    import { activeMosaicAttributes, zoomLevel } from '$lib/stores/preferences';
     import BookCover from './BookCover.svelte';
     import { Search, ChevronUp, ChevronDown, X, CaseSensitive } from 'lucide-svelte';
     import DropdownSelect from './DropdownSelect.svelte';
@@ -143,7 +143,14 @@
         if (event.key === 'Escape') {
             if ($localSearchActive) { toggleLocalSearch(); }
             else if ($multiSelectMode) { bookStore.toggleMultiSelectMode(); }
-            else { bookStore.clearSelection(); bookStore.selectedId.set(null); lastSelectedIndex = -1; }
+            else { 
+                bookStore.clearSelection(); 
+                bookStore.selectedId.set(null); 
+                lastSelectedIndex = -1; 
+                if (document.activeElement instanceof HTMLElement) {
+                    document.activeElement.blur();
+                }
+            }
         }
         if (event.key === 'Delete' && $selectedIds.length > 0) {
             event.preventDefault();
@@ -157,7 +164,7 @@
 <svelte:window on:keydown={handleGlobalKeydown} />
 
 <div class="mosaic-wrapper">
-    <div class="mosaic-container">
+    <div class="mosaic-container" style="zoom: {$zoomLevel / 100}">
         {#each books as book, index (book.id)}
             <div
                     id="mosaic-card-{book.id}"
@@ -173,8 +180,11 @@
             </div>
             <div class="info">
                 <h4>{book.title}</h4>
+                {#if book.authors}
+                    <p class="attr-text authors-text" title={formatAttribute(book, 'authors')}>{formatAttribute(book, 'authors')}</p>
+                {/if}
                 <div class="attributes-list">
-                    {#each $activeMosaicAttributes as attrId}
+                    {#each $activeMosaicAttributes.filter(id => id !== 'title' && id !== 'authors') as attrId}
                         {#if formatAttribute(book, attrId)}
                             <p class="attr-text" title={formatAttribute(book, attrId)}>{formatAttribute(book, attrId)}</p>
                         {/if}
@@ -260,7 +270,6 @@
         box-shadow: 0 0 0 1px var(--primary-color);
     }
     .local-search-bar { display: flex; align-items: center; background-color: var(--bg-color); border-top: 1px solid var(--border-color); padding: 4px 8px; gap: 8px; box-shadow: 0 -2px 4px rgba(0,0,0,0.02); z-index: 10; flex-shrink: 0; }
-    .column-select { border: 1px solid var(--border-color); border-radius: 4px; padding: 4px; font-size: 12px; background-color: var(--panel-bg); color: var(--text-main); }
     .local-search-bar input { border: none; outline: none; flex: 1; font-family: inherit; font-size: 13px; padding: 4px; background-color: transparent; color: var(--text-main); }
     .match-count { font-size: 12px; color: var(--text-muted); white-space: nowrap; }
     .no-matches { color: var(--danger-color); }
@@ -285,12 +294,18 @@
         overflow: hidden;
     }
     .info h4 {
-        margin: 0 0 6px 0;
-        font-size: 13px;
+        margin: 0 0 4px 0;
+        font-size: 14px;
+        font-weight: 600;
         color: var(--text-main);
         white-space: nowrap;
         overflow: hidden;
         text-overflow: ellipsis;
+    }
+    .authors-text {
+        font-weight: 500;
+        color: var(--primary-color) !important;
+        margin-bottom: 8px !important;
     }
     .attributes-list {
         display: flex;

@@ -160,7 +160,6 @@
             console.error(e);
         });
 
-        bookStore.clearSelection();
         onCancel();
     }
 </script>
@@ -571,7 +570,7 @@
         color: var(--text-main);
     }
 
-    input, .form-select {
+    input {
         width: 100%;
         padding: 8px;
         border: 1px solid var(--input-border);
@@ -584,13 +583,9 @@
         transition: all 0.2s;
     }
 
-    input:focus, .form-select:focus {
+    input:focus {
         outline: none;
         border-color: var(--input-focus);
         box-shadow: 0 0 0 2px var(--focus-ring);
-    }
-
-    .mixed-input {
-        color: var(--text-muted);
     }
 </style>

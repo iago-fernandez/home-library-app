@@ -1,7 +1,7 @@
 <script lang="ts">
     import { bookStore } from '$lib/store';
     import { t } from '$lib/i18n';
-    import { activeColumns, availableColumns } from '$lib/stores/preferences';
+    import { activeColumns, availableColumns, zoomLevel } from '$lib/stores/preferences';
     import { createVirtualizer } from '@tanstack/svelte-virtual';
     import {
         createSvelteTable,
@@ -74,7 +74,7 @@
         return {
             id: id,
             accessorKey: id,
-            header: colDef ? colDef.label : id,
+            header: ($t.grid as Record<string, string>)['col_' + id] || (colDef ? colDef.label : id),
             cell: info => getCellData(info.row.original, id),
             minSize: 100,
             size: 150,
@@ -241,7 +241,14 @@
         if (event.key === 'Escape') {
             if ($localSearchActive) { toggleLocalSearch(); }
             else if ($multiSelectMode) { bookStore.toggleMultiSelectMode(); }
-            else { bookStore.clearSelection(); bookStore.selectedId.set(null); lastSelectedIndex = -1; }
+            else { 
+                bookStore.clearSelection(); 
+                bookStore.selectedId.set(null); 
+                lastSelectedIndex = -1; 
+                if (document.activeElement instanceof HTMLElement) {
+                    document.activeElement.blur();
+                }
+            }
         }
         if (event.key === 'Delete' && $selectedIds.length > 0) {
             event.preventDefault();
@@ -254,7 +261,7 @@
 
 <svelte:window on:keydown={handleGlobalKeydown} />
 
-<div class="table-wrapper">
+<div class="table-wrapper" style="zoom: {$zoomLevel / 100}">
 
 
     <div bind:this={scrollContainer} class="scroll-container">
@@ -369,7 +376,6 @@
 <style>
     .table-wrapper { display: flex; flex-direction: column; height: 100%; background-color: var(--panel-bg); border: 1px solid var(--border-color); border-radius: 4px; overflow: hidden; transition: border-color 0.2s; }
     .local-search-bar { display: flex; align-items: center; background-color: var(--bg-color); border-top: 1px solid var(--border-color); padding: 4px 8px; gap: 8px; box-shadow: 0 -2px 4px rgba(0,0,0,0.02); z-index: 10; flex-shrink: 0; }
-    .column-select { border: 1px solid var(--border-color); border-radius: 4px; padding: 4px; font-size: 12px; background-color: var(--panel-bg); color: var(--text-main); }
     .local-search-bar input { border: none; outline: none; flex: 1; font-family: inherit; font-size: 13px; padding: 4px; background-color: transparent; color: var(--text-main); }
     .match-count { font-size: 12px; color: var(--text-muted); white-space: nowrap; }
     .no-matches { color: var(--danger-color); }

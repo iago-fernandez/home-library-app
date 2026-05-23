@@ -5,8 +5,22 @@
 
     let activeTab: 'table' | 'mosaic' = 'table';
 
-    let localColumns = [...availableColumns];
-    let localAttributes = [...availableColumns];
+    function initLocalList(activeIds: string[], forceTop: string[] = []) {
+        const activeCols = activeIds.map(id => availableColumns.find(c => c.id === id)).filter(Boolean) as any[];
+        const inactiveCols = availableColumns.filter(c => !activeIds.includes(c.id));
+        let list = [...activeCols, ...inactiveCols];
+        
+        if (forceTop.length > 0) {
+            const fixedItems = list.filter(c => forceTop.includes(c.id));
+            fixedItems.sort((a, b) => forceTop.indexOf(a.id) - forceTop.indexOf(b.id));
+            const otherItems = list.filter(c => !forceTop.includes(c.id));
+            list = [...fixedItems, ...otherItems];
+        }
+        return list;
+    }
+
+    let localColumns = initLocalList($activeColumns);
+    let localAttributes = initLocalList($activeMosaicAttributes, ['title', 'authors']);
 
     $: isColumnActive = (colId: string) => $activeColumns.includes(colId);
     $: isAttributeActive = (attrId: string) => $activeMosaicAttributes.includes(attrId);
@@ -62,6 +76,9 @@
         e.preventDefault();
         if (draggedIndex === null || draggedIndex === targetIndex) return;
 
+        const currentList = activeTab === 'table' ? localColumns : localAttributes;
+        if (activeTab === 'mosaic' && (currentList[targetIndex].id === 'title' || currentList[targetIndex].id === 'authors')) return;
+
         if (activeTab === 'table') {
             const newCols = [...localColumns];
             const [removed] = newCols.splice(draggedIndex, 1);
@@ -100,30 +117,31 @@
 
     <div class="panel-info">
         <h3 class="panel-title">{activeTab === 'table' ? $t.grid.manageColumns : $t.grid.manageAttributes}</h3>
-        <p class="help-text">{activeTab === 'table' ? $t.grid.columnsHelp : $t.grid.attributesHelp}</p>
+        <p class="help-text">{activeTab === 'table' ? $t.grid.columnsDesc : $t.grid.attributesDesc}</p>
     </div>
 
     <ul class="column-list">
         {#each (activeTab === 'table' ? localColumns : localAttributes) as item, index (item.id)}
             <li
                     class="column-item"
-                    draggable="true"
-                    on:dragstart={(e) => handleDragStart(e, index)}
+                    draggable={!(activeTab === 'mosaic' && (item.id === 'title' || item.id === 'authors'))}
+                    on:dragstart={(e) => { if(!(activeTab === 'mosaic' && (item.id === 'title' || item.id === 'authors'))) handleDragStart(e, index); }}
                     on:dragover={handleDragOver}
                     on:drop={(e) => handleDrop(e, index)}
                     class:dragging={draggedIndex === index}
+                    class:fixed-item={activeTab === 'mosaic' && (item.id === 'title' || item.id === 'authors')}
             >
-                <div class="drag-handle" title={$t.grid.dragToReorder}>
+                <div class="drag-handle" title={$t.grid.dragToReorder} style="opacity: {activeTab === 'mosaic' && (item.id === 'title' || item.id === 'authors') ? '0' : '1'}">
                     <GripVertical size={16} color="#999" />
                 </div>
                 <label class="checkbox-label">
                     <input
                             type="checkbox"
-                            checked={activeTab === 'table' ? isColumnActive(item.id) : isAttributeActive(item.id)}
+                            checked={(item.id === 'title' || item.id === 'authors') || (activeTab === 'table' ? isColumnActive(item.id) : isAttributeActive(item.id))}
                             on:change={() => toggleItem(item.id)}
-                            disabled={(activeTab === 'table' ? $activeColumns.length === 1 && isColumnActive(item.id) : $activeMosaicAttributes.length === 1 && isAttributeActive(item.id))}
+                            disabled={(item.id === 'title' || item.id === 'authors') || (activeTab === 'table' ? $activeColumns.length === 1 && isColumnActive(item.id) : $activeMosaicAttributes.length === 1 && isAttributeActive(item.id))}
                     />
-                    <span>{item.label}</span>
+                    <span>{($t.grid as Record<string, string>)['col_' + item.id] || item.label}</span>
                 </label>
             </li>
         {/each}
@@ -135,8 +153,8 @@
         display: flex;
         flex-direction: column;
         height: 100%;
-        padding: 32px;
-        background-color: var(--panel-bg);
+        padding: 8px 16px 8px 24px;
+        background-color: transparent;
     }
 
     .panel-header {
@@ -239,9 +257,12 @@
 
     .column-item.dragging {
         opacity: 0.5;
-        background-color: var(--secondary-color);
-        border-style: dashed;
-        border-color: var(--primary-color);
+        background-color: var(--hover-color);
+    }
+    .column-item.fixed-item {
+        background-color: var(--bg-color);
+        border-color: var(--border-color);
+        cursor: default;
     }
 
     .drag-handle {
