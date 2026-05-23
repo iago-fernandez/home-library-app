@@ -105,7 +105,10 @@ export const en: TranslationDictionary = {
         multiSelectActive: 'Multi-Select Mode Active',
         exit: 'Exit',
         confirmDelete: 'Are you sure you want to delete this record?',
-        confirmBatchDelete: 'records will be deleted. This action cannot be undone. Proceed?'
+        confirmBatchDelete: 'records will be deleted. This action cannot be undone. Proceed?',
+        tableView: 'Table View',
+        mosaicView: 'Mosaic View',
+        export: 'Export'
     },
     form: {
         addNewBook: 'Add New Book',

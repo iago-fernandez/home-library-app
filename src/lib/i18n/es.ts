@@ -105,7 +105,10 @@ export const es: TranslationDictionary = {
         multiSelectActive: 'Modo Selección Múltiple Activo',
         exit: 'Salir',
         confirmDelete: '¿Estás seguro de que deseas eliminar este registro?',
-        confirmBatchDelete: 'registros serán eliminados. Esta acción no se puede deshacer. ¿Proceder?'
+        confirmBatchDelete: 'registros serán eliminados. Esta acción no se puede deshacer. ¿Proceder?',
+        tableView: 'Vista Tabla',
+        mosaicView: 'Vista Mosaico',
+        export: 'Exportar'
     },
     form: {
         addNewBook: 'Añadir Nuevo Libro',
