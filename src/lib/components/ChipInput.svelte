@@ -68,19 +68,24 @@
         transition: border-color 0.2s;
     }
 
+    .chip-input-container.focused {
+        border-color: var(--input-focus);
+        box-shadow: 0 0 0 2px var(--focus-ring);
+    }
+
     .chip-input-container:focus-within {
-        border-color: #0066cc;
+        border-color: var(--input-focus);
     }
 
     .chip {
         display: flex;
         align-items: center;
-        background-color: #e3f2fd;
-        border: 1px solid #bbdefb;
+        background-color: var(--secondary-color);
+        border: 1px solid var(--accent-color);
         border-radius: 16px;
         padding: 2px 6px 2px 10px;
         font-size: 12px;
-        color: #0d47a1;
+        color: var(--text-main);
         gap: 4px;
     }
 
@@ -100,15 +105,15 @@
         border-radius: 50%;
         width: 16px;
         height: 16px;
-        color: #0d47a1;
+        color: var(--text-main);
         cursor: pointer;
         padding: 0;
         transition: background-color 0.1s;
     }
 
     .chip-remove:hover {
-        background-color: #bbdefb;
-        color: #b71c1c;
+        background-color: var(--bg-color);
+        color: var(--danger-color);
     }
 
     .chip-input {
