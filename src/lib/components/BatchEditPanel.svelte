@@ -11,6 +11,7 @@
     let formData: Record<string, any> = {};
     let isMixed: Record<string, boolean> = {};
     let isModified: Record<string, boolean> = {};
+    let errors: Record<string, string> = {};
     let initialSnapshot = "{}";
 
     const selectedIds = bookStore.selectedIds;
@@ -136,8 +137,37 @@
         isModified = {};
     }
 
+    function validateForm(): boolean {
+        errors = {};
+
+        if (isModified['location_position'] && formData.location_position !== undefined && formData.location_position < 0) {
+            errors.location_position = $t.form?.validationPositiveNumber || 'Must be a positive number';
+        }
+
+        if (isModified['rating'] && formData.rating !== undefined && (formData.rating < 0 || formData.rating > 10)) {
+            errors.rating = $t.form?.validationRating || 'Rating must be between 0 and 10';
+        }
+
+        const dateFields = ['date_started', 'date_finished', 'loan_date'];
+        const today = new Date().toISOString().split('T')[0];
+        dateFields.forEach(field => {
+            if (isModified[field]) {
+                const dateVal = formData[field];
+                if (dateVal && typeof dateVal === 'string' && dateVal > today) {
+                    errors[field] = $t.form?.validationPastDate || 'Date cannot be in the future';
+                }
+            }
+        });
+
+        return Object.keys(errors).length === 0;
+    }
+
     function handleSave() {
         evaluateModifications();
+
+        if (!validateForm()) {
+            return; // Don't proceed if validation fails
+        }
 
         const payload: Record<string, any> = {};
         let hasChanges = false;
@@ -162,9 +192,19 @@
 
         onCancel();
     }
+
+    function handleInput(event: Event) {
+        evaluateModifications();
+        const target = event.target as HTMLElement;
+        const id = target.id;
+        if (id && errors[id]) {
+            delete errors[id];
+            errors = { ...errors };
+        }
+    }
 </script>
 
-<form class="book-form" novalidate on:submit|preventDefault={handleSave} on:input={evaluateModifications} on:change={evaluateModifications}>
+<form class="book-form" novalidate on:submit|preventDefault={handleSave} on:input={handleInput} on:change={handleInput}>
     <div class="form-header">
         <h3>{$t.batchEdit.title} ({$selectedIds.length})</h3>
         <div class="header-actions">
@@ -354,9 +394,10 @@
                     <label for="location_shelf">{$t.form.shelf}</label>
                     <input type="text" id="location_shelf" bind:value={formData.location_shelf} />
                 </div>
-                <div class="input-row" class:modified={isModified['location_position']}>
+                <div class="input-row" class:modified={isModified['location_position']} class:error={errors['location_position']}>
                     <label for="location_position">{$t.form.position}</label>
                     <input type="number" id="location_position" bind:value={formData.location_position} />
+                    {#if errors['location_position']}<span class="error-text">{errors['location_position']}</span>{/if}
                 </div>
             </div>
         </fieldset>
@@ -392,19 +433,22 @@
                         ]}
                     />
                 </div>
-                <div class="input-row" class:modified={isModified['rating']}>
+                <div class="input-row" class:modified={isModified['rating']} class:error={errors['rating']}>
                     <label for="rating">{$t.form.rating}</label>
                     <input type="number" min="0" max="10" id="rating" bind:value={formData.rating} />
+                    {#if errors['rating']}<span class="error-text">{errors['rating']}</span>{/if}
                 </div>
             </div>
             <div class="input-grid">
-                <div class="input-row" class:modified={isModified['date_started']}>
+                <div class="input-row" class:modified={isModified['date_started']} class:error={errors['date_started']}>
                     <label for="date_started">{$t.form.dateStarted}</label>
                     <input type="date" id="date_started" bind:value={formData.date_started} />
+                    {#if errors['date_started']}<span class="error-text">{errors['date_started']}</span>{/if}
                 </div>
-                <div class="input-row" class:modified={isModified['date_finished']}>
+                <div class="input-row" class:modified={isModified['date_finished']} class:error={errors['date_finished']}>
                     <label for="date_finished">{$t.form.dateFinished}</label>
                     <input type="date" id="date_finished" bind:value={formData.date_finished} />
+                    {#if errors['date_finished']}<span class="error-text">{errors['date_finished']}</span>{/if}
                 </div>
             </div>
             <div class="input-row" class:modified={isModified['reading_notes']}>
@@ -424,9 +468,10 @@
                 <input type="text" id="loaned_to" bind:value={formData.loaned_to} />
             </div>
             <div class="input-grid">
-                <div class="input-row" class:modified={isModified['loan_date']}>
+                <div class="input-row" class:modified={isModified['loan_date']} class:error={errors['loan_date']}>
                     <label for="loan_date">{$t.form.loanDate}</label>
                     <input type="date" id="loan_date" bind:value={formData.loan_date} />
+                    {#if errors['loan_date']}<span class="error-text">{errors['loan_date']}</span>{/if}
                 </div>
                 <div class="input-row" class:modified={isModified['expected_return_date']}>
                     <label for="expected_return_date">{$t.form.expectedReturnDate}</label>
@@ -528,16 +573,15 @@
         color: var(--primary-color);
         text-transform: uppercase;
         letter-spacing: 0.5px;
-        margin-bottom: 8px;
+        margin-bottom: 16px;
         padding-bottom: 4px;
         border-bottom: 1px solid var(--border-color);
         width: 100%;
     }
 
     .input-row {
-        display: flex;
-        flex-direction: column;
-        gap: 4px;
+        display: block;
+        position: relative;
         border-left: 2px solid transparent;
         padding-left: 6px;
         margin-left: -8px;
@@ -555,6 +599,7 @@
     }
 
     .checkbox-row {
+        display: flex;
         flex-direction: row;
         align-items: center;
         gap: 8px;
@@ -564,7 +609,14 @@
         width: auto;
     }
 
+    .checkbox-row label {
+        margin-bottom: 0;
+        display: inline-block;
+    }
+
     label {
+        display: block;
+        margin-bottom: 4px;
         font-size: 13px;
         font-weight: 500;
         color: var(--text-main);
@@ -580,12 +632,27 @@
         box-sizing: border-box;
         background-color: var(--panel-bg);
         color: var(--text-main);
-        transition: all 0.2s;
+        outline: 2px solid transparent;
+        outline-offset: 0px;
+        transition: border-color 0.2s, outline-color 0.2s;
     }
 
     input:focus {
-        outline: none;
+        outline: 2px solid var(--focus-ring);
+        outline-offset: 0px;
         border-color: var(--input-focus);
-        box-shadow: 0 0 0 2px var(--focus-ring);
+    }
+
+    .input-row.error :global(input),
+    .input-row.error :global(textarea) {
+        border-color: #ef4444 !important;
+    }
+
+    .error-text {
+        color: #ef4444;
+        font-size: 12px;
+        margin-top: 4px;
+        display: block;
+        animation: fadeIn 0.2s ease-out;
     }
 </style>
