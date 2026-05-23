@@ -4,69 +4,70 @@
     import { authStore } from '$lib/stores/auth';
     import ColumnSettings from './ColumnSettings.svelte';
     import DropdownSelect from './DropdownSelect.svelte';
-    import { X, User, Sliders, Layout } from 'lucide-svelte';
+    import { zoomLevel, activeTheme, appThemes, activeShortcuts } from '$lib/stores/preferences';
+    import { X, User, Sliders, Layout, Monitor, Keyboard, RotateCcw } from 'lucide-svelte';
 
     export let onClose: () => void;
 
-    let activeTab: 'account' | 'preferences' | 'workspace' = 'account';
-    let username = $authStore.user?.username || '';
-    let password = '';
-    let confirmPassword = '';
-    let isLoading = false;
-    let message = '';
-    let isError = false;
+    let activeTab: 'account' | 'preferences' | 'workspace' = 'preferences';
 
-    async function handleUpdateProfile() {
-        isLoading = true;
-        message = '';
-        try {
-            await apiClient.updateProfile({ username });
-            message = $t.settings.accountUpdated;
-            isError = false;
-        } catch (e) {
-            message = 'Error updating profile';
-            isError = true;
-        } finally {
-            isLoading = false;
+    let accountUsername = '';
+    let accountPassword = '';
+    let confirmPassword = '';
+    let accountError = '';
+    let accountSuccess = false;
+
+    $: if ($authStore.user) {
+        // Only set initially to avoid overwriting user input
+        if (!accountUsername) {
+            accountUsername = $authStore.user.username;
         }
     }
 
-    async function handleUpdatePassword() {
-        if (password !== confirmPassword) {
-            message = $t.auth.passwordsMismatch;
-            isError = true;
+    async function handleUpdateProfile() {
+        if (!accountUsername) return;
+        if (accountPassword && accountPassword !== confirmPassword) {
+            accountError = 'Passwords do not match';
             return;
         }
-        isLoading = true;
-        message = '';
+        accountError = '';
+        accountSuccess = false;
         try {
-            await apiClient.updateProfile({ username, password });
-            message = $t.settings.accountUpdated;
-            password = '';
+            await apiClient.updateProfile({ username: accountUsername, password: accountPassword || undefined });
+            accountSuccess = true;
+            accountPassword = '';
             confirmPassword = '';
-            isError = false;
-        } catch (e) {
-            message = 'Error updating security key';
-            isError = true;
-        } finally {
-            isLoading = false;
+            setTimeout(() => accountSuccess = false, 3000);
+        } catch (e: any) {
+            accountError = e.message;
         }
     }
 
     async function handleDeleteAccount() {
-        if (confirm($t.settings.deleteWarning)) {
+        if (confirm($t.settings.confirmDeleteAccount)) {
             try {
                 await apiClient.deleteAccount();
-                window.location.reload();
-            } catch (e) {
-                message = 'Failed to delete account';
-                isError = true;
+                onClose();
+            } catch (e: any) {
+                accountError = e.message;
             }
         }
     }
 
-    function changeLanguage(event: { target: { value: string } }) {
-        setLocale(event.target.value as 'en' | 'es' | 'gl');
+    function scrollToSection(id: string) {
+        const el = document.getElementById(id);
+        if (el) {
+            el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+    }
+
+    function formatShortcut(sc: string): string {
+        if (!sc) return '';
+        return sc.toUpperCase().replace('DELETE', 'DEL').replace('CONTROL', 'CTRL');
+    }
+
+    function changeLanguage(e: any) {
+        locale.set(e.detail.value);
     }
 </script>
 
@@ -81,72 +82,193 @@
 
         <div class="modal-body">
             <nav class="settings-nav">
-                <button class:active={activeTab === 'account'} on:click={() => activeTab = 'account'}>
-                    <User size={18} />
-                    {$t.settings.accountTab}
-                </button>
-                <button class:active={activeTab === 'preferences'} on:click={() => activeTab = 'preferences'}>
-                    <Sliders size={18} />
-                    {$t.settings.preferencesTab}
-                </button>
-                <button class:active={activeTab === 'workspace'} on:click={() => activeTab = 'workspace'}>
-                    <Layout size={18} />
-                    {$t.settings.workspaceTab}
-                </button>
+                <div class="nav-section">
+                    <button class="accordion-header" class:active={activeTab === 'preferences'} on:click={() => activeTab = 'preferences'}>
+                        <Sliders size={18} />
+                        {$t.settings.preferencesTab}
+                    </button>
+                    {#if activeTab === 'preferences'}
+                        <div class="accordion-content">
+                            <button class="nav-sub-item" on:click={() => scrollToSection('sec-lang')}>{$t.settings.languageSelect}</button>
+                            <button class="nav-sub-item" on:click={() => scrollToSection('sec-theme')}>{$t.settings.theme}</button>
+                            <button class="nav-sub-item" on:click={() => scrollToSection('sec-zoom')}>{$t.settings.zoomLevel}</button>
+                            <button class="nav-sub-item" on:click={() => scrollToSection('sec-shortcuts')}>{$t.settings.shortcutsTab}</button>
+                        </div>
+                    {/if}
+                </div>
+
+                <div class="nav-section">
+                    <button class="accordion-header" class:active={activeTab === 'workspace'} on:click={() => activeTab = 'workspace'}>
+                        <Layout size={18} />
+                        {$t.settings.workspaceTab}
+                    </button>
+                </div>
+
+                <div class="nav-section">
+                    <button class="accordion-header" class:active={activeTab === 'account'} on:click={() => activeTab = 'account'}>
+                        <User size={18} />
+                        {$t.settings.accountTab}
+                    </button>
+                </div>
             </nav>
 
-            <section class="settings-content" class:no-padding={activeTab === 'workspace'}>
+            <section class="settings-content scroll-pane">
                 {#if activeTab === 'account'}
-                    <div class="setting-group">
-                        <label for="set-username">{$t.settings.changeUsername}</label>
-                        <input id="set-username" type="text" bind:value={username} />
-                        <button class="save-btn" on:click={handleUpdateProfile} disabled={isLoading}>
-                            {$t.common.save}
-                        </button>
+                    <div id="sec-account" class="setting-group" style="padding-bottom: 2rem;">
+                        <h3>{$t.settings.accountTab}</h3>
+                        {#if $authStore.user}
+                            <div class="form-group" style="margin-top: 24px;">
+                                <div class="setting-label" style="margin-bottom: 8px;">{$t.settings.changeUsername || 'Change Username'}</div>
+                                <input type="text" bind:value={accountUsername} class="account-input" />
+                            </div>
+                            <div class="form-group" style="margin-top: 24px;">
+                                <div class="setting-label" style="margin-bottom: 8px;">{$t.settings.updatePassword || 'New Password'}</div>
+                                <input type="password" bind:value={accountPassword} placeholder="..." class="account-input" />
+                            </div>
+                            <div class="form-group" style="margin-top: 16px;">
+                                <div class="setting-label" style="margin-bottom: 8px;">{$t.settings.confirmPassword || 'Confirm Password'}</div>
+                                <input type="password" bind:value={confirmPassword} placeholder="..." class="account-input" />
+                            </div>
+                            {#if accountError}
+                                <p class="error-msg">{accountError}</p>
+                            {/if}
+                            {#if accountSuccess}
+                                <p class="status-msg">{$t.settings.accountUpdated || 'Profile updated successfully'}</p>
+                            {/if}
+                            <div class="account-actions" style="margin-top: 24px; display: flex; justify-content: flex-end; gap: 12px; align-items: center;">
+                                <button class="btn-primary" on:click={handleUpdateProfile}>{$t.common.save}</button>
+                            </div>
+
+                            <div class="group-header" style="margin-top: 48px; margin-bottom: 12px;">
+                                <h3 class="section-title">{$t.settings.dangerZone || 'Danger Zone'}</h3>
+                            </div>
+                            <div class="form-group danger-zone">
+                                <p class="warning-text">{$t.settings.deleteAccountDesc || 'This action is permanent and cannot be undone.'}</p>
+                                <button class="btn-delete" on:click={handleDeleteAccount}>
+                                    {$t.settings.deleteAccountBtn || 'Delete Account'}
+                                </button>
+                            </div>
+                        {:else}
+                            <p>Not logged in.</p>
+                        {/if}
                     </div>
+                {:else}
+                    {#if activeTab === 'preferences'}
+                        <div class="preferences-container">
+                            <div id="sec-lang" class="setting-group">
+                                <div class="form-group">
+                                    <div class="setting-label" style="margin-bottom: 12px;">{$t.settings.language}</div>
+                                    <DropdownSelect
+                                        id="set-lang"
+                                        customClass="settings-select"
+                                        value={$locale}
+                                        on:change={changeLanguage}
+                                        options={[
+                                            { value: 'en', label: 'English' },
+                                            { value: 'es', label: 'Español' }
+                                        ]}
+                                    />
+                                </div>
+                            </div>
 
-                    <div class="divider"></div>
+                            <div id="sec-theme" class="setting-group">
+                                <div class="form-group">
+                                    <div class="setting-label" style="margin-bottom: 12px;">{$t.settings.theme}</div>
+                                    <div class="theme-grid">
+                                        {#each Object.entries(appThemes) as [key, theme]}
+                                            <button 
+                                                class="theme-card" 
+                                                class:selected={$activeTheme === key}
+                                                on:click={() => activeTheme.set(key)}
+                                                style="--preview-color: {theme.primary}"
+                                            >
+                                                <div class="color-preview"></div>
+                                                <span>{
+                                                    key === 'sky' ? $t.settings.themeSky :
+                                                    key === 'emerald' ? $t.settings.themeEmerald :
+                                                    key === 'amethyst' ? $t.settings.themeAmethyst :
+                                                    key === 'slate' ? $t.settings.themeSlate :
+                                                    key === 'teal' ? $t.settings.themeTeal :
+                                                    key === 'amber' ? $t.settings.themeAmber : theme.name
+                                                }</span>
+                                            </button>
+                                        {/each}
+                                    </div>
+                                </div>
+                            </div>
 
-                    <div class="setting-group">
-                        <label for="set-pass">{$t.settings.updatePassword}</label>
-                        <input id="set-pass" type="password" bind:value={password} placeholder="New password" />
-                        <input type="password" bind:value={confirmPassword} placeholder="Confirm new password" />
-                        <button class="save-btn" on:click={handleUpdatePassword} disabled={isLoading}>
-                            {$t.common.save}
-                        </button>
-                    </div>
+                            <div id="sec-zoom" class="setting-group" style="padding-bottom: 1rem;">
+                                <div class="form-group">
+                                    <div class="setting-label" style="margin-bottom: 12px;">{$t.settings.zoomLevel} ({$zoomLevel}%)</div>
+                                    <input 
+                                        type="range" 
+                                        min="75" max="150" step="5" 
+                                        bind:value={$zoomLevel}
+                                        class="zoom-slider"
+                                    />
+                                    <div class="zoom-hints" style="position: relative; height: 16px; width: 100%;">
+                                        <span style="position: absolute; left: 0%;">75%</span>
+                                        <span style="position: absolute; left: 33.33%; transform: translateX(-50%);">100%</span>
+                                        <span style="position: absolute; right: 0%;">150%</span>
+                                    </div>
+                                </div>
+                            </div>
 
-                    <div class="divider"></div>
-
-                    <div class="danger-zone">
-                        <p>{$t.settings.deleteWarning}</p>
-                        <button class="delete-btn" on:click={handleDeleteAccount}>
-                            {$t.settings.deleteAccount}
-                        </button>
-                    </div>
-
-                    {#if message}
-                        <p class="status-msg" class:error-msg={isError}>{message}</p>
+                            <div id="sec-shortcuts" class="setting-group">
+                                <div class="group-header">
+                                    <h3 class="section-title" style="margin-bottom: 12px;">{$t.settings.keyboardShortcuts}</h3>
+                                    <button class="reset-btn" style="margin-left:auto" on:click={() => activeShortcuts.reset()} title="Reset to Defaults">
+                                        <RotateCcw size={16} />
+                                    </button>
+                                </div>
+                                <div class="shortcuts-list">
+                                    {#each Object.entries($activeShortcuts) as [action, keyCombo]}
+                                        <div class="shortcut-item">
+                                            <span>{
+                                                action === 'newBook' ? $t.form.addNewBook :
+                                                action === 'search' ? $t.common.search :
+                                                action === 'toggleMultiSelect' ? $t.menu.enterMultiSelect :
+                                                action === 'deleteSelected' ? $t.common.delete :
+                                                action === 'settings' ? $t.menu.settings :
+                                                action === 'export' ? $t.menu.exportCsv :
+                                                action
+                                            }</span>
+                                            <input 
+                                                type="text" 
+                                                value={formatShortcut(keyCombo)}
+                                                readonly
+                                                placeholder="Click to rebind..."
+                                                on:focus={(e) => { e.currentTarget.value = 'CAPTURING...'; e.currentTarget.classList.add('capturing'); }}
+                                                on:blur={(e) => { e.currentTarget.value = formatShortcut($activeShortcuts[action]); e.currentTarget.classList.remove('capturing'); }}
+                                                on:keydown={(e) => {
+                                                    e.preventDefault();
+                                                    if (e.key === 'Escape') {
+                                                        e.currentTarget.blur();
+                                                        return;
+                                                    }
+                                                    const newCombo = [
+                                                        e.ctrlKey ? 'ctrl' : '',
+                                                        e.altKey ? 'alt' : '',
+                                                        e.shiftKey ? 'shift' : '',
+                                                        e.key.toLowerCase()
+                                                    ].filter(Boolean).join('+');
+                                                    
+                                                    activeShortcuts.update(sc => ({ ...sc, [action]: newCombo }));
+                                                    e.currentTarget.blur();
+                                                }}
+                                            />
+                                        </div>
+                                    {/each}
+                                </div>
+                            </div>
+                        </div>
                     {/if}
 
-                {:else if activeTab === 'preferences'}
-                    <div class="setting-group">
-                        <label for="set-lang">{$t.settings.language}</label>
-                        <DropdownSelect
-                            id="set-lang"
-                            customClass="settings-select"
-                            value={$locale}
-                            on:change={(e) => changeLanguage({ target: { value: e.detail.value } })}
-                            options={[
-                                { value: 'en', label: 'English' },
-                                { value: 'es', label: 'Español' }
-                            ]}
-                        />
-                    </div>
-                {:else if activeTab === 'workspace'}
-                    <div class="workspace-wrapper">
-                        <ColumnSettings />
-                    </div>
+                    {#if activeTab === 'workspace'}
+                        <div class="workspace-wrapper">
+                            <ColumnSettings />
+                        </div>
+                    {/if}
                 {/if}
             </section>
         </div>
@@ -204,77 +326,96 @@
     }
 
     .settings-nav {
-        width: 220px;
-        background: #F8FAFC; /* Slate 50 */
-        border-right: 1px solid var(--border-color);
-        padding: 16px 12px;
+        width: 250px;
+        background-color: var(--bg-color);
+        padding: 24px 0;
         display: flex;
         flex-direction: column;
-        gap: 6px;
+        border-right: 1px solid var(--border-color);
     }
 
-    .settings-nav button {
+    .nav-section {
+        display: flex;
+        flex-direction: column;
+    }
+
+    .accordion-header {
         display: flex;
         align-items: center;
         gap: 12px;
-        padding: 10px 14px;
+        padding: 12px 24px;
+        background: none;
         border: none;
-        background: transparent;
         width: 100%;
         text-align: left;
-        border-radius: 8px;
-        font-size: 14px;
         font-weight: 500;
+        color: var(--text-main);
         cursor: pointer;
-        color: var(--text-muted);
         transition: all 0.2s ease;
     }
-
-    .settings-nav button:hover {
-        background: #E2E8F0; /* Slate 200 */
-        color: var(--text-main);
+    .accordion-header:hover {
+        background-color: var(--hover-color);
+    }
+    .accordion-header.active {
+        color: var(--primary-color);
+        background-color: var(--hover-color);
+        border-right: 3px solid var(--primary-color);
     }
 
-    .settings-nav button.active {
-        background: var(--primary-color);
-        color: #ffffff;
-        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    .accordion-content {
+        display: flex;
+        flex-direction: column;
+        padding-left: 54px;
+        background-color: var(--bg-color);
+        overflow: hidden;
+    }
+
+    .nav-sub-item {
+        padding: 8px 16px;
+        background: none;
+        border: none;
+        text-align: left;
+        color: var(--text-main);
+        opacity: 0.8;
+        font-size: 0.9em;
+        cursor: pointer;
+        transition: color 0.1s ease;
+    }
+    .nav-sub-item:hover {
+        color: var(--primary-color);
+        opacity: 1;
     }
 
     .settings-content {
         flex: 1;
         padding: 32px;
-        display: flex;
-        flex-direction: column;
-        gap: 24px;
-        overflow-y: auto;
-        background: var(--panel-bg);
     }
-    
-    .settings-content.no-padding {
-        padding: 0;
+    .settings-content.scroll-pane {
+        overflow-y: auto;
+        scroll-behavior: smooth;
+    }
+    .section-divider {
+        border: none;
+        border-top: 1px solid var(--border-color);
+        margin: 24px 0;
     }
 
     .setting-group {
-        display: flex;
-        flex-direction: column;
-        gap: 8px;
+        margin-bottom: 24px;
+        scroll-margin-top: 32px;
+    }
+    .setting-group:last-child {
+        margin-bottom: 0;
     }
 
-    .divider {
-        height: 1px;
-        background-color: var(--border-color);
-        margin: 8px 0;
-    }
-
-    label {
+    label, .setting-label {
         font-size: 13px;
         font-weight: 600;
         color: var(--text-main);
         margin-bottom: 2px;
     }
 
-    input, .settings-select {
+    input {
         padding: 10px 14px;
         border: 1px solid #CBD5E1; /* Slate 300 */
         border-radius: 8px;
@@ -285,84 +426,234 @@
         color: var(--text-main);
         transition: border-color 0.2s, box-shadow 0.2s;
     }
-    input:focus, .settings-select:focus {
+    input:focus {
         outline: none;
         border-color: var(--primary-color);
         box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.15); /* Primary color ring */
-    }
-
-    .save-btn {
-        background: var(--primary-color);
-        color: white;
-        border: none;
-        padding: 10px 16px;
-        border-radius: 8px;
-        font-weight: 500;
-        font-size: 14px;
-        cursor: pointer;
-        width: fit-content;
-        margin-top: 4px;
-        transition: background-color 0.2s, transform 0.1s;
-        align-self: flex-end;
-    }
-    .save-btn:hover:not(:disabled) {
-        background: var(--primary-hover);
-    }
-    .save-btn:active:not(:disabled) {
-        transform: scale(0.98);
-    }
-    .save-btn:disabled {
-        opacity: 0.6;
-        cursor: not-allowed;
-    }
-
-    .danger-zone {
-        background: #FEF2F2; /* Red 50 */
-        border: 1px solid #FECACA; /* Red 200 */
-        padding: 20px;
-        border-radius: 10px;
-        display: flex;
-        flex-direction: column;
-        gap: 12px;
-    }
-
-    .danger-zone p {
-        margin: 0;
-        font-size: 13px;
-        color: #B91C1C; /* Red 700 */
-        line-height: 1.5;
-    }
-
-    .delete-btn {
-        background: #EF4444; /* Red 500 */
-        color: white;
-        border: none;
-        padding: 10px 16px;
-        border-radius: 8px;
-        font-weight: 500;
-        font-size: 14px;
-        cursor: pointer;
-        width: fit-content;
-        transition: background-color 0.2s;
-        align-self: flex-end;
-    }
-    .delete-btn:hover {
-        background: #DC2626; /* Red 600 */
-    }
-
-    .status-msg {
-        font-size: 13px;
-        color: #52c41a;
-        margin: 0;
-    }
-
-    .error-msg {
-        color: #ff4d4f;
     }
 
     .workspace-wrapper {
         display: flex;
         flex-direction: column;
         height: 100%;
+        min-height: 500px;
+        margin: -24px;
+    }
+
+    .profile-info {
+        display: flex;
+        align-items: center;
+        gap: 16px;
+        margin-bottom: 24px;
+    }
+    .warning-text {
+        color: var(--text-muted);
+        font-size: 13px;
+        margin: 0 0 12px 0;
+    }
+    .danger-zone {
+        padding: 16px;
+        border: 1px solid var(--danger-color);
+        border-radius: 8px;
+        background-color: #FEF2F2;
+    }
+
+    .zoom-slider {
+        width: 100%;
+        margin: 12px 0 8px 0;
+        padding: 0;
+        border: none;
+        background: transparent;
+        box-shadow: none;
+        cursor: pointer;
+        accent-color: var(--primary-color);
+    }
+    .zoom-slider:focus {
+        box-shadow: none;
+    }
+    
+    .btn-logout {
+        background-color: transparent;
+        border: 1px solid var(--border-color);
+        border-radius: 6px;
+        padding: 8px 16px;
+        color: var(--text-main);
+        cursor: pointer;
+        font-size: 13px;
+        font-weight: 500;
+        transition: all 0.2s;
+        width: fit-content;
+    }
+    .btn-logout:hover {
+        background-color: var(--bg-color);
+    }
+    .btn-delete {
+        background-color: transparent;
+        border: 1px solid var(--border-color);
+        border-radius: 6px;
+        padding: 8px 16px;
+        color: var(--danger-color);
+        cursor: pointer;
+        font-size: 13px;
+        font-weight: 500;
+        transition: all 0.2s;
+        width: fit-content;
+    }
+    .btn-delete:hover {
+        background-color: #FEF2F2;
+        border-color: var(--danger-color);
+    }
+    .btn-primary {
+        background-color: var(--primary-color);
+        color: white;
+        border: none;
+        border-radius: 6px;
+        padding: 8px 16px;
+        cursor: pointer;
+        font-size: 13px;
+        font-weight: 500;
+        transition: background-color 0.2s;
+    }
+    .btn-primary:hover {
+        background-color: var(--primary-hover);
+    }
+    .account-input {
+        width: 100%;
+    }
+    .status-msg {
+        color: #10B981;
+        font-size: 13px;
+        margin-top: 8px;
+    }
+    .error-msg {
+        color: #EF4444;
+        font-size: 13px;
+        margin-top: 8px;
+    }
+
+    .reset-btn {
+        background: var(--button-bg, #ffffff);
+        border: 1px solid var(--button-border, #E2E8F0);
+        border-radius: 6px;
+        padding: 6px;
+        color: var(--text-muted);
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: all 0.2s;
+    }
+    .reset-btn:hover {
+        background: var(--secondary-color, #F8FAFC);
+        border-color: var(--primary-color);
+        color: var(--primary-color);
+    }
+
+    .theme-grid {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 12px;
+    }
+    .theme-card {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 8px;
+        padding: 12px;
+        background: var(--bg-color);
+        border: 2px solid transparent;
+        transition: all 0.2s ease;
+        border-radius: 8px;
+        cursor: pointer;
+    }
+    .theme-card.selected { border-color: var(--primary-color); }
+    .color-preview { width: 32px; height: 32px; border-radius: 50%; background-color: var(--preview-color); }
+
+    .zoom-hints {
+        display: flex;
+        justify-content: space-between;
+        font-size: 11px;
+        color: var(--text-muted);
+        margin-top: 4px;
+    }
+
+    .shortcuts-list {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+    }
+    .shortcut-item {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 8px 12px;
+        background: var(--bg-color);
+        border: 1px solid var(--border-color);
+        border-radius: 6px;
+        font-size: 13px;
+    }
+    .shortcut-item input {
+        width: 120px;
+        text-align: center;
+        font-family: monospace;
+        cursor: pointer;
+        padding: 4px;
+        border: 1px solid var(--border-color);
+        border-radius: 4px;
+    }
+    .shortcut-item input:focus, :global(.shortcut-item input.capturing) {
+        border-color: var(--primary-color);
+        box-shadow: 0 0 0 1px var(--primary-color);
+        color: var(--primary-color);
+        background-color: var(--bg-color);
+        outline: none;
+    }
+
+    .group-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 8px;
+    }
+
+    .section-title {
+        font-size: 14px;
+        font-weight: 600;
+        color: var(--text-main);
+        margin: 0;
+    }
+
+    .preferences-container {
+        display: flex;
+        flex-direction: column;
+        gap: 32px;
+    }
+
+    .zoom-slider {
+        -webkit-appearance: none;
+        width: 100%;
+        height: 6px;
+        background: var(--border-color);
+        border-radius: 3px;
+        outline: none;
+        margin: 12px 0;
+    }
+    .zoom-slider::-webkit-slider-thumb {
+        -webkit-appearance: none;
+        appearance: none;
+        width: 16px;
+        height: 16px;
+        border-radius: 50%;
+        background: var(--primary-color);
+        cursor: pointer;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        transition: background 0.15s ease, transform 0.1s ease;
+    }
+    .zoom-slider::-webkit-slider-thumb:hover {
+        background: var(--primary-hover);
+        transform: scale(1.1);
+    }
+    .zoom-slider::-webkit-slider-thumb:active {
+        transform: scale(0.95);
     }
 </style>

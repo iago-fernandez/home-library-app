@@ -68,11 +68,6 @@
         transition: border-color 0.2s;
     }
 
-    .chip-input-container.focused {
-        border-color: var(--input-focus);
-        box-shadow: 0 0 0 2px var(--focus-ring);
-    }
-
     .chip-input-container:focus-within {
         border-color: var(--input-focus);
     }

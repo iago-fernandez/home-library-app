@@ -3,6 +3,53 @@ import { writable } from 'svelte/store';
 const PREF_KEY = 'library_datagrid_columns';
 const MOSAIC_PREF_KEY = 'library_mosaic_attributes';
 
+export function createGenericStore<T>(storageKey: string, defaultValue: T) {
+    let initial = defaultValue;
+
+    if (typeof window !== 'undefined') {
+        const stored = localStorage.getItem(storageKey);
+        if (stored) {
+            try {
+                const parsed = JSON.parse(stored);
+                if (typeof parsed === 'object' && parsed !== null && !Array.isArray(parsed)) {
+                    initial = { ...defaultValue, ...parsed };
+                } else {
+                    initial = parsed;
+                }
+            } catch (e) {
+                initial = defaultValue;
+            }
+        }
+    }
+
+    const { subscribe, set, update } = writable<T>(initial);
+
+    return {
+        subscribe,
+        set: (val: T) => {
+            if (typeof window !== 'undefined') {
+                localStorage.setItem(storageKey, JSON.stringify(val));
+            }
+            set(val);
+        },
+        update: (updater: (val: T) => T) => {
+            update(current => {
+                const newVal = updater(current);
+                if (typeof window !== 'undefined') {
+                    localStorage.setItem(storageKey, JSON.stringify(newVal));
+                }
+                return newVal;
+            });
+        },
+        reset: () => {
+            if (typeof window !== 'undefined') {
+                localStorage.setItem(storageKey, JSON.stringify(defaultValue));
+            }
+            set(defaultValue);
+        }
+    };
+}
+
 export const availableColumns = [
     { id: 'catalog_number', label: 'ID' },
     { id: 'title', label: 'Title' },
@@ -109,3 +156,28 @@ function createStore(storageKey: string, defaultValues: string[], validKeys?: st
 const validColumnIds = availableColumns.map(c => c.id);
 export const activeColumns = createStore(PREF_KEY, defaultColumns, validColumnIds);
 export const activeMosaicAttributes = createStore(MOSAIC_PREF_KEY, defaultMosaicAttributes, validColumnIds);
+
+// Appearance & Zoom
+export const zoomLevel = createGenericStore<number>('library_zoom', 100);
+export const activeTheme = createGenericStore<string>('library_theme', 'sky');
+export const activeViewStore = createGenericStore<'table' | 'mosaic'>('library_active_view', 'table');
+
+export const appThemes = {
+    sky: { name: 'Ocean Blue', primary: '#0284C7', hover: '#0369A1', secondary: '#F0F9FF', topbarBg: '#334155', topbarBorder: '#1E293B' },
+    emerald: { name: 'Emerald', primary: '#059669', hover: '#047857', secondary: '#ECFDF5', topbarBg: '#064E3B', topbarBorder: '#022C22' },
+    amethyst: { name: 'Amethyst', primary: '#7C3AED', hover: '#6D28D9', secondary: '#F5F3FF', topbarBg: '#4C1D95', topbarBorder: '#2E1065' },
+    slate: { name: 'Graphite', primary: '#475569', hover: '#334155', secondary: '#F8FAFC', topbarBg: '#1E293B', topbarBorder: '#0F172A' },
+    teal: { name: 'Teal', primary: '#0D9488', hover: '#0F766E', secondary: '#F0FDFA', topbarBg: '#115E59', topbarBorder: '#042F2E' },
+    amber: { name: 'Amber', primary: '#D97706', hover: '#B45309', secondary: '#FFFBEB', topbarBg: '#78350F', topbarBorder: '#451A03' }
+};
+
+// Shortcuts
+export const defaultShortcuts = {
+    newBook: 'ctrl+a',
+    search: 'ctrl+f',
+    toggleMultiSelect: 'ctrl+m',
+    deleteSelected: 'delete',
+    settings: 'ctrl+,',
+    export: 'ctrl+e'
+};
+export const activeShortcuts = createGenericStore<Record<string, string>>('library_shortcuts', defaultShortcuts);
