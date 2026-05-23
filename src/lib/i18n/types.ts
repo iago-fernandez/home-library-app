@@ -186,6 +186,12 @@ export interface TranslationDictionary {
         statusReading: string;
         statusRead: string;
         statusDnf: string;
+        validationRequiredTitle: string;
+        validationRequiredAuthor: string;
+        validationPositiveNumber: string;
+        validationPastDate: string;
+        validationIsbn: string;
+        validationRating: string;
     };
     exportManager: {
         title: string;

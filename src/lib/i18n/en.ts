@@ -15,7 +15,9 @@ export const en: TranslationDictionary = {
         reset: 'Reset',
         close: 'Close',
         confirm: 'Confirm',
-        dangerZone: 'Danger Zone'
+        dangerZone: 'Danger Zone',
+        yes: 'Yes',
+        no: 'No'
     },
     auth: {
         createWorkspace: 'Create Workspace',
@@ -82,7 +84,7 @@ export const en: TranslationDictionary = {
         col_illustrators: 'Illustrators',
         col_publisher: 'Publisher',
         col_publish_date: 'Publication Date',
-        col_original_publish_date: 'Orig. Pub. Date',
+        col_original_publish_date: 'Original Publication Date',
         col_isbn_13: 'ISBN-13',
         col_isbn_10: 'ISBN-10',
         col_oclc_number: 'OCLC Number',
@@ -92,9 +94,9 @@ export const en: TranslationDictionary = {
         col_original_edition: 'Original Edition',
         col_is_first_edition: 'First Edition',
         col_collection_name: 'Collection',
-        col_volume_in_collection: 'Vol. in Collection',
+        col_volume_in_collection: 'Volume in Collection',
         col_series_name: 'Series',
-        col_volume_in_series: 'Vol. in Series',
+        col_volume_in_series: 'Volume in Series',
         col_book_format: 'Format',
         col_page_count: 'Pages',
         col_dimensions: 'Dimensions',
@@ -140,7 +142,8 @@ export const en: TranslationDictionary = {
         greater: 'Greater than',
         greaterEqual: 'Greater or equal',
         less: 'Less than',
-        lessEqual: 'Less or equal'
+        lessEqual: 'Less or equal',
+        notRule: 'NOT'
     },
     actions: {
         addBook: 'Add Book',
@@ -236,7 +239,13 @@ export const en: TranslationDictionary = {
         statusUnread: 'Unread',
         statusReading: 'Reading',
         statusRead: 'Read',
-        statusDnf: 'Did Not Finish'
+        statusDnf: 'Did Not Finish',
+        validationRequiredTitle: 'Title is required',
+        validationRequiredAuthor: 'At least one author is required',
+        validationPositiveNumber: 'Must be a positive number',
+        validationPastDate: 'Date cannot be in the future',
+        validationIsbn: 'Invalid ISBN format',
+        validationRating: 'Rating must be between 0 and 10'
     },
     exportManager: {
         title: 'Export Data',
