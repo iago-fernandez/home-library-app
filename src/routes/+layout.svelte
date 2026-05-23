@@ -5,6 +5,7 @@
     import { t, locale, setLocale } from '$lib/i18n';
     import { activeTheme, appThemes } from '$lib/stores/preferences';
     import { Eye, EyeOff, Palette } from 'lucide-svelte';
+    import ConfirmModal from '$lib/components/ConfirmModal.svelte';
 
     $: currentTheme = appThemes[$activeTheme as keyof typeof appThemes] || appThemes.sky;
 
@@ -84,13 +85,13 @@
         </button>
 
         <div class="theme-selector-container">
-            <button class="theme-toggle" on:click|stopPropagation={() => showThemeMenu = !showThemeMenu}>
+            <button class="theme-toggle" aria-label="Toggle Theme Menu" on:click|stopPropagation={() => showThemeMenu = !showThemeMenu}>
                 <Palette size={16} />
             </button>
             {#if showThemeMenu}
                 <div class="theme-menu">
                     {#each Object.entries(appThemes) as [key, theme]}
-                        <button class="theme-menu-item" class:active={$activeTheme === key} on:click|stopPropagation={() => { activeTheme.set(key); showThemeMenu = false; }}>
+                        <button class="theme-menu-item" aria-label="Select {key} theme" class:active={$activeTheme === key} on:click|stopPropagation={() => { activeTheme.set(key); showThemeMenu = false; }}>
                             <div class="color-dot" style="background-color: {theme.primary};"></div>
                         </button>
                     {/each}
@@ -151,6 +152,7 @@
     </div>
 {:else}
     <slot />
+    <ConfirmModal />
 {/if}
 
 <style>

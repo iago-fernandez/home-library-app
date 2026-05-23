@@ -2,10 +2,13 @@
     import { t, locale, setLocale } from '$lib/i18n';
     import { apiClient } from '$lib/api/client';
     import { authStore } from '$lib/stores/auth';
+    import { dialogStore } from '$lib/stores/dialog';
     import ColumnSettings from './ColumnSettings.svelte';
     import DropdownSelect from './DropdownSelect.svelte';
     import { zoomLevel, activeTheme, appThemes, activeShortcuts } from '$lib/stores/preferences';
     import { X, User, Sliders, Layout, Monitor, Keyboard, RotateCcw } from 'lucide-svelte';
+    import { onMount } from 'svelte';
+    import DeleteAccountModal from './DeleteAccountModal.svelte';
 
     export let onClose: () => void;
 
@@ -16,6 +19,10 @@
     let confirmPassword = '';
     let accountError = '';
     let accountSuccess = false;
+
+    let showDeleteConfirm = false;
+    let deletePassword = '';
+    let deleteError = '';
 
     $: if ($authStore.user) {
         // Only set initially to avoid overwriting user input
@@ -43,14 +50,30 @@
         }
     }
 
-    async function handleDeleteAccount() {
-        if (confirm($t.settings.confirmDeleteAccount)) {
-            try {
-                await apiClient.deleteAccount();
-                onClose();
-            } catch (e: any) {
-                accountError = e.message;
+    function handleDeleteAccount() {
+        showDeleteConfirm = true;
+        deleteError = '';
+    }
+
+    async function executeDeleteAccount(event: CustomEvent<string>) {
+        const pwd = event.detail;
+        if (!pwd) {
+            deleteError = $t.auth?.loginError || 'Password is required';
+            return;
+        }
+        
+        try {
+            // Re-authenticate to ensure they know the password
+            if ($authStore.user) {
+                const isValid = await apiClient.login({ username: $authStore.user.username, password: pwd });
+                if (!isValid) throw new Error('Invalid password');
             }
+            
+            await apiClient.deleteAccount();
+            showDeleteConfirm = false;
+            onClose();
+        } catch (e: any) {
+            deleteError = e.message || 'Invalid password';
         }
     }
 
@@ -148,6 +171,7 @@
                                     {$t.settings.deleteAccountBtn || 'Delete Account'}
                                 </button>
                             </div>
+                            
                         {:else}
                             <p>Not logged in.</p>
                         {/if}
@@ -275,6 +299,14 @@
     </div>
 </div>
 
+{#if showDeleteConfirm}
+    <DeleteAccountModal 
+        error={deleteError}
+        on:confirm={executeDeleteAccount}
+        on:cancel={() => { showDeleteConfirm = false; deleteError = ''; }}
+    />
+{/if}
+
 <style>
     .modal-overlay {
         position: fixed;
@@ -394,11 +426,6 @@
         overflow-y: auto;
         scroll-behavior: smooth;
     }
-    .section-divider {
-        border: none;
-        border-top: 1px solid var(--border-color);
-        margin: 24px 0;
-    }
 
     .setting-group {
         margin-bottom: 24px;
@@ -408,7 +435,7 @@
         margin-bottom: 0;
     }
 
-    label, .setting-label {
+    .setting-label {
         font-size: 13px;
         font-weight: 600;
         color: var(--text-main);
@@ -440,12 +467,6 @@
         margin: -24px;
     }
 
-    .profile-info {
-        display: flex;
-        align-items: center;
-        gap: 16px;
-        margin-bottom: 24px;
-    }
     .warning-text {
         color: var(--text-muted);
         font-size: 13px;
@@ -472,21 +493,6 @@
         box-shadow: none;
     }
     
-    .btn-logout {
-        background-color: transparent;
-        border: 1px solid var(--border-color);
-        border-radius: 6px;
-        padding: 8px 16px;
-        color: var(--text-main);
-        cursor: pointer;
-        font-size: 13px;
-        font-weight: 500;
-        transition: all 0.2s;
-        width: fit-content;
-    }
-    .btn-logout:hover {
-        background-color: var(--bg-color);
-    }
     .btn-delete {
         background-color: transparent;
         border: 1px solid var(--border-color);
