@@ -150,6 +150,8 @@
                 <div class="columns-list">
                     {#each columnsToExport as colId, index}
                         <div class="column-item"
+                             role="button"
+                             tabindex="0"
                              draggable="true"
                              on:dragstart={(e) => handleDragStart(e, index)}
                              on:dragover={handleDragOver}

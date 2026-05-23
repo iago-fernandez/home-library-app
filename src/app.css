@@ -12,9 +12,9 @@
     --danger-color: #EF4444; /* Red 500 */
     
     /* Global Input/Focus Variables */
-    --focus-ring: rgba(79, 70, 229, 0.2);
+    --focus-ring: color-mix(in srgb, var(--primary-color) 20%, transparent);
     --input-border: #CBD5E1;
-    --input-focus: #4F46E5;
+    --input-focus: var(--primary-color);
     
     /* Interactive variables */
     --button-bg: var(--panel-bg);
@@ -24,20 +24,20 @@
 
 /* Custom Premium Scrollbar */
 ::-webkit-scrollbar {
-    width: 10px;
-    height: 10px;
+    width: 12px;
+    height: 12px;
 }
 ::-webkit-scrollbar-track {
     background: transparent;
 }
 ::-webkit-scrollbar-thumb {
-    background-color: #94A3B8; /* Slate 400 */
-    border-radius: 10px;
-    border: 3px solid var(--panel-bg);
+    background-color: color-mix(in srgb, var(--primary-color) 40%, #94A3B8);
+    border-radius: 12px;
+    border: 3px solid var(--bg-color);
     background-clip: padding-box;
 }
 ::-webkit-scrollbar-thumb:hover {
-    background-color: #64748B; /* Slate 500 */
+    background-color: color-mix(in srgb, var(--primary-color) 60%, #64748B);
 }
 
 html, body {
@@ -53,6 +53,10 @@ html, body {
 
 * {
     box-sizing: border-box;
+}
+
+input[type="checkbox"], input[type="radio"] {
+    accent-color: var(--primary-color);
 }
 
 
