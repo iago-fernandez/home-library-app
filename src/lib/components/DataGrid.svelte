@@ -11,8 +11,9 @@
         type TableOptions,
         type SortingState
     } from 'tanstack-table-8-svelte-5';
+    import { createEventDispatcher, onMount, afterUpdate, tick } from 'svelte';
     import { Search, ChevronUp, ChevronDown, X, CaseSensitive } from 'lucide-svelte';
-    import { tick, onMount } from 'svelte';
+    import DropdownSelect from './DropdownSelect.svelte';
 
     const totalBooks = bookStore.total;
     const selectedIds = bookStore.selectedIds;
@@ -87,7 +88,7 @@
         state: { sorting, columnSizing },
         manualSorting: true,
         sortDescFirst: false,
-        enableSortingRemoval: false,
+        enableSortingRemoval: true,
         onSortingChange: (updater) => {
             sorting = typeof updater === 'function' ? updater(sorting) : updater;
             if (isMounted) {
@@ -253,27 +254,8 @@
 
 <svelte:window on:keydown={handleGlobalKeydown} />
 
-<div class="table-wrapper" class:multi-select-active={$multiSelectMode}>
-    {#if $localSearchActive}
-        <div class="local-search-bar">
-            <Search size={16} color="#666" />
-            <select bind:value={localSearchColumn} class="column-select" on:change={executeLocalSearch}>
-                {#each searchColumns as col}
-                    <option value={col.value}>{col.label}</option>
-                {/each}
-            </select>
-            <input bind:this={localSearchInput} type="text" placeholder={$t.grid.findPlaceholder} bind:value={localSearchQuery} on:input={executeLocalSearch} on:keydown={(e) => e.key === 'Enter' && nextMatch()}/>
-            <button class="icon-btn-small {isCaseSensitive ? 'active' : ''}" title={$t.filters.caseSensitive} on:click={toggleCaseSensitivity}><CaseSensitive size={16} /></button>
-            {#if matchIndices.length > 0} <span class="match-count">{currentMatchIndex + 1} {$t.grid.of} {matchIndices.length}</span>
-            {:else if localSearchQuery} <span class="match-count no-matches">{$t.grid.noMatches}</span> {/if}
-            <div class="nav-buttons">
-                <button class="icon-btn-small" on:click={prevMatch} disabled={matchIndices.length === 0}><ChevronUp size={16} /></button>
-                <button class="icon-btn-small" on:click={nextMatch} disabled={matchIndices.length === 0}><ChevronDown size={16} /></button>
-            </div>
-            <div class="divider"></div>
-            <button class="icon-btn-small close-search" on:click={toggleLocalSearch}><X size={16} /></button>
-        </div>
-    {/if}
+<div class="table-wrapper">
+
 
     <div bind:this={scrollContainer} class="scroll-container">
         <div class="grid-table-inner" style="min-width: 100%; width: {$table.getTotalSize()}px">
@@ -358,32 +340,56 @@
             </div>
         </div>
     </div>
+
+    {#if $localSearchActive}
+        <div class="local-search-bar">
+            <Search size={16} color="var(--text-muted)" />
+            <div style="width: 140px;">
+                <DropdownSelect
+                    options={searchColumns}
+                    bind:value={localSearchColumn}
+                    on:change={executeLocalSearch}
+                    direction="up"
+                />
+            </div>
+            <input bind:this={localSearchInput} type="text" placeholder={$t.grid.findPlaceholder} bind:value={localSearchQuery} on:input={executeLocalSearch} on:keydown={(e) => e.key === 'Enter' && nextMatch()}/>
+            <button class="icon-btn-small {isCaseSensitive ? 'active' : ''}" title={$t.filters.caseSensitive} on:click={toggleCaseSensitivity}><CaseSensitive size={16} /></button>
+            {#if matchIndices.length > 0} <span class="match-count">{currentMatchIndex + 1} {$t.grid.of} {matchIndices.length}</span>
+            {:else if localSearchQuery} <span class="match-count no-matches">{$t.grid.noMatches}</span> {/if}
+            <div class="nav-buttons">
+                <button class="icon-btn-small" on:click={prevMatch} disabled={matchIndices.length === 0}><ChevronUp size={16} /></button>
+                <button class="icon-btn-small" on:click={nextMatch} disabled={matchIndices.length === 0}><ChevronDown size={16} /></button>
+            </div>
+            <div class="divider"></div>
+            <button class="icon-btn-small close-search" on:click={toggleLocalSearch}><X size={16} /></button>
+        </div>
+    {/if}
 </div>
 
 <style>
-    .table-wrapper { display: flex; flex-direction: column; height: 100%; background-color: #ffffff; border: 1px solid #e0e0e0; border-radius: 4px; overflow: hidden; transition: border-color 0.2s; }
-    .table-wrapper.multi-select-active { border: 2px solid #0066cc; }
-    .local-search-bar { display: flex; align-items: center; background-color: #ffffff; border-bottom: 1px solid #ccc; padding: 4px 8px; gap: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); z-index: 10; flex-shrink: 0; }
-    .column-select { border: 1px solid #ccc; border-radius: 4px; padding: 4px; font-size: 12px; background-color: #f9f9f9; color: #333; }
-    .local-search-bar input { border: none; outline: none; flex: 1; font-family: inherit; font-size: 13px; padding: 4px; }
-    .match-count { font-size: 12px; color: #666; white-space: nowrap; }
-    .no-matches { color: #d32f2f; }
+    .table-wrapper { display: flex; flex-direction: column; height: 100%; background-color: var(--panel-bg); border: 1px solid var(--border-color); border-radius: 4px; overflow: hidden; transition: border-color 0.2s; }
+    .local-search-bar { display: flex; align-items: center; background-color: var(--bg-color); border-top: 1px solid var(--border-color); padding: 4px 8px; gap: 8px; box-shadow: 0 -2px 4px rgba(0,0,0,0.02); z-index: 10; flex-shrink: 0; }
+    .column-select { border: 1px solid var(--border-color); border-radius: 4px; padding: 4px; font-size: 12px; background-color: var(--panel-bg); color: var(--text-main); }
+    .local-search-bar input { border: none; outline: none; flex: 1; font-family: inherit; font-size: 13px; padding: 4px; background-color: transparent; color: var(--text-main); }
+    .match-count { font-size: 12px; color: var(--text-muted); white-space: nowrap; }
+    .no-matches { color: var(--danger-color); }
     .nav-buttons { display: flex; }
-    .icon-btn-small { background: transparent; border: none; cursor: pointer; padding: 4px; color: #444; border-radius: 4px; display: flex; align-items: center; justify-content: center; transition: background-color 0.1s; }
-    .icon-btn-small:hover:not(:disabled) { background-color: #e0e0e0; }
-    .icon-btn-small.active { background-color: #0066cc; color: #ffffff; }
+    .icon-btn-small { background: transparent; border: none; cursor: pointer; padding: 4px; color: var(--text-muted); border-radius: 4px; display: flex; align-items: center; justify-content: center; transition: background-color 0.1s; }
+    .icon-btn-small:hover:not(:disabled):not(.active) { background-color: var(--secondary-color); }
+    .icon-btn-small.active { background-color: var(--primary-color); color: #ffffff; }
+    .icon-btn-small.active:hover { background-color: #3730A3; /* Indigo 800 */ }
     .icon-btn-small:disabled { opacity: 0.3; cursor: not-allowed; }
-    .divider { width: 1px; height: 16px; background-color: #ccc; margin: 0 4px; }
+    .divider { width: 1px; height: 16px; background-color: var(--border-color); margin: 0 4px; }
 
     .scroll-container { flex: 1; overflow: auto; position: relative; }
     .grid-table-inner { position: relative; min-height: 100%; }
 
     .grid-header {
-        background-color: #f5f5f5;
-        border-bottom: 1px solid #ccc;
+        background-color: var(--bg-color);
+        border-bottom: 1px solid var(--border-color);
         font-weight: 600;
         font-size: 13px;
-        color: #333;
+        color: var(--text-main);
         position: sticky;
         top: 0;
         z-index: 2;
@@ -397,18 +403,19 @@
         top: 0;
         left: 0;
         display: flex;
-        border-bottom: 1px solid #f0f0f0;
+        border-bottom: 1px solid var(--border-color);
         font-size: 13px;
-        color: #1a1a1a;
-        background-color: #ffffff;
+        color: var(--text-main);
+        background-color: var(--panel-bg);
         box-sizing: border-box;
         cursor: pointer;
         user-select: none;
     }
 
-    .grid-row:focus { outline: none; background-color: #f0f8ff; }
-    .grid-row:hover { background-color: #f9f9f9; }
-    .grid-row.selected { background-color: #e6f7ff; border-bottom: 1px solid #91d5ff; }
+    .grid-row:focus { outline: none; }
+    .grid-row:focus-visible { outline: 2px solid var(--primary-color); outline-offset: -2px; }
+    .grid-row:hover { background-color: var(--bg-color); }
+    .grid-row.selected { background-color: var(--secondary-color); }
 
     .cell {
         padding: 8px 12px;
@@ -422,12 +429,12 @@
     }
 
     .header-cell { user-select: none; }
-    .header-cell:focus { outline: 1px solid #0066cc; outline-offset: -1px; }
+    .header-cell:focus { outline: 1px solid var(--primary-color); outline-offset: -1px; }
 
     .sortable { cursor: pointer; transition: background-color 0.1s; }
-    .sortable:hover { background-color: #e8e8e8; }
+    .sortable:hover { background-color: var(--border-color); }
 
-    .sort-indicator { margin-left: 6px; color: #0066cc; font-weight: bold; }
+    .sort-indicator { margin-left: 6px; color: var(--primary-color); font-weight: bold; }
 
     .resizer {
         position: absolute;
@@ -441,8 +448,13 @@
         touch-action: none;
     }
 
-    .resizer:hover, .resizer.isResizing {
-        background: #0066cc;
+    .resizer:hover, :global(.match-highlight) {
+        background: var(--primary-color);
+        color: #ffffff;
+    }
+
+    .resizer.isResizing {
+        background: var(--primary-color);
         opacity: 0.5;
     }
 
