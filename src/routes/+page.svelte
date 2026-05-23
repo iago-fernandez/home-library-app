@@ -11,6 +11,7 @@
   import SettingsModal from '$lib/components/SettingsModal.svelte';
   import BatchEditPanel from '$lib/components/BatchEditPanel.svelte';
   import { zoomLevel, activeShortcuts, activeViewStore } from '$lib/stores/preferences';
+  import { dialogStore } from '$lib/stores/dialog';
   import type { CreateBookPayload } from '$lib/types/book';
   import { Plus, Pencil, Trash2, Filter, Settings, X, Search, CheckSquare, Download, Table, LayoutGrid, Library } from 'lucide-svelte';
 
@@ -111,8 +112,19 @@
     }
   }
 
-  async function handleDeleteSelected() {
-    if ($selectedIds.length > 0 && confirm(`${$selectedIds.length} ${$t.actions.confirmBatchDelete}`)) {
+  async function handleBatchDeleteClick() {
+    if ($selectedIds.length === 0) return;
+    
+    const count = $selectedIds.length;
+    const msg = count === 1 
+      ? $t.actions.confirmDelete 
+      : `${count} ${$t.actions.confirmBatchDelete}`;
+
+    if (await dialogStore.confirm({
+      title: $t.actions.deleteSelected,
+      message: msg,
+      isDanger: true
+    })) {
       try {
         await bookStore.deleteBooksBatch($selectedIds);
       } catch (error) {
@@ -126,8 +138,8 @@
   }
 
   function handleGlobalKeydown(e: KeyboardEvent) {
-    if (e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement || e.target instanceof HTMLSelectElement) return;
-
+    const isInput = e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement || e.target instanceof HTMLSelectElement;
+    
     const keyCombo = [
       e.ctrlKey ? 'ctrl' : '',
       e.altKey ? 'alt' : '',
@@ -136,27 +148,45 @@
     ].filter(Boolean).join('+');
 
     const sc = $activeShortcuts;
+
+    // Skip if user is typing in an input and the shortcut has NO modifiers
+    if (isInput && !e.ctrlKey && !e.altKey) {
+        if (e.key === 'Escape') {
+            if (openMenu) { closeMenus(); return; }
+            if (showExportModal || showSettingsModal) { showExportModal = false; showSettingsModal = false; return; }
+        } else {
+            return;
+        }
+    }
+
     if (keyCombo === sc.newBook) {
       e.preventDefault();
+      e.stopPropagation();
       activePanel = 'addBook';
     } else if (keyCombo === sc.search) {
       e.preventDefault();
+      e.stopPropagation();
       bookStore.toggleLocalSearch();
     } else if (keyCombo === sc.toggleMultiSelect) {
       e.preventDefault();
+      e.stopPropagation();
       bookStore.toggleMultiSelectMode();
     } else if (keyCombo === sc.deleteSelected && $selectedIds.length > 0) {
       e.preventDefault();
-      handleDeleteSelected();
+      e.stopPropagation();
+      handleBatchDeleteClick();
     } else if (keyCombo === sc.settings) {
       e.preventDefault();
+      e.stopPropagation();
       showSettingsModal = true;
     } else if (keyCombo === sc.export) {
       e.preventDefault();
+      e.stopPropagation();
       showExportModal = true;
     } else if (e.key === 'Escape') {
         if (openMenu) { closeMenus(); return; }
         if (showExportModal || showSettingsModal) { showExportModal = false; showSettingsModal = false; return; }
+        if ($localSearchActive) { bookStore.toggleLocalSearch(); return; }
         if (activePanel !== 'actions') { handleFormCancel(); return; }
         if ($selectedIds.length > 0) { bookStore.clearSelection(); return; }
         if ($multiSelectMode) { bookStore.toggleMultiSelectMode(); return; }
@@ -186,9 +216,13 @@
       }
 
       if (activePanel === 'editBook' && $selectedId) {
-        await bookStore.updateBook($selectedId, payload);
+        bookStore.updateBook($selectedId, payload).catch(e => {
+            console.error("Failed to update book", e);
+        });
       } else {
-        await bookStore.addBook(payload);
+        bookStore.addBook(payload).catch(e => {
+            console.error("Failed to add book", e);
+        });
       }
       activePanel = 'actions';
     } catch (error) {
@@ -315,7 +349,7 @@
       }
     }
 
-    let text = `${fieldLabel} ${rule.isNot ? 'NOT ' : ''}${opLabel} "${rule.value}"`;
+    let text = `${fieldLabel} ${rule.isNot ? $t.filters.notRule + ' ' : ''}${opLabel} "${rule.value}"`;
     if (rule.caseSensitive) text += ' (Aa)';
     return text;
   }
@@ -326,7 +360,7 @@
   }
 </script>
 
-<svelte:window on:click={handleWindowClick} on:keydown={handleGlobalKeydown} />
+<svelte:window on:click={handleWindowClick} on:keydown|capture={handleGlobalKeydown} />
 
 <div class="app-container">
   <header class="top-bar" style="background-color: var(--topbar-bg);">
@@ -578,7 +612,7 @@
                           class:active-not={rule.isNot}
                           on:click={() => { rule.isNot = !rule.isNot; handleControlChange(); }}
                           title={$t.filters.invertRule}>
-                    NOT
+                    {$t.filters.notRule}
                   </button>
                   <DropdownSelect
                     options={availableFields}
@@ -828,11 +862,11 @@
     display: flex;
     align-items: center;
     background-color: var(--secondary-color);
-    border: 1px solid var(--border-color);
+    border: 1px solid color-mix(in srgb, var(--primary-color) 40%, transparent);
     border-radius: 16px;
     padding: 2px 4px 2px 10px;
     font-size: 12px;
-    color: var(--primary-color);
+    color: var(--text-main);
   }
 
   .chip-text-btn {

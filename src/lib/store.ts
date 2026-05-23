@@ -49,7 +49,7 @@ function createBookStore() {
             });
         },
 
-        loadBooks: async () => {
+        loadBooks: async (isReset = false) => {
             if (isFetching || !hasMore) return;
 
             isFetching = true;
@@ -74,7 +74,7 @@ function createBookStore() {
                 let currentArrayLength = 0;
 
                 update(currentBooks => {
-                    const combined = [...currentBooks, ...response.data];
+                    const combined = isReset ? response.data : [...currentBooks, ...response.data];
                     const uniqueBooks = combined.filter((book, index, self) =>
                         index === self.findIndex((b) => b.id === book.id)
                     );
@@ -103,15 +103,14 @@ function createBookStore() {
 
         resetAndLoad: async () => {
             currentRequestId += 1;
-            set([]);
-            totalBooks.set(0);
+            // Do not clear the array here to prevent UI flicker and state loss
             selectedBookId.set(null);
             selectedIdsList.set([]);
             currentOffset = 0;
             hasMore = true;
             isFetching = false;
 
-            await bookStore.loadBooks();
+            await bookStore.loadBooks(true);
         },
 
         applySort: async (column: string | undefined, order: 'asc' | 'desc' | undefined) => {

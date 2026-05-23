@@ -43,15 +43,16 @@
         }
     }
 
-    function getColumnLabel(id: string): string {
-        return availableColumnsFiltered.find(c => c.id === id)?.label || id;
+    function getColumnLabel(id: string, tObj: any): string {
+        const key = 'col_' + id;
+        return (tObj.grid && tObj.grid[key]) || availableColumnsFiltered.find(c => c.id === id)?.label || id;
     }
 
-    function getCellData(book: any, colId: string): string {
+    function getCellData(book: any, colId: string, tObj: any): string {
         if (!book) return '';
         const val = book[colId];
         if (Array.isArray(val)) return val.join(', ');
-        if (typeof val === 'boolean') return val ? 'Yes' : 'No';
+        if (typeof val === 'boolean') return val ? (tObj.common.yes || 'Yes') : (tObj.common.no || 'No');
         return val ? String(val) : '';
     }
 
@@ -159,7 +160,7 @@
                              class:dragging={draggedIndex === index}>
                             <div class="drag-handle" title={$t.grid?.dragToReorder || 'Drag to reorder'}>
                                 <GripVertical size={16} />
-                                {getColumnLabel(colId)}
+                                {getColumnLabel(colId, $t)}
                             </div>
                             <button class="icon-btn-small remove" on:click={() => toggleColumn(colId)}><X size={14} /></button>
                         </div>
@@ -169,7 +170,7 @@
                 <h3>{$t.exportManager.availableColumns}</h3>
                 <div class="available-columns">
                     {#each availableColumnsFiltered.filter(c => !columnsToExport.includes(c.id)) as col}
-                        <button class="chip-btn" on:click={() => toggleColumn(col.id)}>+ {col.label}</button>
+                        <button class="chip-btn" on:click={() => toggleColumn(col.id)}>+ {getColumnLabel(col.id, $t)}</button>
                     {/each}
                 </div>
             </div>
@@ -181,7 +182,7 @@
                         <thead>
                         <tr>
                             {#each columnsToExport as colId}
-                                <th>{getColumnLabel(colId)}</th>
+                                <th>{getColumnLabel(colId, $t)}</th>
                             {/each}
                         </tr>
                         </thead>
@@ -189,7 +190,7 @@
                         {#each previewData as row}
                             <tr>
                                 {#each columnsToExport as colId}
-                                    <td>{getCellData(row, colId)}</td>
+                                    <td>{getCellData(row, colId, $t)}</td>
                                 {/each}
                             </tr>
                         {/each}
@@ -231,6 +232,7 @@
         display: flex;
         flex-direction: column;
         box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+        overflow: hidden;
     }
 
     .modal-header {

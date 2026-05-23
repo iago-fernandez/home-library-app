@@ -15,7 +15,9 @@ export const es: TranslationDictionary = {
         reset: 'Restablecer',
         close: 'Cerrar',
         confirm: 'Confirmar',
-        dangerZone: 'Zona de peligro'
+        dangerZone: 'Zona de peligro',
+        yes: 'Sí',
+        no: 'No'
     },
     auth: {
         createWorkspace: 'Crear Espacio',
@@ -82,7 +84,7 @@ export const es: TranslationDictionary = {
         col_illustrators: 'Ilustradores',
         col_publisher: 'Editorial',
         col_publish_date: 'Fecha de Publicación',
-        col_original_publish_date: 'Fecha Pub. Original',
+        col_original_publish_date: 'Fecha de Publicación Original',
         col_isbn_13: 'ISBN-13',
         col_isbn_10: 'ISBN-10',
         col_oclc_number: 'Número OCLC',
@@ -92,9 +94,9 @@ export const es: TranslationDictionary = {
         col_original_edition: 'Edición Original',
         col_is_first_edition: 'Primera Edición',
         col_collection_name: 'Colección',
-        col_volume_in_collection: 'Vol. en Colección',
+        col_volume_in_collection: 'Volumen en Colección',
         col_series_name: 'Serie',
-        col_volume_in_series: 'Vol. en Serie',
+        col_volume_in_series: 'Volumen en Serie',
         col_book_format: 'Formato',
         col_page_count: 'Páginas',
         col_dimensions: 'Dimensiones',
@@ -140,7 +142,8 @@ export const es: TranslationDictionary = {
         greater: 'Mayor que',
         greaterEqual: 'Mayor o igual',
         less: 'Menor que',
-        lessEqual: 'Menor o igual'
+        lessEqual: 'Menor o igual',
+        notRule: 'NO'
     },
     actions: {
         addBook: 'Añadir Libro',
@@ -236,7 +239,13 @@ export const es: TranslationDictionary = {
         statusUnread: 'Sin Leer',
         statusReading: 'Leyendo',
         statusRead: 'Leído',
-        statusDnf: 'Abandonado'
+        statusDnf: 'Abandonado',
+        validationRequiredTitle: 'El título es obligatorio',
+        validationRequiredAuthor: 'Debe especificar al menos un autor',
+        validationPositiveNumber: 'Debe ser un número positivo',
+        validationPastDate: 'La fecha no puede ser futura',
+        validationIsbn: 'Formato de ISBN inválido',
+        validationRating: 'La puntuación debe estar entre 0 y 10'
     },
     exportManager: {
         title: 'Exportar Datos',

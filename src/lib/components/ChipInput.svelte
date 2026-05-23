@@ -58,17 +58,21 @@
         display: flex;
         flex-wrap: wrap;
         gap: 6px;
-        padding: 4px;
-        border: 1px solid #ccc;
+        padding: 4px 8px;
+        border: 1px solid var(--border-color);
         border-radius: 4px;
-        background-color: #ffffff;
-        min-height: 36px;
+        background-color: var(--panel-bg);
+        min-height: 35px;
         align-items: center;
         cursor: text;
-        transition: border-color 0.2s;
+        transition: border-color 0.2s, outline-color 0.2s;
+        outline: 2px solid transparent;
+        outline-offset: 0px;
     }
 
     .chip-input-container:focus-within {
+        outline: 2px solid var(--focus-ring);
+        outline-offset: 0px;
         border-color: var(--input-focus);
     }
 
@@ -76,7 +80,7 @@
         display: flex;
         align-items: center;
         background-color: var(--secondary-color);
-        border: 1px solid var(--accent-color);
+        border: 1px solid color-mix(in srgb, var(--primary-color) 40%, transparent);
         border-radius: 16px;
         padding: 2px 6px 2px 10px;
         font-size: 12px;
@@ -119,6 +123,8 @@
         background: transparent;
         font-family: inherit;
         font-size: 13px;
-        padding: 4px;
+        color: var(--text-main);
+        padding: 4px 0;
+        margin: 0;
     }
 </style>

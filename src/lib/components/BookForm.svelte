@@ -21,6 +21,50 @@
     let imagePreviewUrl: string = formData.cover_url || '';
     let fileInputRef: HTMLInputElement;
 
+    let errors: Record<string, string> = {};
+
+    function validateForm(): boolean {
+        errors = {};
+        if (!formData.title?.trim()) {
+            errors.title = $t.form?.validationRequiredTitle || 'Title is required';
+        }
+        if (!formData.authors || formData.authors.length === 0) {
+            errors.authors = $t.form?.validationRequiredAuthor || 'At least one author is required';
+        }
+        // Basic type checks
+        // Positive Number checks
+        const positiveFields = ['page_count', 'volume_in_collection', 'volume_in_series', 'location_position'];
+        positiveFields.forEach(field => {
+            if (formData[field as keyof CreateBookPayload] !== undefined && (formData[field as keyof CreateBookPayload] as number) < 0) {
+                errors[field] = $t.form?.validationPositiveNumber || 'Must be a positive number';
+            }
+        });
+
+        // Rating check
+        if (formData.rating !== undefined && (formData.rating < 0 || formData.rating > 10)) {
+            errors.rating = $t.form?.validationRating || 'Rating must be between 0 and 10';
+        }
+
+        // ISBN check
+        if (formData.isbn_13 && formData.isbn_13.replace(/-/g, '').length !== 13) {
+            errors.isbn_13 = $t.form?.validationIsbn || 'Invalid ISBN format';
+        }
+        if (formData.isbn_10 && formData.isbn_10.replace(/-/g, '').length !== 10) {
+            errors.isbn_10 = $t.form?.validationIsbn || 'Invalid ISBN format';
+        }
+
+        // Past date checks
+        const dateFields = ['publish_date', 'original_publish_date', 'purchase_date', 'date_started', 'date_finished'];
+        const today = new Date().toISOString().split('T')[0];
+        dateFields.forEach(field => {
+            const dateVal = formData[field as keyof CreateBookPayload];
+            if (dateVal && typeof dateVal === 'string' && dateVal > today) {
+                errors[field] = $t.form?.validationPastDate || 'Date cannot be in the future';
+            }
+        });
+        return Object.keys(errors).length === 0;
+    }
+
     function getInitialFormData(data: Book | null): Partial<CreateBookPayload> {
         if (data) {
             return {
@@ -123,11 +167,38 @@
     }
 
     function handleSubmit() {
-        onSubmit(formData as CreateBookPayload, selectedImageFile);
+        if (validateForm()) {
+            onSubmit(formData as CreateBookPayload, selectedImageFile);
+        } else {
+            // Scroll to top to see errors if any
+            const firstError = document.querySelector('.input-row.error');
+            if (firstError) {
+                firstError.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            }
+        }
+    }
+
+    function handleInput(event: Event) {
+        const target = event.target as HTMLElement;
+        const id = target.id;
+        if (id && errors[id]) {
+            delete errors[id];
+            errors = { ...errors };
+        } else {
+            // Support for components like ChipInput or DropdownSelect that might not emit standard input events with ids,
+            // or we might need to handle them differently, but for standard inputs this bubbles up perfectly.
+            // For ChipInput, authors is handled by its own bind. We can just clear it if we detect changes.
+        }
+    }
+
+    // Reactive watcher for special custom components that might not bubble Native events nicely:
+    $: if (formData.authors && formData.authors.length > 0 && errors.authors) {
+        delete errors.authors;
+        errors = { ...errors };
     }
 </script>
 
-<form class="book-form" novalidate on:submit|preventDefault={handleSubmit}>
+<form class="book-form" novalidate on:submit|preventDefault={handleSubmit} on:input={handleInput}>
     <div class="form-header">
         <h3>{initialData ? $t.form.editBook : $t.form.addNewBook}</h3>
         <div class="header-actions">
@@ -158,14 +229,16 @@
                 <div class="fetch-error-message">{fetchError}</div>
             {/if}
 
-            <div class="input-row">
+            <div class="input-row" class:error={!!errors.isbn_13}>
                 <label for="isbn_13">{$t.form.isbn13}</label>
                 <input type="text" id="isbn_13" bind:value={formData.isbn_13} />
+                {#if errors.isbn_13}<span class="error-text">{errors.isbn_13}</span>{/if}
             </div>
             <div class="input-grid">
-                <div class="input-row">
+                <div class="input-row" class:error={!!errors.isbn_10}>
                     <label for="isbn_10">{$t.form.isbn10}</label>
                     <input type="text" id="isbn_10" bind:value={formData.isbn_10} />
+                    {#if errors.isbn_10}<span class="error-text">{errors.isbn_10}</span>{/if}
                 </div>
                 <div class="input-row">
                     <label for="open_library_id">{$t.form.openLibraryId}</label>
@@ -205,10 +278,11 @@
         </fieldset>
 
         <fieldset class="form-group">
-            <legend>{$t.form.essentialInfo}</legend>
-            <div class="input-row">
-                <label for="title">{$t.form.title}</label>
+            <legend>{$t.form.coreMetadata}</legend>
+            <div class="input-row" class:error={!!errors.title}>
+                <label for="title">{$t.form.title} <span class="required">*</span></label>
                 <AutoExpandTextarea id="title" bind:value={formData.title} required={true} />
+                {#if errors.title}<span class="error-text">{errors.title}</span>{/if}
             </div>
             <div class="input-row">
                 <label for="subtitle">{$t.form.subtitle}</label>
@@ -218,9 +292,10 @@
                 <label for="original_title">{$t.form.originalTitle}</label>
                 <AutoExpandTextarea id="original_title" bind:value={formData.original_title} />
             </div>
-            <div class="input-row">
-                <label for="authors">{$t.form.authors}</label>
-                <ChipInput id="authors" bind:values={formData.authors} placeholder="..." />
+            <div class="input-row" class:error={!!errors.authors}>
+                <label for="authors">{$t.form.authors} <span class="required">*</span></label>
+                <ChipInput id="authors" bind:values={formData.authors} placeholder={$t.form.authorsPlaceholder} />
+                {#if errors.authors}<span class="error-text">{errors.authors}</span>{/if}
             </div>
             <div class="input-row">
                 <label for="translators">{$t.form.translators}</label>
@@ -239,13 +314,15 @@
                 <AutoExpandTextarea id="publisher" bind:value={formData.publisher} />
             </div>
             <div class="input-grid">
-                <div class="input-row">
+                <div class="input-row" class:error={!!errors.publish_date}>
                     <label for="publish_date">{$t.form.pubDate}</label>
                     <input type="date" id="publish_date" bind:value={formData.publish_date} />
+                    {#if errors.publish_date}<span class="error-text">{errors.publish_date}</span>{/if}
                 </div>
-                <div class="input-row">
+                <div class="input-row" class:error={!!errors.original_publish_date}>
                     <label for="original_publish_date">{$t.form.origPubDate}</label>
                     <input type="date" id="original_publish_date" bind:value={formData.original_publish_date} />
+                    {#if errors.original_publish_date}<span class="error-text">{errors.original_publish_date}</span>{/if}
                 </div>
             </div>
             <div class="input-grid">
@@ -271,9 +348,10 @@
                     <label for="collection_name">{$t.form.collectionName}</label>
                     <AutoExpandTextarea id="collection_name" bind:value={formData.collection_name} />
                 </div>
-                <div class="input-row">
+                <div class="input-row" class:error={!!errors.volume_in_collection}>
                     <label for="volume_in_collection">{$t.form.volInCollection}</label>
-                    <input type="number" id="volume_in_collection" bind:value={formData.volume_in_collection} />
+                    <input type="number" id="volume_in_collection" bind:value={formData.volume_in_collection} min="0" />
+                    {#if errors.volume_in_collection}<span class="error-text">{errors.volume_in_collection}</span>{/if}
                 </div>
             </div>
             <div class="input-grid">
@@ -281,9 +359,10 @@
                     <label for="series_name">{$t.form.seriesName}</label>
                     <AutoExpandTextarea id="series_name" bind:value={formData.series_name} />
                 </div>
-                <div class="input-row">
+                <div class="input-row" class:error={!!errors.volume_in_series}>
                     <label for="volume_in_series">{$t.form.volInSeries}</label>
-                    <input type="number" id="volume_in_series" bind:value={formData.volume_in_series} />
+                    <input type="number" id="volume_in_series" bind:value={formData.volume_in_series} min="0" />
+                    {#if errors.volume_in_series}<span class="error-text">{errors.volume_in_series}</span>{/if}
                 </div>
             </div>
         </fieldset>
@@ -295,9 +374,10 @@
                     <label for="book_format">{$t.form.bookFormat}</label>
                     <input type="text" id="book_format" bind:value={formData.book_format} />
                 </div>
-                <div class="input-row">
+                <div class="input-row" class:error={!!errors.page_count}>
                     <label for="page_count">{$t.form.pageCount}</label>
-                    <input type="number" id="page_count" bind:value={formData.page_count} />
+                    <input type="number" id="page_count" bind:value={formData.page_count} min="0" />
+                    {#if errors.page_count}<span class="error-text">{errors.page_count}</span>{/if}
                 </div>
             </div>
             <div class="input-grid">
@@ -349,9 +429,10 @@
         <fieldset class="form-group">
             <legend>{$t.form.acquisition}</legend>
             <div class="input-grid">
-                <div class="input-row">
+                <div class="input-row" class:error={!!errors.purchase_date}>
                     <label for="purchase_date">{$t.form.purchaseDate}</label>
                     <input type="date" id="purchase_date" bind:value={formData.purchase_date} />
+                    {#if errors.purchase_date}<span class="error-text">{errors.purchase_date}</span>{/if}
                 </div>
                 <div class="input-row">
                     <label for="purchase_price">{$t.form.purchasePrice}</label>
@@ -391,9 +472,10 @@
                     <label for="location_shelf">{$t.form.shelf}</label>
                     <input type="text" id="location_shelf" bind:value={formData.location_shelf} />
                 </div>
-                <div class="input-row">
+                <div class="input-row" class:error={!!errors.location_position}>
                     <label for="location_position">{$t.form.position}</label>
                     <input type="number" id="location_position" bind:value={formData.location_position} />
+                    {#if errors.location_position}<span class="error-text">{errors.location_position}</span>{/if}
                 </div>
             </div>
         </fieldset>
@@ -428,19 +510,22 @@
                         ]}
                     />
                 </div>
-                <div class="input-row">
+                <div class="input-row" class:error={!!errors.rating}>
                     <label for="rating">{$t.form.rating}</label>
                     <input type="number" min="0" max="10" id="rating" bind:value={formData.rating} />
+                    {#if errors.rating}<span class="error-text">{errors.rating}</span>{/if}
                 </div>
             </div>
             <div class="input-grid">
-                <div class="input-row">
+                <div class="input-row" class:error={!!errors.date_started}>
                     <label for="date_started">{$t.form.dateStarted}</label>
                     <input type="date" id="date_started" bind:value={formData.date_started} />
+                    {#if errors.date_started}<span class="error-text">{errors.date_started}</span>{/if}
                 </div>
-                <div class="input-row">
+                <div class="input-row" class:error={!!errors.date_finished}>
                     <label for="date_finished">{$t.form.dateFinished}</label>
                     <input type="date" id="date_finished" bind:value={formData.date_finished} />
+                    {#if errors.date_finished}<span class="error-text">{errors.date_finished}</span>{/if}
                 </div>
             </div>
             <div class="input-row">
@@ -580,6 +665,8 @@
         flex: 1;
         overflow-y: auto;
         padding-right: 8px;
+        padding-left: 4px; /* for box shadow */
+        padding-bottom: 4px;
         display: flex;
         flex-direction: column;
         gap: 32px;
@@ -600,7 +687,7 @@
         color: var(--primary-color);
         text-transform: uppercase;
         letter-spacing: 0.5px;
-        margin-bottom: 8px;
+        margin-bottom: 16px;
         padding-bottom: 4px;
         border-bottom: 1px solid var(--border-color);
         width: 100%;
@@ -644,18 +731,26 @@
     }
 
     .input-row {
-        display: flex;
-        flex-direction: column;
-        gap: 4px;
+        display: block;
+        position: relative;
+    }
+
+    label {
+        display: block;
+        margin-bottom: 4px;
+        font-size: 13px;
+        font-weight: 500;
+        color: var(--text-main);
     }
 
     .input-grid {
         display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
         gap: 12px;
     }
 
     .checkbox-row {
+        display: flex;
         flex-direction: row;
         align-items: center;
         gap: 8px;
@@ -665,28 +760,51 @@
         width: auto;
     }
 
-    label {
-        font-size: 13px;
-        font-weight: 500;
-        color: var(--text-main);
+    .checkbox-row label {
+        margin-bottom: 0;
+        display: inline-block;
+    }
+
+    .input-row.error :global(input),
+    .input-row.error :global(textarea),
+    .input-row.error :global(.chip-input-container) {
+        border-color: #ef4444 !important;
+    }
+
+    .error-text {
+        color: #ef4444;
+        font-size: 12px;
+        margin-top: 4px;
+        display: block;
+        animation: fadeIn 0.2s ease-out;
+    }
+
+    .required {
+        color: #ef4444;
+        margin-left: 2px;
     }
 
     input {
         width: 100%;
         padding: 8px;
-        border: 1px solid var(--input-border);
+        margin: 0;
+        border: 1px solid var(--border-color);
         border-radius: 4px;
         font-family: inherit;
         font-size: 13px;
         box-sizing: border-box;
         background-color: var(--panel-bg);
         color: var(--text-main);
+        outline: 2px solid transparent;
+        outline-offset: 0px;
+        transition: border-color 0.2s, outline-color 0.2s;
+        min-height: 35px;
     }
 
     input:focus {
-        outline: none;
+        outline: 2px solid var(--focus-ring);
+        outline-offset: 0px;
         border-color: var(--input-focus);
-        box-shadow: 0 0 0 2px var(--focus-ring);
     }
 
     .fetch-error-message {

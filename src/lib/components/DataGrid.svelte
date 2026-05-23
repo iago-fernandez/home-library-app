@@ -2,6 +2,7 @@
     import { bookStore } from '$lib/store';
     import { t } from '$lib/i18n';
     import { activeColumns, availableColumns, zoomLevel } from '$lib/stores/preferences';
+    import { dialogStore } from '$lib/stores/dialog';
     import { createVirtualizer } from '@tanstack/svelte-virtual';
     import {
         createSvelteTable,
@@ -144,8 +145,8 @@
     $: searchColumns = [
         { value: 'all', label: $t.grid.allColumns },
         ...$activeColumns.map(id => {
-            const colDef = availableColumns.find(c => c.id === id);
-            return { value: id, label: colDef ? colDef.label : id };
+            const key = `col_${id}` as keyof typeof $t.grid;
+            return { value: id, label: $t.grid[key] || id };
         })
     ];
 
@@ -233,33 +234,9 @@
         bookStore.selectedIds.set(newSelection);
         bookStore.selectedId.set(newSelection.length === 1 ? newSelection[0] : null);
     }
-
-    function handleGlobalKeydown(event: KeyboardEvent) {
-        if ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === 'f') {
-            event.preventDefault(); toggleLocalSearch(); return;
-        }
-        if (event.key === 'Escape') {
-            if ($localSearchActive) { toggleLocalSearch(); }
-            else if ($multiSelectMode) { bookStore.toggleMultiSelectMode(); }
-            else { 
-                bookStore.clearSelection(); 
-                bookStore.selectedId.set(null); 
-                lastSelectedIndex = -1; 
-                if (document.activeElement instanceof HTMLElement) {
-                    document.activeElement.blur();
-                }
-            }
-        }
-        if (event.key === 'Delete' && $selectedIds.length > 0) {
-            event.preventDefault();
-            if (confirm(`${$selectedIds.length} ${$t.actions.confirmBatchDelete}`)) {
-                bookStore.deleteBooksBatch($selectedIds);
-            }
-        }
-    }
 </script>
 
-<svelte:window on:keydown={handleGlobalKeydown} />
+
 
 <div class="table-wrapper" style="zoom: {$zoomLevel / 100}">
 
@@ -383,7 +360,7 @@
     .icon-btn-small { background: transparent; border: none; cursor: pointer; padding: 4px; color: var(--text-muted); border-radius: 4px; display: flex; align-items: center; justify-content: center; transition: background-color 0.1s; }
     .icon-btn-small:hover:not(:disabled):not(.active) { background-color: var(--secondary-color); }
     .icon-btn-small.active { background-color: var(--primary-color); color: #ffffff; }
-    .icon-btn-small.active:hover { background-color: #3730A3; /* Indigo 800 */ }
+    .icon-btn-small.active:hover { background-color: var(--primary-hover); }
     .icon-btn-small:disabled { opacity: 0.3; cursor: not-allowed; }
     .divider { width: 1px; height: 16px; background-color: var(--border-color); margin: 0 4px; }
 
