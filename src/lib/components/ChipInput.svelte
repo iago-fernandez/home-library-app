@@ -17,6 +17,9 @@
     function handleKeydown(event: KeyboardEvent) {
         if (isAutocompleteOpen && (event.key === 'ArrowDown' || event.key === 'ArrowUp' || event.key === 'Escape')) {
             autocompleteComponent.handleKeydown(event);
+            if (event.key === 'Escape') {
+                event.stopPropagation();
+            }
             return;
         }
 

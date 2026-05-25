@@ -66,21 +66,17 @@
     }
 </script>
 
-{#if isOpen && (suggestions.length > 0 || loading)}
-    <ul class="autocomplete-dropdown" style="top: {topOffset}px">
-        {#if loading && suggestions.length === 0}
-            <li class="loading">Loading...</li>
-        {:else}
-            {#each suggestions as suggestion, i}
-                <li 
-                    class:selected={i === selectedIndex}
-                    on:mousedown|preventDefault={() => selectSuggestion(suggestion)}
-                    on:mouseenter={() => selectedIndex = i}
-                >
-                    {suggestion}
-                </li>
-            {/each}
-        {/if}
+{#if isOpen && suggestions.length > 0}
+    <ul class="autocomplete-dropdown" style="top: {topOffset}px" class:loading>
+        {#each suggestions as suggestion, i}
+            <li 
+                class:selected={i === selectedIndex}
+                on:mousedown|preventDefault={() => selectSuggestion(suggestion)}
+                on:mouseenter={() => selectedIndex = i}
+            >
+                {suggestion}
+            </li>
+        {/each}
     </ul>
 {/if}
 

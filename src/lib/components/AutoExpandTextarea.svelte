@@ -23,8 +23,16 @@
     }
 
     function handleKeydown(event: KeyboardEvent) {
-        if (isAutocompleteOpen && (event.key === 'ArrowDown' || event.key === 'ArrowUp' || event.key === 'Escape' || event.key === 'Enter')) {
+        if (isAutocompleteOpen && (event.key === 'ArrowDown' || event.key === 'ArrowUp' || event.key === 'Escape')) {
             autocompleteComponent.handleKeydown(event);
+            if (event.key === 'Escape') {
+                event.stopPropagation();
+            }
+            return;
+        }
+        if (isAutocompleteOpen && event.key === 'Enter') {
+            autocompleteComponent.handleKeydown(event);
+            return;
         }
     }
 
