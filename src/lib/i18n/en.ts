@@ -283,6 +283,8 @@ export const en: TranslationDictionary = {
         themeTeal: 'Teal',
         themeAmber: 'Amber',
         zoomLevel: 'Zoom Level',
+        autocompleteSuggestions: 'Autocomplete Suggestions',
+        disabled: 'Disabled',
         keyboardShortcuts: 'Keyboard Shortcuts',
         shortcutsTab: 'Shortcuts',
         deleteWarning: 'This action is permanent and will delete all your books and data.',

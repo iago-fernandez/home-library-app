@@ -286,6 +286,8 @@ export const es: TranslationDictionary = {
         themeTeal: 'Turquesa',
         themeAmber: 'Ámbar',
         zoomLevel: 'Nivel de Zoom',
+        autocompleteSuggestions: 'Sugerencias de Autocompletado',
+        disabled: 'Desactivado',
         keyboardShortcuts: 'Atajos de Teclado',
         shortcutsTab: 'Atajos'
     },

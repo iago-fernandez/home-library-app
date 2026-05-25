@@ -5,7 +5,7 @@
     import { dialogStore } from '$lib/stores/dialog';
     import ColumnSettings from './ColumnSettings.svelte';
     import DropdownSelect from './DropdownSelect.svelte';
-    import { zoomLevel, activeTheme, appThemes, activeShortcuts } from '$lib/stores/preferences';
+    import { zoomLevel, activeTheme, appThemes, activeShortcuts, autocompleteLimit } from '$lib/stores/preferences';
     import { X, User, Sliders, Layout, Monitor, Keyboard, RotateCcw } from 'lucide-svelte';
     import { onMount } from 'svelte';
     import DeleteAccountModal from './DeleteAccountModal.svelte';
@@ -115,6 +115,7 @@
                             <button class="nav-sub-item" on:click={() => scrollToSection('sec-lang')}>{$t.settings.languageSelect}</button>
                             <button class="nav-sub-item" on:click={() => scrollToSection('sec-theme')}>{$t.settings.theme}</button>
                             <button class="nav-sub-item" on:click={() => scrollToSection('sec-zoom')}>{$t.settings.zoomLevel}</button>
+                            <button class="nav-sub-item" on:click={() => scrollToSection('sec-autocomplete')}>{$t.settings.autocompleteSuggestions}</button>
                             <button class="nav-sub-item" on:click={() => scrollToSection('sec-shortcuts')}>{$t.settings.shortcutsTab}</button>
                         </div>
                     {/if}
@@ -181,7 +182,7 @@
                         <div class="preferences-container">
                             <div id="sec-lang" class="setting-group">
                                 <div class="form-group">
-                                    <div class="setting-label" style="margin-bottom: 12px;">{$t.settings.language}</div>
+                                    <h3 class="section-title" style="margin-bottom: 12px;">{$t.settings.language}</h3>
                                     <DropdownSelect
                                         id="set-lang"
                                         customClass="settings-select"
@@ -197,7 +198,7 @@
 
                             <div id="sec-theme" class="setting-group">
                                 <div class="form-group">
-                                    <div class="setting-label" style="margin-bottom: 12px;">{$t.settings.theme}</div>
+                                    <h3 class="section-title" style="margin-bottom: 12px;">{$t.settings.theme}</h3>
                                     <div class="theme-grid">
                                         {#each Object.entries(appThemes) as [key, theme]}
                                             <button 
@@ -223,7 +224,7 @@
 
                             <div id="sec-zoom" class="setting-group" style="padding-bottom: 1rem;">
                                 <div class="form-group">
-                                    <div class="setting-label" style="margin-bottom: 12px;">{$t.settings.zoomLevel} ({$zoomLevel}%)</div>
+                                    <h3 class="section-title" style="margin-bottom: 12px;">{$t.settings.zoomLevel} ({$zoomLevel}%)</h3>
                                     <input 
                                         type="range" 
                                         min="75" max="150" step="5" 
@@ -235,6 +236,25 @@
                                         <span style="position: absolute; left: 33.33%; transform: translateX(-50%);">100%</span>
                                         <span style="position: absolute; right: 0%;">150%</span>
                                     </div>
+                                </div>
+                            </div>
+
+                            <div id="sec-autocomplete" class="setting-group" style="padding-bottom: 1rem;">
+                                <div class="form-group">
+                                    <h3 class="section-title" style="margin-bottom: 12px;">{$t.settings.autocompleteSuggestions}</h3>
+                                    <DropdownSelect
+                                        id="set-autocomplete"
+                                        customClass="settings-select"
+                                        value={($autocompleteLimit ?? 10).toString()}
+                                        on:change={(e) => autocompleteLimit.set(parseInt(e.detail.value))}
+                                        options={[
+                                            { value: '0', label: $t.settings.disabled },
+                                            { value: '5', label: '5' },
+                                            { value: '10', label: '10' },
+                                            { value: '25', label: '25' },
+                                            { value: '50', label: '50' }
+                                        ]}
+                                    />
                                 </div>
                             </div>
 

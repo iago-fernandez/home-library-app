@@ -1,15 +1,36 @@
 <script lang="ts">
     import { X } from 'lucide-svelte';
 
+    import AutocompleteDropdown from './AutocompleteDropdown.svelte';
+
     export let id: string;
     export let values: string[] = [];
     export let placeholder: string = '';
+    export let autocompleteField: string | null = null;
 
     let inputValue = '';
     let inputElement: HTMLInputElement;
+    let containerElement: HTMLDivElement;
+    let isAutocompleteOpen = false;
+    let autocompleteComponent: AutocompleteDropdown;
 
     function handleKeydown(event: KeyboardEvent) {
+        if (isAutocompleteOpen && (event.key === 'ArrowDown' || event.key === 'ArrowUp' || event.key === 'Escape')) {
+            if (autocompleteComponent) {
+                autocompleteComponent.handleKeydown(event);
+            }
+            if (event.key === 'Escape') {
+                isAutocompleteOpen = false;
+                event.stopPropagation();
+            }
+            return;
+        }
+
         if (event.key === 'Enter') {
+            if (isAutocompleteOpen) {
+                autocompleteComponent.handleKeydown(event);
+                return;
+            }
             event.preventDefault();
             const trimmed = inputValue.trim();
             if (trimmed && !values.includes(trimmed)) {
@@ -25,10 +46,42 @@
         values = values.filter((_, index) => index !== indexToRemove);
         inputElement.focus();
     }
+
+    function handleInput() {
+        if (autocompleteField) {
+            isAutocompleteOpen = true;
+        }
+    }
+
+    let blurTimer: ReturnType<typeof setTimeout>;
+
+    function handleFocus() {
+        clearTimeout(blurTimer);
+        if (autocompleteField) {
+            isAutocompleteOpen = true;
+        }
+    }
+
+    function handleBlur(e: FocusEvent) {
+        // Delay closing so that click events on the dropdown can fire
+        blurTimer = setTimeout(() => {
+            isAutocompleteOpen = false;
+        }, 150);
+    }
+
+    function handleSelect(event: CustomEvent<string>) {
+        const selected = event.detail.trim();
+        if (selected && !values.includes(selected)) {
+            values = [...values, selected];
+            inputValue = '';
+        }
+        inputElement.focus();
+    }
 </script>
 
 <div
         class="chip-input-container"
+        bind:this={containerElement}
         role="button"
         tabindex="0"
         on:click={() => inputElement.focus()}
@@ -48,13 +101,28 @@
             type="text"
             bind:value={inputValue}
             on:keydown={handleKeydown}
+            on:input={handleInput}
+            on:focus={handleFocus}
+            on:blur={handleBlur}
             {placeholder}
             class="chip-input"
+            autocomplete="off"
     />
+    {#if autocompleteField}
+        <AutocompleteDropdown
+            bind:this={autocompleteComponent}
+            field={autocompleteField}
+            query={inputValue}
+            bind:isOpen={isAutocompleteOpen}
+            topOffset={containerElement ? containerElement.offsetHeight + 2 : 0}
+            on:select={handleSelect}
+        />
+    {/if}
 </div>
 
 <style>
     .chip-input-container {
+        position: relative;
         display: flex;
         flex-wrap: wrap;
         gap: 6px;

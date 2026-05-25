@@ -219,6 +219,22 @@ export interface TranslationDictionary {
         confirmDeleteAccount: string;
         accountUpdated: string;
         language: string;
+        languageSelect: string;
+        theme: string;
+        themeSky: string;
+        themeEmerald: string;
+        themeAmethyst: string;
+        themeSlate: string;
+        themeTeal: string;
+        themeAmber: string;
+        zoomLevel: string;
+        autocompleteSuggestions: string;
+        disabled: string;
+        keyboardShortcuts: string;
+        shortcutsTab: string;
+        dangerZone: string;
+        deleteAccountDesc: string;
+        deleteAccountBtn: string;
     };
     batchEdit: {
         title: string;

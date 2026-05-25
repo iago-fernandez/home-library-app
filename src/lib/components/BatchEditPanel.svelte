@@ -223,15 +223,15 @@
             <legend>{$t.form.essentialInfo}</legend>
             <div class="input-row" class:modified={isModified['authors']}>
                 <label for="authors">{$t.form.authors}</label>
-                <ChipInput id="authors" bind:values={formData.authors} />
+                <ChipInput id="authors" bind:values={formData.authors} autocompleteField="authors" />
             </div>
             <div class="input-row" class:modified={isModified['translators']}>
                 <label for="translators">{$t.form.translators}</label>
-                <ChipInput id="translators" bind:values={formData.translators} />
+                <ChipInput id="translators" bind:values={formData.translators} autocompleteField="translators" />
             </div>
             <div class="input-row" class:modified={isModified['illustrators']}>
                 <label for="illustrators">{$t.form.illustrators}</label>
-                <ChipInput id="illustrators" bind:values={formData.illustrators} />
+                <ChipInput id="illustrators" bind:values={formData.illustrators} autocompleteField="illustrators" />
             </div>
         </fieldset>
 
@@ -239,7 +239,7 @@
             <legend>{$t.form.pubDetails}</legend>
             <div class="input-row" class:modified={isModified['publisher']}>
                 <label for="publisher">{$t.form.publisher}</label>
-                <AutoExpandTextarea id="publisher" bind:value={formData.publisher} />
+                <AutoExpandTextarea id="publisher" bind:value={formData.publisher} autocompleteField="publisher" />
             </div>
             <div class="input-grid">
                 <div class="input-row" class:modified={isModified['publish_date']}>
@@ -272,7 +272,7 @@
             <div class="input-grid">
                 <div class="input-row" class:modified={isModified['collection_name']}>
                     <label for="collection_name">{$t.form.collectionName}</label>
-                    <AutoExpandTextarea id="collection_name" bind:value={formData.collection_name} />
+                    <AutoExpandTextarea id="collection_name" bind:value={formData.collection_name} autocompleteField="collection_name" />
                 </div>
                 <div class="input-row" class:modified={isModified['volume_in_collection']}>
                     <label for="volume_in_collection">{$t.form.volInCollection}</label>
@@ -282,7 +282,7 @@
             <div class="input-grid">
                 <div class="input-row" class:modified={isModified['series_name']}>
                     <label for="series_name">{$t.form.seriesName}</label>
-                    <AutoExpandTextarea id="series_name" bind:value={formData.series_name} />
+                    <AutoExpandTextarea id="series_name" bind:value={formData.series_name} autocompleteField="series_name" />
                 </div>
                 <div class="input-row" class:modified={isModified['volume_in_series']}>
                     <label for="volume_in_series">{$t.form.volInSeries}</label>
@@ -316,11 +316,11 @@
             <div class="input-grid">
                 <div class="input-row" class:modified={isModified['language']}>
                     <label for="language">{$t.form.language}</label>
-                    <AutoExpandTextarea id="language" bind:value={formData.language} />
+                    <AutoExpandTextarea id="language" bind:value={formData.language} autocompleteField="language" />
                 </div>
                 <div class="input-row" class:modified={isModified['original_language']}>
                     <label for="original_language">{$t.form.origLanguage}</label>
-                    <AutoExpandTextarea id="original_language" bind:value={formData.original_language} />
+                    <AutoExpandTextarea id="original_language" bind:value={formData.original_language} autocompleteField="original_language" />
                 </div>
             </div>
         </fieldset>
@@ -329,11 +329,11 @@
             <legend>{$t.form.classification}</legend>
             <div class="input-row" class:modified={isModified['subjects']}>
                 <label for="subjects">{$t.form.subjects}</label>
-                <ChipInput id="subjects" bind:values={formData.subjects} />
+                <ChipInput id="subjects" bind:values={formData.subjects} autocompleteField="subjects" />
             </div>
             <div class="input-row" class:modified={isModified['genres']}>
                 <label for="genres">{$t.form.genres}</label>
-                <ChipInput id="genres" bind:values={formData.genres} />
+                <ChipInput id="genres" bind:values={formData.genres} autocompleteField="genres" />
             </div>
             <div class="input-row" class:modified={isModified['target_audience']}>
                 <label for="target_audience">{$t.form.targetAudience}</label>
@@ -364,7 +364,7 @@
             <div class="input-grid">
                 <div class="input-row" class:modified={isModified['store_or_vendor']}>
                     <label for="store_or_vendor">{$t.form.storeOrVendor}</label>
-                    <AutoExpandTextarea id="store_or_vendor" bind:value={formData.store_or_vendor} />
+                    <AutoExpandTextarea id="store_or_vendor" bind:value={formData.store_or_vendor} autocompleteField="store_or_vendor" />
                 </div>
                 <div class="input-row" class:modified={isModified['acquisition_type']}>
                     <label for="acquisition_type">{$t.form.acquisitionType}</label>
