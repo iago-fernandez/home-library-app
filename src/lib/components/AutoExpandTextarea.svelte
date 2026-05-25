@@ -1,9 +1,15 @@
 <script lang="ts">
+    import AutocompleteDropdown from './AutocompleteDropdown.svelte';
+
     export let value: string = '';
     export let id: string = '';
     export let required: boolean = false;
+    export let autocompleteField: string | null = null;
 
     let textareaElement: HTMLTextAreaElement;
+    let containerElement: HTMLDivElement;
+    let isAutocompleteOpen = false;
+    let autocompleteComponent: AutocompleteDropdown;
 
     function resize() {
         if (textareaElement) {
@@ -15,18 +21,75 @@
     $: if (value !== undefined) {
         setTimeout(resize, 0);
     }
+
+    function handleKeydown(event: KeyboardEvent) {
+        if (isAutocompleteOpen && (event.key === 'ArrowDown' || event.key === 'ArrowUp' || event.key === 'Escape' || event.key === 'Enter')) {
+            autocompleteComponent.handleKeydown(event);
+        }
+    }
+
+    function handleInput() {
+        resize();
+        if (autocompleteField) {
+            isAutocompleteOpen = true;
+        }
+    }
+
+    let blurTimer: ReturnType<typeof setTimeout>;
+
+    function handleFocus() {
+        clearTimeout(blurTimer);
+        if (autocompleteField) {
+            isAutocompleteOpen = true;
+        }
+    }
+
+    function handleBlur() {
+        blurTimer = setTimeout(() => {
+            isAutocompleteOpen = false;
+        }, 150);
+    }
+
+    function handleSelect(event: CustomEvent<string>) {
+        value = event.detail;
+        isAutocompleteOpen = false;
+        textareaElement.focus();
+    }
 </script>
 
-<textarea
-        {id}
-        bind:value
-        {required}
-        bind:this={textareaElement}
-        on:input={resize}
-        rows="1"
-></textarea>
+<div class="textarea-wrapper" bind:this={containerElement}>
+    <textarea
+            {id}
+            bind:value
+            {required}
+            bind:this={textareaElement}
+            on:input={handleInput}
+            on:focus={handleFocus}
+            on:blur={handleBlur}
+            on:keydown={handleKeydown}
+            rows="1"
+            autocomplete="off"
+    ></textarea>
+    
+    {#if autocompleteField}
+        <AutocompleteDropdown
+            bind:this={autocompleteComponent}
+            field={autocompleteField}
+            query={value}
+            bind:isOpen={isAutocompleteOpen}
+            topOffset={containerElement ? containerElement.offsetHeight + 2 : 0}
+            on:select={handleSelect}
+        />
+    {/if}
+</div>
 
 <style>
+    .textarea-wrapper {
+        position: relative;
+        width: 100%;
+        display: flex;
+    }
+
     textarea {
         width: 100%;
         padding: 8px;

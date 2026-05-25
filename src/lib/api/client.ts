@@ -154,6 +154,19 @@ export const apiClient = {
         return response.json();
     },
 
+    async getAutocomplete(field: string, query: string, limit: number = 10): Promise<string[]> {
+        const url = new URL(`${API_BASE_URL}/lookup/autocomplete`);
+        url.searchParams.append('field', field);
+        url.searchParams.append('q', query);
+        url.searchParams.append('limit', limit.toString());
+        const response = await apiFetch(url.toString(), {
+            method: 'GET',
+            headers: getHeaders()
+        });
+        if (!response.ok) throw new Error('Failed to fetch autocomplete suggestions');
+        return response.json();
+    },
+
     async uploadCover(file: File): Promise<{ url: string }> {
         const formData = new FormData();
         formData.append('cover', file);

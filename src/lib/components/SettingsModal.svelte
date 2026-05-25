@@ -5,7 +5,7 @@
     import { dialogStore } from '$lib/stores/dialog';
     import ColumnSettings from './ColumnSettings.svelte';
     import DropdownSelect from './DropdownSelect.svelte';
-    import { zoomLevel, activeTheme, appThemes, activeShortcuts } from '$lib/stores/preferences';
+    import { zoomLevel, activeTheme, appThemes, activeShortcuts, autocompleteLimit } from '$lib/stores/preferences';
     import { X, User, Sliders, Layout, Monitor, Keyboard, RotateCcw } from 'lucide-svelte';
     import { onMount } from 'svelte';
     import DeleteAccountModal from './DeleteAccountModal.svelte';
@@ -235,6 +235,25 @@
                                         <span style="position: absolute; left: 33.33%; transform: translateX(-50%);">100%</span>
                                         <span style="position: absolute; right: 0%;">150%</span>
                                     </div>
+                                </div>
+                            </div>
+
+                            <div id="sec-autocomplete" class="setting-group" style="padding-bottom: 1rem;">
+                                <div class="form-group">
+                                    <div class="setting-label" style="margin-bottom: 12px;">Autocomplete Suggestions</div>
+                                    <DropdownSelect
+                                        id="set-autocomplete"
+                                        customClass="settings-select"
+                                        value={$autocompleteLimit.toString()}
+                                        on:change={(e) => autocompleteLimit.set(parseInt(e.detail))}
+                                        options={[
+                                            { value: '0', label: 'Disabled' },
+                                            { value: '5', label: 'Top 5' },
+                                            { value: '10', label: 'Top 10' },
+                                            { value: '25', label: 'Top 25' },
+                                            { value: '50', label: 'Top 50' }
+                                        ]}
+                                    />
                                 </div>
                             </div>
 

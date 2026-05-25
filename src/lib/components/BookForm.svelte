@@ -281,29 +281,29 @@
             <legend>{$t.form.coreMetadata}</legend>
             <div class="input-row" class:error={!!errors.title}>
                 <label for="title">{$t.form.title} <span class="required">*</span></label>
-                <AutoExpandTextarea id="title" bind:value={formData.title} required={true} />
+                <AutoExpandTextarea id="title" bind:value={formData.title} required={true} autocompleteField="title" />
                 {#if errors.title}<span class="error-text">{errors.title}</span>{/if}
             </div>
             <div class="input-row">
                 <label for="subtitle">{$t.form.subtitle}</label>
-                <AutoExpandTextarea id="subtitle" bind:value={formData.subtitle} />
+                <AutoExpandTextarea id="subtitle" bind:value={formData.subtitle} autocompleteField="subtitle" />
             </div>
             <div class="input-row">
                 <label for="original_title">{$t.form.originalTitle}</label>
-                <AutoExpandTextarea id="original_title" bind:value={formData.original_title} />
+                <AutoExpandTextarea id="original_title" bind:value={formData.original_title} autocompleteField="original_title" />
             </div>
             <div class="input-row" class:error={!!errors.authors}>
                 <label for="authors">{$t.form.authors} <span class="required">*</span></label>
-                <ChipInput id="authors" bind:values={formData.authors} placeholder={$t.form.authorsPlaceholder} />
+                <ChipInput id="authors" bind:values={formData.authors} placeholder={$t.form.authorsPlaceholder} autocompleteField="authors" />
                 {#if errors.authors}<span class="error-text">{errors.authors}</span>{/if}
             </div>
             <div class="input-row">
                 <label for="translators">{$t.form.translators}</label>
-                <ChipInput id="translators" bind:values={formData.translators} placeholder="..." />
+                <ChipInput id="translators" bind:values={formData.translators} placeholder="..." autocompleteField="translators" />
             </div>
             <div class="input-row">
                 <label for="illustrators">{$t.form.illustrators}</label>
-                <ChipInput id="illustrators" bind:values={formData.illustrators} placeholder="..." />
+                <ChipInput id="illustrators" bind:values={formData.illustrators} placeholder="..." autocompleteField="illustrators" />
             </div>
         </fieldset>
 
@@ -311,7 +311,7 @@
             <legend>{$t.form.pubDetails}</legend>
             <div class="input-row">
                 <label for="publisher">{$t.form.publisher}</label>
-                <AutoExpandTextarea id="publisher" bind:value={formData.publisher} />
+                <AutoExpandTextarea id="publisher" bind:value={formData.publisher} autocompleteField="publisher" />
             </div>
             <div class="input-grid">
                 <div class="input-row" class:error={!!errors.publish_date}>
@@ -346,7 +346,7 @@
             <div class="input-grid">
                 <div class="input-row">
                     <label for="collection_name">{$t.form.collectionName}</label>
-                    <AutoExpandTextarea id="collection_name" bind:value={formData.collection_name} />
+                    <AutoExpandTextarea id="collection_name" bind:value={formData.collection_name} autocompleteField="collection_name" />
                 </div>
                 <div class="input-row" class:error={!!errors.volume_in_collection}>
                     <label for="volume_in_collection">{$t.form.volInCollection}</label>
@@ -357,7 +357,7 @@
             <div class="input-grid">
                 <div class="input-row">
                     <label for="series_name">{$t.form.seriesName}</label>
-                    <AutoExpandTextarea id="series_name" bind:value={formData.series_name} />
+                    <AutoExpandTextarea id="series_name" bind:value={formData.series_name} autocompleteField="series_name" />
                 </div>
                 <div class="input-row" class:error={!!errors.volume_in_series}>
                     <label for="volume_in_series">{$t.form.volInSeries}</label>
@@ -393,11 +393,11 @@
             <div class="input-grid">
                 <div class="input-row">
                     <label for="language">{$t.form.language}</label>
-                    <AutoExpandTextarea id="language" bind:value={formData.language} />
+                    <AutoExpandTextarea id="language" bind:value={formData.language} autocompleteField="language" />
                 </div>
                 <div class="input-row">
                     <label for="original_language">{$t.form.origLanguage}</label>
-                    <AutoExpandTextarea id="original_language" bind:value={formData.original_language} />
+                    <AutoExpandTextarea id="original_language" bind:value={formData.original_language} autocompleteField="original_language" />
                 </div>
             </div>
         </fieldset>
@@ -406,11 +406,11 @@
             <legend>{$t.form.classification}</legend>
             <div class="input-row">
                 <label for="subjects">{$t.form.subjects}</label>
-                <ChipInput id="subjects" bind:values={formData.subjects} placeholder="..." />
+                <ChipInput id="subjects" bind:values={formData.subjects} placeholder="..." autocompleteField="subjects" />
             </div>
             <div class="input-row">
                 <label for="genres">{$t.form.genres}</label>
-                <ChipInput id="genres" bind:values={formData.genres} placeholder="..." />
+                <ChipInput id="genres" bind:values={formData.genres} placeholder="..." autocompleteField="genres" />
             </div>
             <div class="input-row">
                 <label for="target_audience">{$t.form.targetAudience}</label>
@@ -442,7 +442,7 @@
             <div class="input-grid">
                 <div class="input-row">
                     <label for="store_or_vendor">{$t.form.storeOrVendor}</label>
-                    <AutoExpandTextarea id="store_or_vendor" bind:value={formData.store_or_vendor} />
+                    <AutoExpandTextarea id="store_or_vendor" bind:value={formData.store_or_vendor} autocompleteField="store_or_vendor" />
                 </div>
                 <div class="input-row">
                     <label for="acquisition_type">{$t.form.acquisitionType}</label>

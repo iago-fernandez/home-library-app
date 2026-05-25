@@ -161,6 +161,7 @@ export const activeMosaicAttributes = createStore(MOSAIC_PREF_KEY, defaultMosaic
 export const zoomLevel = createGenericStore<number>('library_zoom', 100);
 export const activeTheme = createGenericStore<string>('library_theme', 'sky');
 export const activeViewStore = createGenericStore<'table' | 'mosaic'>('library_active_view', 'table');
+export const autocompleteLimit = createGenericStore<number>('library_autocomplete_limit', 10);
 
 export const appThemes = {
     sky: { name: 'Ocean Blue', primary: '#0284C7', hover: '#0369A1', secondary: '#F0F9FF', topbarBg: '#334155', topbarBorder: '#1E293B' },
