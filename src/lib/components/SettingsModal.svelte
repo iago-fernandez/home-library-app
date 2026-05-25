@@ -245,8 +245,8 @@
                                     <DropdownSelect
                                         id="set-autocomplete"
                                         customClass="settings-select"
-                                        value={$autocompleteLimit.toString()}
-                                        on:change={(e) => autocompleteLimit.set(parseInt(e.detail))}
+                                        value={($autocompleteLimit ?? 10).toString()}
+                                        on:change={(e) => autocompleteLimit.set(parseInt(e.detail.value))}
                                         options={[
                                             { value: '0', label: $t.settings.disabled },
                                             { value: '5', label: '5' },

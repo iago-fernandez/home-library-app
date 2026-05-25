@@ -13,7 +13,7 @@ export function createGenericStore<T>(storageKey: string, defaultValue: T) {
                 const parsed = JSON.parse(stored);
                 if (typeof parsed === 'object' && parsed !== null && !Array.isArray(parsed)) {
                     initial = { ...defaultValue, ...parsed };
-                } else {
+                } else if (parsed !== null) {
                     initial = parsed;
                 }
             } catch (e) {
