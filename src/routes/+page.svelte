@@ -154,6 +154,7 @@
         if (e.key === 'Escape') {
             if (openMenu) { closeMenus(); return; }
             if (showExportModal || showSettingsModal) { showExportModal = false; showSettingsModal = false; return; }
+            return; // Allow the input itself to handle Escape (like closing an autocomplete dropdown)
         } else {
             return;
         }
