@@ -465,18 +465,11 @@
     <section class="center-stage">
       <div class="grid-wrapper">
         <div class="view-container">
-        {#if $bookStore.length === 0}
-          <div class="empty-state">
-            <Library size={48} color="var(--border-color)" />
-            <p>{$t.common.emptyLibrary}</p>
-          </div>
-        {:else}
           {#if $activeViewStore === 'table'}
             <DataGrid books={$bookStore} on:edit={handleEditBookClick} />
           {:else if $activeViewStore === 'mosaic'}
             <MosaicGrid books={$bookStore} on:edit={handleEditBookClick} />
           {/if}
-        {/if}
         </div>
 
         {#if activeFilters.filter(r => r.value.trim() !== '').length > 0}

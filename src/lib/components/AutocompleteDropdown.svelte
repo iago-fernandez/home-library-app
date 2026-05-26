@@ -67,10 +67,13 @@
 </script>
 
 {#if isOpen && suggestions.length > 0}
-    <ul class="autocomplete-dropdown" style="top: {topOffset}px" class:loading>
+    <ul class="autocomplete-dropdown" style="top: {topOffset}px" class:loading role="listbox">
         {#each suggestions as suggestion, i}
             <li 
                 class:selected={i === selectedIndex}
+                role="option"
+                aria-selected={i === selectedIndex}
+                tabindex="-1"
                 on:mousedown|preventDefault={() => selectSuggestion(suggestion)}
                 on:mouseenter={() => selectedIndex = i}
             >
@@ -108,15 +111,5 @@
     li:hover, li.selected {
         background-color: var(--hover-bg);
         color: var(--primary-color);
-    }
-
-    li.loading {
-        color: var(--text-muted);
-        cursor: default;
-    }
-    
-    li.loading:hover {
-        background-color: transparent;
-        color: var(--text-muted);
     }
 </style>
