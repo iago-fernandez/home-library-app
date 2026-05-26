@@ -6,7 +6,9 @@
     import ChipInput from './ChipInput.svelte';
     import BookCover from './BookCover.svelte';
     import DropdownSelect from './DropdownSelect.svelte';
-    import { Search, DownloadCloud, UploadCloud } from 'lucide-svelte';
+    import BarcodeScannerModal from './BarcodeScannerModal.svelte';
+    import CameraCaptureModal from './CameraCaptureModal.svelte';
+    import { Search, DownloadCloud, UploadCloud, Camera } from 'lucide-svelte';
 
     export let initialData: Book | null = null;
     export let onCancel: () => void;
@@ -15,6 +17,8 @@
     let isLookingUp = false;
     let fetchId = '';
     let fetchError = '';
+    let showBarcodeScanner = false;
+    let showCameraCapture = false;
 
     let formData: Partial<CreateBookPayload> = getInitialFormData(initialData);
     let selectedImageFile: File | undefined = undefined;
@@ -153,6 +157,12 @@
         }
     }
 
+    function handleBarcodeScanned(event: CustomEvent<string>) {
+        fetchId = event.detail;
+        showBarcodeScanner = false;
+        handleAutoFill();
+    }
+
     function handleFileSelection(event: Event) {
         const target = event.target as HTMLInputElement;
         if (target.files && target.files.length > 0) {
@@ -160,6 +170,12 @@
             imagePreviewUrl = URL.createObjectURL(selectedImageFile);
             formData.cover_url = '';
         }
+    }
+
+    function handleCameraCapture(event: CustomEvent<File>) {
+        selectedImageFile = event.detail;
+        imagePreviewUrl = URL.createObjectURL(selectedImageFile);
+        formData.cover_url = '';
     }
 
     function triggerFileInput() {
@@ -198,6 +214,9 @@
     }
 </script>
 
+<BarcodeScannerModal bind:isOpen={showBarcodeScanner} on:scan={handleBarcodeScanned} />
+<CameraCaptureModal bind:isOpen={showCameraCapture} on:capture={handleCameraCapture} />
+
 <form class="book-form" novalidate on:submit|preventDefault={handleSubmit} on:input={handleInput}>
     <div class="form-header">
         <h3>{initialData ? $t.form.editBook : $t.form.addNewBook}</h3>
@@ -208,10 +227,12 @@
     </div>
 
     <div class="form-scroll-area">
-        <fieldset class="form-group">
-            <legend>{$t.form.identifiers}</legend>
-
-            <div class="smart-fetch-row">
+        <div class="autofill-banner">
+            <div class="autofill-header">
+                <Search size={18} />
+                <h4>{$t.form.autofillBannerTitle || 'Smart Fetch'}</h4>
+            </div>
+            <div class="smart-fetch-container">
                 <input
                         type="text"
                         bind:value={fetchId}
@@ -219,16 +240,23 @@
                         class="fetch-input"
                         on:keydown={(e) => e.key === 'Enter' && handleAutoFill()}
                 />
-                <button type="button" class="btn-autofill" on:click={handleAutoFill} disabled={isLookingUp || !fetchId}>
-                    <DownloadCloud size={14} />
-                    {isLookingUp ? $t.form.autofillLoading : $t.form.autofill}
-                </button>
+                <div class="smart-fetch-actions">
+                    <button type="button" class="btn-scan" on:click={() => showBarcodeScanner = true} title={$t.form.scanBarcode}>
+                        <Camera size={18} /> {$t.form.scanBarcode}
+                    </button>
+                    <button type="button" class="btn-autofill" on:click={handleAutoFill} disabled={isLookingUp || !fetchId}>
+                        <DownloadCloud size={14} />
+                        {isLookingUp ? $t.form.autofillLoading : $t.form.autofill}
+                    </button>
+                </div>
             </div>
-
             {#if fetchError}
                 <div class="fetch-error-message">{fetchError}</div>
             {/if}
+        </div>
 
+        <fieldset class="form-group">
+            <legend>{$t.form.identifiers}</legend>
             <div class="input-row" class:error={!!errors.isbn_13}>
                 <label for="isbn_13">{$t.form.isbn13}</label>
                 <input type="text" id="isbn_13" bind:value={formData.isbn_13} />
@@ -266,9 +294,14 @@
                             on:change={handleFileSelection}
                             style="display: none;"
                     />
-                    <button type="button" class="btn-secondary" on:click={triggerFileInput}>
-                        <UploadCloud size={16} /> {$t.form.selectFileOrCamera}
-                    </button>
+                    <div class="cover-buttons-row">
+                        <button type="button" class="btn-secondary" on:click={triggerFileInput}>
+                            <UploadCloud size={16} /> {$t.form.selectFileOrCamera}
+                        </button>
+                        <button type="button" class="btn-secondary" on:click={() => showCameraCapture = true}>
+                            <Camera size={16} /> {$t.form.takePhoto}
+                        </button>
+                    </div>
                     <div class="input-row" style="width: 100%;">
                         <label for="cover_url_manual">{$t.form.externalUrl}</label>
                         <input type="url" id="cover_url_manual" bind:value={formData.cover_url} on:input={() => { imagePreviewUrl = formData.cover_url || ''; selectedImageFile = undefined; }} />
@@ -294,7 +327,7 @@
             </div>
             <div class="input-row" class:error={!!errors.authors}>
                 <label for="authors">{$t.form.authors} <span class="required">*</span></label>
-                <ChipInput id="authors" bind:values={formData.authors} placeholder={$t.form.authorsPlaceholder} autocompleteField="authors" />
+                <ChipInput id="authors" bind:values={formData.authors} placeholder="..." autocompleteField="authors" />
                 {#if errors.authors}<span class="error-text">{errors.authors}</span>{/if}
             </div>
             <div class="input-row">
@@ -624,11 +657,61 @@
         border-color: var(--accent-color);
     }
 
-    .smart-fetch-row {
+    .autofill-banner {
+        background-color: var(--bg-color);
+        border: 1px solid var(--border-color);
+        border-radius: 8px;
+        padding: 16px 16px 12px 16px;
+        margin-bottom: 24px;
+    }
+
+    .autofill-header {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        color: var(--primary-color);
+        margin-bottom: 16px;
+    }
+
+    .autofill-header h4 {
+        margin: 0;
+        font-size: 15px;
+        font-weight: 600;
+    }
+
+    .smart-fetch-container {
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+        margin-bottom: 0;
+    }
+
+    .smart-fetch-actions {
         display: flex;
         gap: 8px;
-        margin-bottom: 16px;
-        align-items: stretch;
+    }
+
+    .btn-scan {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        padding: 8px 16px;
+        background-color: var(--panel-bg);
+        border: 1px solid var(--border-color);
+        border-radius: 6px;
+        color: var(--text-main);
+        cursor: pointer;
+        transition: all 0.2s;
+        font-family: inherit;
+        font-weight: 500;
+        flex: 1;
+    }
+
+    .btn-scan:hover {
+        background-color: var(--bg-color);
+        color: var(--primary-color);
+        border-color: var(--primary-color);
     }
 
     .fetch-input {
@@ -728,6 +811,20 @@
         gap: 8px;
         flex: 1;
         align-items: flex-start;
+        width: 100%;
+    }
+
+    .cover-buttons-row {
+        display: flex;
+        gap: 8px;
+        width: 100%;
+    }
+
+    .cover-buttons-row .btn-secondary {
+        flex: 1;
+        justify-content: center;
+        padding: 8px;
+        font-size: 13px;
     }
 
     .input-row {

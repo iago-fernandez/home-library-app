@@ -14,6 +14,8 @@ export interface TranslationDictionary {
         close: string;
         confirm: string;
         dangerZone: string;
+        notSet: string;
+        emptyLibrary: string;
     };
     auth: {
         createWorkspace: string;
@@ -71,6 +73,8 @@ export interface TranslationDictionary {
         noCover: string;
         dragToReorder: string;
         coverAlt: string;
+        columnsDesc: string;
+        attributesDesc: string;
     };
     filters: {
         activeFilters: string;
@@ -90,6 +94,7 @@ export interface TranslationDictionary {
         greaterEqual: string;
         less: string;
         lessEqual: string;
+        notRule: string;
     };
     actions: {
         addBook: string;
@@ -111,6 +116,8 @@ export interface TranslationDictionary {
     form: {
         addNewBook: string;
         editBook: string;
+        coreMetadata: string;
+        authorsPlaceholder: string;
         identifiers: string;
         essentialInfo: string;
         pubDetails: string;
@@ -176,11 +183,15 @@ export interface TranslationDictionary {
         expectedReturnDate: string;
         autofill: string;
         autofillLoading: string;
+        autofillBannerTitle: string;
+        autofillBannerDesc: string;
         fetchErrorEmpty: string;
         fetchPlaceholder: string;
         coverImage: string;
         coverPreviewAlt: string;
         selectFileOrCamera: string;
+        takePhoto: string;
+        scanBarcode: string;
         externalUrl: string;
         statusUnread: string;
         statusReading: string;
@@ -214,6 +225,7 @@ export interface TranslationDictionary {
         workspaceTab: string;
         changeUsername: string;
         updatePassword: string;
+        confirmPassword: string;
         deleteAccount: string;
         deleteWarning: string;
         confirmDeleteAccount: string;
