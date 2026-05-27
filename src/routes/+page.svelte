@@ -10,7 +10,10 @@
   import ExportModal from '$lib/components/ExportModal.svelte';
   import SettingsModal from '$lib/components/SettingsModal.svelte';
   import BatchEditPanel from '$lib/components/BatchEditPanel.svelte';
+  import LibraryManagerModal from '$lib/components/LibraryManagerModal.svelte';
+  import MoveToLibraryModal from '$lib/components/MoveToLibraryModal.svelte';
   import { zoomLevel, activeShortcuts, activeViewStore } from '$lib/stores/preferences';
+  import { libraryStore } from '$lib/stores/library';
   import { dialogStore } from '$lib/stores/dialog';
   import type { CreateBookPayload } from '$lib/types/book';
   import { Plus, Pencil, Trash2, Filter, Settings, X, Search, CheckSquare, Download, Table, LayoutGrid, Library } from 'lucide-svelte';
@@ -18,6 +21,8 @@
   let activePanel: 'actions' | 'addBook' | 'editBook' | 'filter' | 'batchEdit' = 'actions';
   let showExportModal = false;
   let showSettingsModal = false;
+  let showLibraryManager = false;
+  let showMoveToLibraryModal = false;
   let isSubmitting = false;
 
   type FieldType = 'text' | 'numeric';
@@ -221,6 +226,9 @@
             console.error("Failed to update book", e);
         });
       } else {
+        if ($libraryStore.activeLibraryId) {
+            payload.library_id = $libraryStore.activeLibraryId;
+        }
         bookStore.addBook(payload).catch(e => {
             console.error("Failed to add book", e);
         });
@@ -459,6 +467,20 @@
       </div>
     </nav>
     <div style="flex-grow: 1;"></div>
+    <div class="library-switcher" style="display:flex; align-items:center; padding-right: 4px; gap: 8px;">
+        {#if $libraryStore.libraries.length > 0}
+            <DropdownSelect 
+                options={$libraryStore.libraries.map(l => ({ value: l.id, label: l.name }))}
+                value={$libraryStore.activeLibraryId || ''}
+                on:change={(e) => libraryStore.setActiveLibrary(e.detail.value)}
+                customClass="library-dropdown"
+                placeholder="Select Library"
+            />
+        {/if}
+        <button class="icon-btn" title="Manage Libraries" on:click={() => showLibraryManager = true} style="background: transparent; border: none; cursor: pointer; color: var(--text-muted); display:flex; padding: 4px; border-radius:4px;">
+            <Settings size={18} />
+        </button>
+    </div>
   </header>
 
   <main class="workspace">
@@ -466,9 +488,9 @@
       <div class="grid-wrapper">
         <div class="view-container">
           {#if $activeViewStore === 'table'}
-            <DataGrid books={$bookStore} on:edit={handleEditBookClick} />
+            <DataGrid on:edit={handleEditBookClick} />
           {:else if $activeViewStore === 'mosaic'}
-            <MosaicGrid books={$bookStore} on:edit={handleEditBookClick} />
+            <MosaicGrid on:edit={handleEditBookClick} />
           {/if}
         </div>
 
@@ -511,6 +533,10 @@
 
               <button class="icon-btn" title={$t.actions.exportSelected} on:click={() => showExportModal = true}>
                 <Download size={20} strokeWidth={1.5} />
+              </button>
+
+              <button class="icon-btn" title="Move to library" on:click={() => showMoveToLibraryModal = true}>
+                <Library size={20} strokeWidth={1.5} />
               </button>
 
               <button class="icon-btn danger" title={$t.actions.deleteSelected} on:click={handleBatchDeleteClick}>
@@ -678,6 +704,9 @@
 {#if showSettingsModal}
   <SettingsModal onClose={() => showSettingsModal = false} />
 {/if}
+
+<LibraryManagerModal bind:isOpen={showLibraryManager} />
+<MoveToLibraryModal bind:isOpen={showMoveToLibraryModal} selectedBookIds={$selectedIds} />
 
 <style>
   .app-container {
@@ -1224,4 +1253,18 @@
     overflow: hidden;
   }
 
+  :global(.library-dropdown) {
+    width: 200px;
+  }
+  :global(.library-dropdown .select-button) {
+    background-color: transparent !important;
+    border: 1px solid rgba(255, 255, 255, 0.2) !important;
+    color: #fff !important;
+  }
+  :global(.library-dropdown .select-icon) {
+    color: rgba(255, 255, 255, 0.7) !important;
+  }
+  :global(.library-dropdown .select-button:hover), :global(.library-dropdown .select-button:focus) {
+    border-color: rgba(255, 255, 255, 0.5) !important;
+  }
 </style>

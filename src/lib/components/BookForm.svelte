@@ -661,7 +661,7 @@
         background-color: var(--bg-color);
         border: 1px solid var(--border-color);
         border-radius: 8px;
-        padding: 16px 16px 12px 16px;
+        padding: 16px 16px 8px 16px;
         margin-bottom: 24px;
     }
 
@@ -682,7 +682,7 @@
     .smart-fetch-container {
         display: flex;
         flex-direction: column;
-        gap: 12px;
+        gap: 16px;
         margin-bottom: 0;
     }
 
