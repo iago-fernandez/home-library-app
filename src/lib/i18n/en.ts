@@ -72,6 +72,8 @@ export const en: TranslationDictionary = {
         manageAttributes: 'Manage Card Attributes',
         columnsDesc: 'Choose which columns to display in the table view.',
         attributesDesc: 'Choose which attributes to display in the mosaic view.',
+        columnsHelp: 'Drag and drop columns to reorder.',
+        attributesHelp: 'Configure card attributes.',
         columns: 'Columns',
         attributes: 'Attributes',
         noCover: 'No Cover',
@@ -168,7 +170,7 @@ export const en: TranslationDictionary = {
         addNewBook: 'Add New Book',
         editBook: 'Edit Book',
         coreMetadata: 'Core Metadata',
-        authorsPlaceholder: 'Press Enter to add author...',
+
         identifiers: 'IDENTIFIERS',
         essentialInfo: 'ESSENTIAL INFORMATION',
         pubDetails: 'PUBLICATION DETAILS',
@@ -278,8 +280,9 @@ export const en: TranslationDictionary = {
         updatePassword: 'Update Password',
         confirmPassword: 'Confirm Password',
         accountUpdated: 'Profile updated successfully',
-        dangerZone: 'Danger Zone',
-        deleteAccountDesc: 'This action is permanent and cannot be undone.',
+        deleteAccount: 'Delete Account',
+        deleteWarning: 'This action is permanent and will delete all your books and data.',
+        confirmDeleteAccount: 'Confirm account deletion',
         deleteAccountBtn: 'Delete Account',
         language: 'System Language',
         languageSelect: 'Language',
@@ -294,9 +297,7 @@ export const en: TranslationDictionary = {
         autocompleteSuggestions: 'Autocomplete Suggestions',
         disabled: 'Disabled',
         keyboardShortcuts: 'Keyboard Shortcuts',
-        shortcutsTab: 'Shortcuts',
-        deleteWarning: 'This action is permanent and will delete all your books and data.',
-        confirmDeleteAccount: 'Confirm account deletion'
+        shortcutsTab: 'Shortcuts'
     },
     batchEdit: {
         title: 'Batch Edit',
@@ -304,5 +305,31 @@ export const en: TranslationDictionary = {
         applyChanges: 'Apply Changes',
         warning: 'Only modified fields will be updated across all selected records.',
         successMessage: 'Records updated successfully.'
+    },
+    libraryManager: {
+        title: 'Manage Libraries',
+        myLibraries: 'My Libraries',
+        sharedLibraries: 'Shared With Me',
+        createNew: 'Create New',
+        libraryName: 'Library Name',
+        create: 'Create',
+        generalTab: 'General',
+        membersTab: 'Members',
+        description: 'Description',
+        noDescription: 'No description provided.',
+        saveChanges: 'Save Changes',
+        dangerZone: 'Danger Zone',
+        deleteDesc: 'This action is permanent and will delete the library and all its books.',
+        deleteLibrary: 'Delete',
+        confirmDeleteLibrary: 'Please enter your password to confirm library deletion.',
+        roleViewer: 'Viewer',
+        roleEditor: 'Editor',
+        addMember: 'Add',
+        memberUsername: 'Username',
+        memberError: 'Error. Ensure user exists and is not a member.',
+        noMembers: 'No members found.',
+        removeMember: 'Remove Member',
+        changeRole: 'Change Role',
+        cannotAddSelf: 'You cannot add yourself.'
     }
 };

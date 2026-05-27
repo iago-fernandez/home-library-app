@@ -1,6 +1,7 @@
 import { writable, get } from 'svelte/store';
 import type { Book, CreateBookPayload, UpdateBookPayload } from './types/book';
 import { apiClient } from './api/client';
+import { libraryStore } from './stores/library';
 
 function createBookStore() {
     const { subscribe, set, update } = writable<Book[]>([]);
@@ -66,7 +67,8 @@ function createBookStore() {
                     requestedOffset,
                     get(sortParam),
                     get(orderParam),
-                    currentQuery
+                    currentQuery,
+                    get(libraryStore).activeLibraryId || undefined
                 );
 
                 if (reqId !== currentRequestId) return;
@@ -270,3 +272,14 @@ function createBookStore() {
 }
 
 export const bookStore = createBookStore();
+
+// Watch activeLibraryId to reload books when library changes
+let previousLibraryId: string | null = null;
+libraryStore.subscribe(state => {
+    if (state.activeLibraryId !== previousLibraryId) {
+        previousLibraryId = state.activeLibraryId;
+        if (state.activeLibraryId) {
+            bookStore.resetAndLoad();
+        }
+    }
+});

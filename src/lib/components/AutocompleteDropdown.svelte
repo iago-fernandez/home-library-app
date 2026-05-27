@@ -50,15 +50,20 @@
         if (event.key === 'ArrowDown') {
             event.preventDefault();
             selectedIndex = (selectedIndex + 1) % suggestions.length;
+            return true;
         } else if (event.key === 'ArrowUp') {
             event.preventDefault();
             selectedIndex = (selectedIndex - 1 + suggestions.length) % suggestions.length;
+            return true;
         } else if (event.key === 'Enter' && selectedIndex >= 0) {
             event.preventDefault();
             selectSuggestion(suggestions[selectedIndex]);
+            return true;
         } else if (event.key === 'Escape') {
             isOpen = false;
+            return true;
         }
+        return false;
     }
     
     function selectSuggestion(suggestion: string) {
