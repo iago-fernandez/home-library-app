@@ -11,7 +11,7 @@ const dictionaries: Record<Locale, TranslationDictionary> = {
 };
 
 const defaultLocale: Locale = 'en';
-let initialLocale = defaultLocale;
+let initialLocale: Locale = defaultLocale;
 if (typeof window !== 'undefined') {
     const saved = localStorage.getItem('library_locale');
     if (saved === 'en' || saved === 'es') {

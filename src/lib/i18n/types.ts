@@ -16,6 +16,8 @@ export interface TranslationDictionary {
         dangerZone: string;
         notSet: string;
         emptyLibrary: string;
+        yes: string;
+        no: string;
     };
     auth: {
         createWorkspace: string;
@@ -75,6 +77,7 @@ export interface TranslationDictionary {
         coverAlt: string;
         columnsDesc: string;
         attributesDesc: string;
+        [key: string]: string; // Allow col_ properties
     };
     filters: {
         activeFilters: string;
@@ -117,7 +120,7 @@ export interface TranslationDictionary {
         addNewBook: string;
         editBook: string;
         coreMetadata: string;
-        authorsPlaceholder: string;
+
         identifiers: string;
         essentialInfo: string;
         pubDetails: string;
@@ -229,6 +232,7 @@ export interface TranslationDictionary {
         deleteAccount: string;
         deleteWarning: string;
         confirmDeleteAccount: string;
+        deleteAccountBtn: string;
         accountUpdated: string;
         language: string;
         languageSelect: string;
@@ -246,7 +250,6 @@ export interface TranslationDictionary {
         shortcutsTab: string;
         dangerZone: string;
         deleteAccountDesc: string;
-        deleteAccountBtn: string;
     };
     batchEdit: {
         title: string;
@@ -254,5 +257,30 @@ export interface TranslationDictionary {
         applyChanges: string;
         warning: string;
         successMessage: string;
+    };
+    libraryManager: {
+        title: string;
+        myLibraries: string;
+        sharedLibraries: string;
+        createNew: string;
+        libraryName: string;
+        create: string;
+        generalTab: string;
+        membersTab: string;
+        description: string;
+        noDescription: string;
+        saveChanges: string;
+        dangerZone: string;
+        deleteDesc: string;
+        deleteLibrary: string;
+        roleViewer: string;
+        roleEditor: string;
+        addMember: string;
+        memberUsername: string;
+        memberError: string;
+        noMembers: string;
+        removeMember: string;
+        changeRole: string;
+        cannotAddSelf: string;
     };
 }
