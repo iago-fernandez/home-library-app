@@ -108,7 +108,8 @@
         position: absolute;
         top: calc(100% + 4px);
         left: 0;
-        width: 100%;
+        min-width: 100%;
+        width: max-content;
         background-color: var(--panel-bg);
         border: 1px solid var(--border-color);
         border-radius: 6px;
@@ -143,6 +144,7 @@
         color: var(--text-main);
         cursor: pointer;
         transition: background-color 0.15s ease;
+        white-space: nowrap;
     }
 
     .select-option:hover {

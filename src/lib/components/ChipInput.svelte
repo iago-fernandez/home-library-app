@@ -27,9 +27,9 @@
         }
 
         if (event.key === 'Enter') {
-            if (isAutocompleteOpen) {
-                autocompleteComponent.handleKeydown(event);
-                return;
+            if (isAutocompleteOpen && autocompleteComponent) {
+                const handled = autocompleteComponent.handleKeydown(event);
+                if (handled) return;
             }
             event.preventDefault();
             const trimmed = inputValue.trim();

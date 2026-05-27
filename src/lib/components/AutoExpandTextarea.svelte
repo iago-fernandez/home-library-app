@@ -5,6 +5,9 @@
     export let id: string = '';
     export let required: boolean = false;
     export let autocompleteField: string | null = null;
+    export let placeholder: string = '';
+    export let customStyle: string = '';
+    export let customClass: string = '';
 
     let textareaElement: HTMLTextAreaElement;
     let containerElement: HTMLDivElement;
@@ -82,6 +85,9 @@
             on:keydown={handleKeydown}
             rows="1"
             autocomplete="off"
+            {placeholder}
+            class={customClass}
+            style={customStyle}
     ></textarea>
     
     {#if autocompleteField}
