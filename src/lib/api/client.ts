@@ -1,5 +1,6 @@
 import type { Book, CreateBookPayload, UpdateBookPayload, PaginatedResponse, BookMetadataResponse } from '../types/book';
 import type { AuthRequest, AuthResponse, User } from '../types/auth';
+import type { Library, CreateLibraryPayload, UpdateLibraryPayload, LibraryMember, ShareLibraryPayload } from '../types/library';
 import { sanitizeBookPayload } from './sanitizer';
 import { authStore } from '../stores/auth';
 import { get } from 'svelte/store';
@@ -58,7 +59,8 @@ export const apiClient = {
         offset = 0,
         sortBy?: string,
         sortOrder?: 'asc' | 'desc',
-        queryJson?: string
+        queryJson?: string,
+        libraryId?: string
     ): Promise<PaginatedResponse> {
         const url = new URL(`${API_BASE_URL}/books`);
         url.searchParams.append('limit', limit.toString());
@@ -67,6 +69,7 @@ export const apiClient = {
         if (sortBy) url.searchParams.append('sort_by', sortBy);
         if (sortOrder) url.searchParams.append('sort_order', sortOrder);
         if (queryJson) url.searchParams.append('query', queryJson);
+        if (libraryId) url.searchParams.append('library_id', libraryId);
 
         const response = await apiFetch(url.toString(), {
             method: 'GET',
@@ -218,5 +221,70 @@ export const apiClient = {
         });
         if (!response.ok) throw new Error('Failed to delete account');
         this.logout();
+    },
+
+    async getLibraries(): Promise<Library[]> {
+        const response = await apiFetch(`${API_BASE_URL}/libraries`, {
+            headers: getHeaders()
+        });
+        if (!response.ok) throw new Error('Failed to fetch libraries');
+        return response.json();
+    },
+
+    async createLibrary(payload: CreateLibraryPayload): Promise<Library> {
+        const response = await apiFetch(`${API_BASE_URL}/libraries`, {
+            method: 'POST',
+            headers: getHeaders({ 'Content-Type': 'application/json' }),
+            body: JSON.stringify(payload)
+        });
+        if (!response.ok) throw new Error('Failed to create library');
+        return response.json();
+    },
+
+    async updateLibrary(id: string, payload: UpdateLibraryPayload): Promise<Library> {
+        const response = await apiFetch(`${API_BASE_URL}/libraries/${id}`, {
+            method: 'PUT',
+            headers: getHeaders({ 'Content-Type': 'application/json' }),
+            body: JSON.stringify(payload)
+        });
+        if (!response.ok) throw new Error('Failed to update library');
+        return response.json();
+    },
+
+    async deleteLibrary(id: string): Promise<void> {
+        const response = await apiFetch(`${API_BASE_URL}/libraries/${id}`, {
+            method: 'DELETE',
+            headers: getHeaders()
+        });
+        if (!response.ok) throw new Error('Failed to delete library');
+    },
+
+    async getLibraryMembers(libraryId: string): Promise<LibraryMember[]> {
+        const response = await apiFetch(`${API_BASE_URL}/libraries/${libraryId}/members`, {
+            headers: getHeaders()
+        });
+        if (!response.ok) throw new Error('Failed to fetch library members');
+        return response.json();
+    },
+
+    async addLibraryMember(libraryId: string, payload: ShareLibraryPayload): Promise<LibraryMember> {
+        const response = await apiFetch(`${API_BASE_URL}/libraries/${libraryId}/members`, {
+            method: 'POST',
+            headers: getHeaders({ 'Content-Type': 'application/json' }),
+            body: JSON.stringify(payload)
+        });
+        if (!response.ok) {
+            const errBody = await response.text();
+            throw new Error(errBody || 'Failed to add library member');
+        }
+        return response.json();
+    },
+
+    async removeLibraryMember(libraryId: string, userId: string): Promise<void> {
+        const response = await apiFetch(`${API_BASE_URL}/libraries/${libraryId}/members/${userId}`, {
+            method: 'DELETE',
+            headers: getHeaders()
+        });
+        if (!response.ok) throw new Error('Failed to remove library member');
     }
 };
