@@ -8,6 +8,7 @@
     export let id: string = '';
     export let customClass: string = '';
     export let direction: 'down' | 'up' = 'down';
+    export let align: 'left' | 'right' = 'left';
 
     const dispatch = createEventDispatcher();
     let isOpen = false;
@@ -41,7 +42,7 @@
     </button>
 
     {#if isOpen}
-        <div class="select-dropdown" class:up={direction === 'up'}>
+        <div class="select-dropdown" class:up={direction === 'up'} class:align-right={align === 'right'}>
             {#each options as option}
                 <button
                     type="button"
@@ -125,6 +126,11 @@
         top: auto;
         bottom: calc(100% + 4px);
         transform-origin: bottom;
+    }
+
+    .select-dropdown.align-right {
+        left: auto;
+        right: 0;
     }
 
     @keyframes fadeIn {

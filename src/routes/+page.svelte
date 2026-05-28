@@ -475,6 +475,7 @@
                 on:change={(e) => libraryStore.setActiveLibrary(e.detail.value)}
                 customClass="library-dropdown"
                 placeholder="Select Library"
+                align="right"
             />
         {/if}
         <button class="icon-btn" title="Manage Libraries" on:click={() => showLibraryManager = true} style="background: transparent; border: none; cursor: pointer; color: var(--text-muted); display:flex; padding: 4px; border-radius:4px;">
