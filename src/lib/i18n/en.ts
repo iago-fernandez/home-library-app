@@ -50,10 +50,20 @@ export const en: TranslationDictionary = {
         toggleSidebar: 'Toggle Sidebar',
         importIsbn: 'Import ISBN List',
         exportCsv: 'Export Data...',
-        documentation: 'Documentation',
+        userGuide: 'User Guide',
         about: 'About',
         enterMultiSelect: 'Enter Multi-Select Mode',
-        exitMultiSelect: 'Exit Multi-Select Mode'
+        exitMultiSelect: 'Exit Multi-Select Mode',
+        addBook: 'Add Book',
+        editBook: 'Edit Book',
+        editBooks: 'Edit Books',
+        deleteBook: 'Delete Book',
+        deleteBooks: 'Delete Books',
+        moveBook: 'Move to Library',
+        moveBooks: 'Move Books to Library',
+        zoomIn: 'Zoom In',
+        zoomOut: 'Zoom Out',
+        zoomReset: 'Reset Zoom'
     },
     grid: {
         allColumns: 'All Columns',
@@ -330,6 +340,15 @@ export const en: TranslationDictionary = {
         noMembers: 'No members found.',
         removeMember: 'Remove Member',
         changeRole: 'Change Role',
-        cannotAddSelf: 'You cannot add yourself.'
+        cannotAddSelf: 'You cannot add yourself as a member.'
+    },
+    modals: {
+        moveToLibrary: {
+            title: 'Move to Library',
+            selectDestinationSingular: 'Select destination library for this book:',
+            selectDestinationPlural: 'Select destination library for {count} books:',
+            moveBtn: 'Move',
+            moveError: 'Failed to move books. Please verify data and try again.'
+        }
     }
 };
