@@ -48,10 +48,20 @@ export interface TranslationDictionary {
         toggleSidebar: string;
         importIsbn: string;
         exportCsv: string;
-        documentation: string;
+        userGuide: string;
         about: string;
         enterMultiSelect: string;
         exitMultiSelect: string;
+        addBook: string;
+        editBook: string;
+        editBooks: string;
+        deleteBook: string;
+        deleteBooks: string;
+        moveBook: string;
+        moveBooks: string;
+        zoomIn: string;
+        zoomOut: string;
+        zoomReset: string;
     };
     grid: {
         allColumns: string;
@@ -282,5 +292,14 @@ export interface TranslationDictionary {
         removeMember: string;
         changeRole: string;
         cannotAddSelf: string;
+    };
+    modals: {
+        moveToLibrary: {
+            title: string;
+            selectDestinationSingular: string;
+            selectDestinationPlural: string;
+            moveBtn: string;
+            moveError: string;
+        };
     };
 }

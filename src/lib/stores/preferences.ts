@@ -175,10 +175,16 @@ export const appThemes = {
 // Shortcuts
 export const defaultShortcuts = {
     newBook: 'ctrl+a',
+    editBook: 'ctrl+e',
     search: 'ctrl+f',
+    advancedFilter: 'ctrl+shift+f',
     toggleMultiSelect: 'ctrl+m',
     deleteSelected: 'delete',
+    moveBook: 'ctrl+shift+m',
     settings: 'ctrl+,',
-    export: 'ctrl+e'
+    export: 'ctrl+shift+e',
+    zoomIn: 'ctrl++',
+    zoomOut: 'ctrl+-',
+    zoomReset: 'ctrl+0'
 };
 export const activeShortcuts = createGenericStore<Record<string, string>>('library_shortcuts', defaultShortcuts);

@@ -16,7 +16,7 @@
   import { libraryStore } from '$lib/stores/library';
   import { dialogStore } from '$lib/stores/dialog';
   import type { CreateBookPayload } from '$lib/types/book';
-  import { Plus, Pencil, Trash2, Filter, Settings, X, Search, CheckSquare, Download, Table, LayoutGrid, Library } from 'lucide-svelte';
+  import { Plus, Pencil, Trash2, Filter, Settings, X, Search, CheckSquare, Download, Table, LayoutGrid, Library, Minus, RotateCcw } from 'lucide-svelte';
 
   let activePanel: 'actions' | 'addBook' | 'editBook' | 'filter' | 'batchEdit' = 'actions';
   let showExportModal = false;
@@ -189,6 +189,26 @@
       e.preventDefault();
       e.stopPropagation();
       showExportModal = true;
+    } else if (keyCombo === sc.editBook && $selectedIds.length > 0) {
+      e.preventDefault();
+      e.stopPropagation();
+      activePanel = $selectedIds.length === 1 ? 'editBook' : 'batchEdit';
+    } else if (keyCombo === sc.moveBook && $selectedIds.length > 0) {
+      e.preventDefault();
+      e.stopPropagation();
+      showMoveToLibraryModal = true;
+    } else if (keyCombo === sc.zoomIn) {
+      e.preventDefault();
+      e.stopPropagation();
+      $zoomLevel = Math.min($zoomLevel + 10, 200);
+    } else if (keyCombo === sc.zoomOut) {
+      e.preventDefault();
+      e.stopPropagation();
+      $zoomLevel = Math.max($zoomLevel - 10, 50);
+    } else if (keyCombo === sc.zoomReset) {
+      e.preventDefault();
+      e.stopPropagation();
+      $zoomLevel = 100;
     } else if (e.key === 'Escape') {
         if (openMenu) { closeMenus(); return; }
         if (showExportModal || showSettingsModal) { showExportModal = false; showSettingsModal = false; return; }
@@ -378,7 +398,6 @@
         <button class="menu-btn" class:active={openMenu === 'File'} on:click={() => toggleMenu('File')}>{$t.menu.file}</button>
         {#if openMenu === 'File'}
           <div class="dropdown-menu">
-            <button class="dropdown-item">{$t.menu.newLibrary}</button>
             <button class="dropdown-item" on:click={() => { showSettingsModal = true; closeMenus(); }}>
               <div style="display:flex; justify-content:space-between; align-items:center; width:100%; gap:16px;">
                 <span>{$t.menu.settings}</span>
@@ -397,23 +416,35 @@
         <button class="menu-btn" class:active={openMenu === 'Edit'} on:click={() => toggleMenu('Edit')}>{$t.menu.edit}</button>
         {#if openMenu === 'Edit'}
           <div class="dropdown-menu">
+            <button class="dropdown-item" on:click={() => { activePanel = 'addBook'; closeMenus(); }}>
+              <div style="display:flex; justify-content:space-between; align-items:center; width:100%; gap:16px;">
+                <span>{$t.menu.addBook}</span>
+                <span class="shortcut-hint" style="opacity:0.6; font-size:0.9em;">({formatShortcut($activeShortcuts.newBook)})</span>
+              </div>
+            </button>
+            <button class="dropdown-item" on:click={() => { if ($selectedIds.length > 0) { activePanel = $selectedIds.length === 1 ? 'editBook' : 'batchEdit'; closeMenus(); } }} disabled={$selectedIds.length === 0}>
+              <div style="display:flex; justify-content:space-between; align-items:center; width:100%; gap:16px;">
+                <span>{$selectedIds.length > 1 ? $t.menu.editBooks : $t.menu.editBook}</span>
+                <span class="shortcut-hint" style="opacity:0.6; font-size:0.9em;">({formatShortcut($activeShortcuts.editBook)})</span>
+              </div>
+            </button>
+            <button class="dropdown-item" on:click={() => { if ($selectedIds.length > 0) { handleBatchDeleteClick(); closeMenus(); } }} disabled={$selectedIds.length === 0}>
+              <div style="display:flex; justify-content:space-between; align-items:center; width:100%; gap:16px;">
+                <span>{$selectedIds.length > 1 ? $t.menu.deleteBooks : $t.menu.deleteBook}</span>
+                <span class="shortcut-hint" style="opacity:0.6; font-size:0.9em;">({formatShortcut($activeShortcuts.deleteSelected)})</span>
+              </div>
+            </button>
+            <button class="dropdown-item" on:click={() => { if ($selectedIds.length > 0) { showMoveToLibraryModal = true; closeMenus(); } }} disabled={$selectedIds.length === 0}>
+              <div style="display:flex; justify-content:space-between; align-items:center; width:100%; gap:16px;">
+                <span>{$selectedIds.length > 1 ? $t.menu.moveBooks : $t.menu.moveBook}</span>
+                <span class="shortcut-hint" style="opacity:0.6; font-size:0.9em;">({formatShortcut($activeShortcuts.moveBook)})</span>
+              </div>
+            </button>
+            <div class="menu-divider" style="height: 1px; background-color: var(--border-color); margin: 4px 0;"></div>
             <button class="dropdown-item" on:click={() => { bookStore.toggleMultiSelectMode(); closeMenus(); }}>
               <div style="display:flex; justify-content:space-between; align-items:center; width:100%; gap:16px;">
                 <span>{$multiSelectMode ? $t.menu.exitMultiSelect : $t.menu.enterMultiSelect}</span>
                 <span class="shortcut-hint" style="opacity:0.6; font-size:0.9em;">({formatShortcut($activeShortcuts.toggleMultiSelect)})</span>
-              </div>
-            </button>
-            <div class="dropdown-divider"></div>
-            <button class="dropdown-item" on:click={() => { bookStore.toggleLocalSearch(); closeMenus(); }}>
-              <div style="display:flex; justify-content:space-between; align-items:center; width:100%; gap:16px;">
-                <span>{$t.menu.findInView}</span>
-                <span class="shortcut-hint" style="opacity:0.6; font-size:0.9em;">({formatShortcut($activeShortcuts.search)})</span>
-              </div>
-            </button>
-            <button class="dropdown-item" on:click={() => { handleFilterClick(); closeMenus(); }}>
-              <div style="display:flex; justify-content:space-between; align-items:center; width:100%; gap:16px;">
-                <span>{$t.menu.advancedFilter}</span>
-                <span class="shortcut-hint" style="opacity:0.6; font-size:0.9em;">({formatShortcut('ctrl+shift+f')})</span>
               </div>
             </button>
           </div>
@@ -424,6 +455,20 @@
         <button class="menu-btn" class:active={openMenu === 'View'} on:click={() => toggleMenu('View')}>{$t.menu.view}</button>
         {#if openMenu === 'View'}
           <div class="dropdown-menu">
+            <div class="dropdown-item zoom-control" style="display:flex; justify-content:space-between; align-items:center; cursor: default; padding-top: 6px; padding-bottom: 6px;">
+              <span>Zoom</span>
+              <div style="display:flex; align-items:center; gap: 4px;">
+                <button class="zoom-btn" on:click|stopPropagation={() => $zoomLevel = Math.max($zoomLevel - 10, 50)} title="{$t.menu.zoomOut}"><Minus size={14}/></button>
+                <input 
+                  type="number" 
+                  min="50" max="200" step="5"
+                  bind:value={$zoomLevel}
+                  on:blur={() => $zoomLevel = Math.max(50, Math.min(200, $zoomLevel))}
+                  class="zoom-input"
+                />
+                <button class="zoom-btn" on:click|stopPropagation={() => $zoomLevel = Math.min($zoomLevel + 10, 200)} title="{$t.menu.zoomIn}"><Plus size={14}/></button>
+              </div>
+            </div>
             <button class="dropdown-item" on:click={() => { bookStore.loadBooks(); closeMenus(); }}>
               <div style="display:flex; justify-content:space-between; width:100%">
                 <span>{$t.common.refresh}</span>
@@ -445,7 +490,19 @@
         <button class="menu-btn" class:active={openMenu === 'Tools'} on:click={() => toggleMenu('Tools')}>{$t.menu.tools}</button>
         {#if openMenu === 'Tools'}
           <div class="dropdown-menu">
-            <button class="dropdown-item">{$t.menu.importIsbn}</button>
+            <button class="dropdown-item" on:click={() => { bookStore.toggleLocalSearch(); closeMenus(); }}>
+              <div style="display:flex; justify-content:space-between; align-items:center; width:100%; gap:16px;">
+                <span>{$t.menu.findInView}</span>
+                <span class="shortcut-hint" style="opacity:0.6; font-size:0.9em;">({formatShortcut($activeShortcuts.search)})</span>
+              </div>
+            </button>
+            <button class="dropdown-item" on:click={() => { handleFilterClick(); closeMenus(); }}>
+              <div style="display:flex; justify-content:space-between; align-items:center; width:100%; gap:16px;">
+                <span>{$t.menu.advancedFilter}</span>
+                <span class="shortcut-hint" style="opacity:0.6; font-size:0.9em;">(CTRL+SHIFT+F)</span>
+              </div>
+            </button>
+            <div class="menu-divider" style="height: 1px; background-color: var(--border-color); margin: 4px 0;"></div>
             <button class="dropdown-item" on:click={() => { showExportModal = true; closeMenus(); }}>
               <div style="display:flex; justify-content:space-between; width:100%">
                 <span>{$t.menu.exportCsv}</span>
@@ -460,8 +517,7 @@
         <button class="menu-btn" class:active={openMenu === 'Help'} on:click={() => toggleMenu('Help')}>{$t.menu.help}</button>
         {#if openMenu === 'Help'}
           <div class="dropdown-menu">
-            <button class="dropdown-item">{$t.menu.documentation}</button>
-            <button class="dropdown-item">{$t.menu.about}</button>
+            <button class="dropdown-item" on:click={() => { closeMenus(); }}>{$t.menu.userGuide}</button>
           </div>
         {/if}
       </div>
@@ -536,7 +592,7 @@
                 <Download size={20} strokeWidth={1.5} />
               </button>
 
-              <button class="icon-btn" title="Move to library" on:click={() => showMoveToLibraryModal = true}>
+              <button class="icon-btn" title={$t.menu.moveBook} on:click={() => showMoveToLibraryModal = true}>
                 <Library size={20} strokeWidth={1.5} />
               </button>
 
@@ -796,6 +852,61 @@
 
   .dropdown-item:hover {
     background-color: var(--bg-color);
+  }
+
+  .dropdown-item:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+
+  .dropdown-item:disabled:hover {
+    background-color: transparent;
+  }
+
+  .dropdown-item.zoom-control:hover {
+    background-color: transparent;
+  }
+
+  .zoom-btn {
+    background: none;
+    border: none;
+    color: var(--text-main);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 4px;
+    border-radius: 4px;
+    transition: background-color 0.15s ease;
+  }
+
+  .zoom-btn:hover {
+    background-color: var(--border-color);
+  }
+
+  .zoom-input {
+    font-size: 13px;
+    width: 5ch;
+    text-align: center;
+    background: transparent;
+    border: none;
+    color: var(--text-main);
+    padding: 2px 0;
+    -moz-appearance: textfield;
+    border-radius: 4px;
+    transition: all 0.2s;
+  }
+
+  .zoom-input:focus {
+    outline: none;
+    background-color: var(--bg-color);
+    box-shadow: 0 0 0 1px var(--primary-color);
+  }
+
+  .zoom-input::-webkit-outer-spin-button,
+  .zoom-input::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
   }
 
   .dropdown-divider {

@@ -50,10 +50,20 @@ export const es: TranslationDictionary = {
         toggleSidebar: 'Alternar Panel Lateral',
         importIsbn: 'Importar Lista ISBN',
         exportCsv: 'Exportar Datos...',
-        documentation: 'Documentación',
+        userGuide: 'Guía de Usuario',
         about: 'Acerca de',
         enterMultiSelect: 'Activar Selección Múltiple',
-        exitMultiSelect: 'Salir de Selección Múltiple'
+        exitMultiSelect: 'Salir de Selección Múltiple',
+        addBook: 'Añadir Libro',
+        editBook: 'Editar Libro',
+        editBooks: 'Editar Libros',
+        deleteBook: 'Eliminar Libro',
+        deleteBooks: 'Eliminar Libros',
+        moveBook: 'Mover de Librería',
+        moveBooks: 'Mover Libros',
+        zoomIn: 'Acercar Zoom',
+        zoomOut: 'Alejar Zoom',
+        zoomReset: 'Restablecer Zoom'
     },
     grid: {
         allColumns: 'Todas las Columnas',
@@ -334,5 +344,14 @@ export const es: TranslationDictionary = {
         removeMember: 'Eliminar Miembro',
         changeRole: 'Cambiar Permisos',
         cannotAddSelf: 'No puedes añadirte a ti mismo.'
+    },
+    modals: {
+        moveToLibrary: {
+            title: 'Mover a Librería',
+            selectDestinationSingular: 'Selecciona la librería de destino para este libro:',
+            selectDestinationPlural: 'Selecciona la librería de destino para {count} libros:',
+            moveBtn: 'Mover',
+            moveError: 'Error al mover los libros. Verifica los datos o actualiza la página.'
+        }
     }
 };
