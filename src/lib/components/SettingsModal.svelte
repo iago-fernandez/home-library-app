@@ -20,6 +20,8 @@
     let accountError = '';
     let accountSuccess = false;
 
+    let capturingKey: string | null = null;
+
     let showDeleteConfirm = false;
     let deletePassword = '';
     let deleteError = '';
@@ -227,14 +229,14 @@
                                     <h3 class="section-title" style="margin-bottom: 12px;">{$t.settings.zoomLevel} ({$zoomLevel}%)</h3>
                                     <input 
                                         type="range" 
-                                        min="75" max="150" step="5" 
+                                        min="50" max="200" step="5" 
                                         bind:value={$zoomLevel}
                                         class="zoom-slider"
                                     />
                                     <div class="zoom-hints" style="position: relative; height: 16px; width: 100%;">
-                                        <span style="position: absolute; left: 0%;">75%</span>
+                                        <span style="position: absolute; left: 0%;">50%</span>
                                         <span style="position: absolute; left: 33.33%; transform: translateX(-50%);">100%</span>
-                                        <span style="position: absolute; right: 0%;">150%</span>
+                                        <span style="position: absolute; right: 0%;">200%</span>
                                     </div>
                                 </div>
                             </div>
@@ -269,21 +271,27 @@
                                     {#each Object.entries($activeShortcuts) as [action, keyCombo]}
                                         <div class="shortcut-item">
                                             <span>{
-                                                action === 'newBook' ? $t.form.addNewBook :
+                                                action === 'newBook' ? $t.menu.addBook :
+                                                action === 'editBook' ? $t.menu.editBook :
                                                 action === 'search' ? $t.common.search :
                                                 action === 'toggleMultiSelect' ? $t.menu.enterMultiSelect :
                                                 action === 'deleteSelected' ? $t.common.delete :
+                                                action === 'moveBook' ? $t.menu.moveBook :
                                                 action === 'settings' ? $t.menu.settings :
                                                 action === 'export' ? $t.menu.exportCsv :
+                                                action === 'advancedFilter' ? $t.menu.advancedFilter :
+                                                action === 'zoomIn' ? $t.menu.zoomIn :
+                                                action === 'zoomOut' ? $t.menu.zoomOut :
+                                                action === 'zoomReset' ? $t.menu.zoomReset :
                                                 action
                                             }</span>
-                                            <input 
-                                                type="text" 
-                                                value={formatShortcut(keyCombo)}
-                                                readonly
-                                                placeholder="Click to rebind..."
-                                                on:focus={(e) => { e.currentTarget.value = 'CAPTURING...'; e.currentTarget.classList.add('capturing'); }}
-                                                on:blur={(e) => { e.currentTarget.value = formatShortcut($activeShortcuts[action]); e.currentTarget.classList.remove('capturing'); }}
+                                            <div 
+                                                class="shortcut-btn"
+                                                class:capturing={capturingKey === action}
+                                                tabindex="0"
+                                                role="button"
+                                                on:focus={() => capturingKey = action}
+                                                on:blur={() => capturingKey = null}
                                                 on:keydown={(e) => {
                                                     e.preventDefault();
                                                     if (e.key === 'Escape') {
@@ -300,7 +308,16 @@
                                                     activeShortcuts.update(sc => ({ ...sc, [action]: newCombo }));
                                                     e.currentTarget.blur();
                                                 }}
-                                            />
+                                            >
+                                                {#if capturingKey === action}
+                                                    <span class="capturing-text">CAPTURING...</span>
+                                                {:else}
+                                                    {#each formatShortcut(keyCombo).split('+') as key, i}
+                                                        {#if i > 0}<span class="plus-sep">+</span>{/if}
+                                                        <kbd class="shortcut-kbd">{key}</kbd>
+                                                    {/each}
+                                                {/if}
+                                            </div>
                                         </div>
                                     {/each}
                                 </div>
@@ -618,21 +635,50 @@
         border-radius: 6px;
         font-size: 13px;
     }
-    .shortcut-item input {
-        width: 120px;
+    .shortcut-btn {
+        width: 150px;
         text-align: center;
         font-family: monospace;
         cursor: pointer;
         padding: 4px;
         border: 1px solid var(--border-color);
         border-radius: 4px;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        background: var(--bg-color);
+        transition: all 0.2s;
     }
-    .shortcut-item input:focus, :global(.shortcut-item input.capturing) {
+    .shortcut-btn:focus, .shortcut-btn.capturing {
         border-color: var(--primary-color);
         box-shadow: 0 0 0 1px var(--primary-color);
         color: var(--primary-color);
         background-color: var(--bg-color);
         outline: none;
+    }
+    .shortcut-kbd {
+        display: inline-block;
+        padding: 2px 6px;
+        background: var(--button-bg, #f1f5f9);
+        border: 1px solid var(--button-border, #cbd5e1);
+        border-radius: 4px;
+        font-size: 11px;
+        color: var(--text-main);
+        font-family: inherit;
+        box-shadow: 0 1px 1px rgba(0,0,0,0.05);
+    }
+    .shortcut-btn.capturing .shortcut-kbd {
+        display: none;
+    }
+    .plus-sep {
+        margin: 0 4px;
+        color: var(--primary-color);
+        font-weight: bold;
+    }
+    .capturing-text {
+        color: var(--primary-color);
+        font-weight: 600;
+        font-size: 12px;
     }
 
     .group-header {
