@@ -1,6 +1,6 @@
 <script lang="ts">
   import { onMount } from 'svelte';
-  import { bookStore } from '$lib/store';
+  import { bookStore } from '$lib/stores/book';
   import { apiClient } from '$lib/api/client';
   import { t } from '$lib/i18n';
   import DataGrid from '$lib/components/DataGrid.svelte';
@@ -16,7 +16,7 @@
   import { libraryStore } from '$lib/stores/library';
   import { dialogStore } from '$lib/stores/dialog';
   import type { CreateBookPayload } from '$lib/types/book';
-  import { Plus, Pencil, Trash2, Filter, Settings, X, Search, CheckSquare, Download, Table, LayoutGrid, Library, Minus, RotateCcw } from 'lucide-svelte';
+  import { Plus, Pencil, Trash2, Filter, Settings, X, Search, CheckSquare, Download, Table, LayoutGrid, Library, Minus, RotateCcw, FolderOutput } from 'lucide-svelte';
 
   let activePanel: 'actions' | 'addBook' | 'editBook' | 'filter' | 'batchEdit' = 'actions';
   let showExportModal = false;
@@ -51,15 +51,34 @@
   const selectedId = bookStore.selectedId;
   const multiSelectMode = bookStore.multiSelectMode;
 
-  $: availableFields = [
-    { value: 'title', label: $t.grid.title, type: 'text' as FieldType, inputType: 'text' as InputHTMLType },
-    { value: 'author', label: $t.grid.authors, type: 'text' as FieldType, inputType: 'text' as InputHTMLType },
-    { value: 'publisher', label: $t.grid.publisher, type: 'text' as FieldType, inputType: 'text' as InputHTMLType },
-    { value: 'publish_date', label: $t.grid.date, type: 'numeric' as FieldType, inputType: 'date' as InputHTMLType },
-    { value: 'isbn_13', label: $t.grid.isbn, type: 'text' as FieldType, inputType: 'text' as InputHTMLType },
-    { value: 'location_room', label: $t.grid.room, type: 'text' as FieldType, inputType: 'text' as InputHTMLType },
-    { value: 'location_bookcase', label: $t.grid.bookcase, type: 'text' as FieldType, inputType: 'text' as InputHTMLType }
-  ];
+  import { availableColumns } from '$lib/stores/preferences';
+
+  $: availableFields = availableColumns.map(col => {
+      let type: FieldType = 'text';
+      let inputType: InputHTMLType = 'text';
+      
+      const numFields = ['catalog_number', 'page_count', 'rating', 'volume_in_collection', 'volume_in_series', 'purchase_price', 'location_position'];
+      const dateFields = ['publish_date', 'original_publish_date', 'purchase_date', 'date_started', 'date_finished', 'loan_date', 'expected_return_date', 'created_at', 'updated_at'];
+      const boolFields = ['is_first_edition', 'is_loaned'];
+      
+      if (numFields.includes(col.id)) {
+          type = 'numeric';
+          inputType = 'number';
+      } else if (dateFields.includes(col.id)) {
+          type = 'numeric';
+          inputType = 'date';
+      } else if (boolFields.includes(col.id)) {
+          type = 'text'; // We can use exact match for boolean with "true" or "false"
+          inputType = 'text';
+      }
+
+      return {
+          value: col.id,
+          label: ($t.grid as Record<string, string>)['col_' + col.id] || col.label,
+          type,
+          inputType
+      };
+  }).sort((a, b) => a.label.localeCompare(b.label));
 
   $: operatorDefinitions = {
     text: [
@@ -143,6 +162,10 @@
   }
 
   function handleGlobalKeydown(e: KeyboardEvent) {
+    if (typeof document !== 'undefined' && document.activeElement?.classList.contains('shortcut-btn')) {
+        return;
+    }
+
     const isInput = e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement || e.target instanceof HTMLSelectElement;
     
     const keyCombo = [
@@ -593,7 +616,7 @@
               </button>
 
               <button class="icon-btn" title={$t.menu.moveBook} on:click={() => showMoveToLibraryModal = true}>
-                <Library size={20} strokeWidth={1.5} />
+                <FolderOutput size={20} strokeWidth={1.5} />
               </button>
 
               <button class="icon-btn danger" title={$t.actions.deleteSelected} on:click={handleBatchDeleteClick}>

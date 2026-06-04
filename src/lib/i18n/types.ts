@@ -194,6 +194,8 @@ export interface TranslationDictionary {
         loanedTo: string;
         loanDate: string;
         expectedReturnDate: string;
+        createdAt: string;
+        updatedAt: string;
         autofill: string;
         autofillLoading: string;
         autofillBannerTitle: string;
@@ -235,6 +237,15 @@ export interface TranslationDictionary {
         title: string;
         accountTab: string;
         preferencesTab: string;
+        dateFormat: string;
+        dateFormats: {
+            dd_mm_yyyy_hh_mm_ss: string;
+            dd_mm_yyyy: string;
+            mm_dd_yyyy_hh_mm_ss: string;
+            mm_dd_yyyy: string;
+            yyyy_mm_dd_hh_mm_ss: string;
+            yyyy_mm_dd: string;
+        };
         workspaceTab: string;
         changeUsername: string;
         updatePassword: string;
@@ -283,11 +294,14 @@ export interface TranslationDictionary {
         dangerZone: string;
         deleteDesc: string;
         deleteLibrary: string;
+        confirmDeleteLibrary: string;
         roleViewer: string;
         roleEditor: string;
         addMember: string;
+        memberAddSuccess: string;
         memberUsername: string;
         memberError: string;
+        memberRemoveSuccess: string;
         noMembers: string;
         removeMember: string;
         changeRole: string;

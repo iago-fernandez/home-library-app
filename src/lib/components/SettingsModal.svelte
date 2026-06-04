@@ -5,7 +5,7 @@
     import { dialogStore } from '$lib/stores/dialog';
     import ColumnSettings from './ColumnSettings.svelte';
     import DropdownSelect from './DropdownSelect.svelte';
-    import { zoomLevel, activeTheme, appThemes, activeShortcuts, autocompleteLimit } from '$lib/stores/preferences';
+    import { zoomLevel, activeTheme, appThemes, activeShortcuts, autocompleteLimit, activeDateFormat } from '$lib/stores/preferences';
     import { X, User, Sliders, Layout, Monitor, Keyboard, RotateCcw } from 'lucide-svelte';
     import { onMount } from 'svelte';
     import DeleteAccountModal from './DeleteAccountModal.svelte';
@@ -86,9 +86,20 @@
         }
     }
 
-    function formatShortcut(sc: string): string {
-        if (!sc) return '';
-        return sc.toUpperCase().replace('DELETE', 'DEL').replace('CONTROL', 'CTRL');
+    function parseShortcut(sc: string): string[] {
+        if (!sc) return [];
+        let parts: string[] = [];
+        let current = '';
+        for (let i = 0; i < sc.length; i++) {
+            if (sc[i] === '+' && current !== '') {
+                parts.push(current);
+                current = '';
+            } else {
+                current += sc[i];
+            }
+        }
+        if (current) parts.push(current);
+        return parts.map(p => p.toUpperCase().replace('DELETE', 'DEL').replace('CONTROL', 'CTRL'));
     }
 
     function changeLanguage(e: any) {
@@ -117,6 +128,7 @@
                             <button class="nav-sub-item" on:click={() => scrollToSection('sec-lang')}>{$t.settings.languageSelect}</button>
                             <button class="nav-sub-item" on:click={() => scrollToSection('sec-theme')}>{$t.settings.theme}</button>
                             <button class="nav-sub-item" on:click={() => scrollToSection('sec-zoom')}>{$t.settings.zoomLevel}</button>
+                            <button class="nav-sub-item" on:click={() => scrollToSection('sec-dateformat')}>{$t.settings.dateFormat || 'Date Format'}</button>
                             <button class="nav-sub-item" on:click={() => scrollToSection('sec-autocomplete')}>{$t.settings.autocompleteSuggestions}</button>
                             <button class="nav-sub-item" on:click={() => scrollToSection('sec-shortcuts')}>{$t.settings.shortcutsTab}</button>
                         </div>
@@ -241,6 +253,26 @@
                                 </div>
                             </div>
 
+                            <div id="sec-dateformat" class="setting-group" style="padding-bottom: 1rem;">
+                                <div class="form-group">
+                                    <h3 class="section-title" style="margin-bottom: 12px;">{$t.settings.dateFormat || 'Date Format'}</h3>
+                                    <DropdownSelect
+                                        id="set-dateformat"
+                                        customClass="settings-select dateformat-select"
+                                        value={$activeDateFormat}
+                                        on:change={(e) => activeDateFormat.set(e.detail.value)}
+                                        options={[
+                                            { value: 'dd/mm/yyyy hh:mm:ss', label: $t.settings.dateFormats?.dd_mm_yyyy_hh_mm_ss || 'DD/MM/YYYY HH:MM:SS' },
+                                            { value: 'dd/mm/yyyy', label: $t.settings.dateFormats?.dd_mm_yyyy || 'DD/MM/YYYY' },
+                                            { value: 'mm/dd/yyyy hh:mm:ss', label: $t.settings.dateFormats?.mm_dd_yyyy_hh_mm_ss || 'MM/DD/YYYY HH:MM:SS' },
+                                            { value: 'mm/dd/yyyy', label: $t.settings.dateFormats?.mm_dd_yyyy || 'MM/DD/YYYY' },
+                                            { value: 'yyyy-mm-dd hh:mm:ss', label: $t.settings.dateFormats?.yyyy_mm_dd_hh_mm_ss || 'YYYY-MM-DD HH:MM:SS' },
+                                            { value: 'yyyy-mm-dd', label: $t.settings.dateFormats?.yyyy_mm_dd || 'YYYY-MM-DD' }
+                                        ]}
+                                    />
+                                </div>
+                            </div>
+
                             <div id="sec-autocomplete" class="setting-group" style="padding-bottom: 1rem;">
                                 <div class="form-group">
                                     <h3 class="section-title" style="margin-bottom: 12px;">{$t.settings.autocompleteSuggestions}</h3>
@@ -294,8 +326,12 @@
                                                 on:blur={() => capturingKey = null}
                                                 on:keydown={(e) => {
                                                     e.preventDefault();
+                                                    e.stopPropagation();
                                                     if (e.key === 'Escape') {
                                                         e.currentTarget.blur();
+                                                        return;
+                                                    }
+                                                    if (['control', 'shift', 'alt', 'meta', 'altgraph', 'capslock', 'numlock', 'scrolllock'].includes(e.key.toLowerCase())) {
                                                         return;
                                                     }
                                                     const newCombo = [
@@ -312,7 +348,7 @@
                                                 {#if capturingKey === action}
                                                     <span class="capturing-text">CAPTURING...</span>
                                                 {:else}
-                                                    {#each formatShortcut(keyCombo).split('+') as key, i}
+                                                    {#each parseShortcut(keyCombo) as key, i}
                                                         {#if i > 0}<span class="plus-sep">+</span>{/if}
                                                         <kbd class="shortcut-kbd">{key}</kbd>
                                                     {/each}
@@ -629,25 +665,29 @@
         display: flex;
         justify-content: space-between;
         align-items: center;
-        padding: 8px 12px;
-        background: var(--bg-color);
-        border: 1px solid var(--border-color);
-        border-radius: 6px;
+        padding: 10px 4px;
+        background: transparent;
+        border-bottom: 1px solid var(--border-color);
         font-size: 13px;
     }
+    .shortcut-item:last-child {
+        border-bottom: none;
+    }
     .shortcut-btn {
-        width: 150px;
-        text-align: center;
         font-family: monospace;
         cursor: pointer;
-        padding: 4px;
-        border: 1px solid var(--border-color);
-        border-radius: 4px;
+        padding: 6px 8px;
+        border: 1px solid transparent;
+        border-radius: 6px;
         display: flex;
-        justify-content: center;
+        justify-content: flex-end;
         align-items: center;
-        background: var(--bg-color);
+        background: transparent;
         transition: all 0.2s;
+        min-height: 32px;
+    }
+    .shortcut-btn:hover {
+        background: var(--bg-color);
     }
     .shortcut-btn:focus, .shortcut-btn.capturing {
         border-color: var(--primary-color);
@@ -728,5 +768,21 @@
     }
     .zoom-slider::-webkit-slider-thumb:active {
         transform: scale(0.95);
+    }
+
+    :global(.dateformat-select .select-button),
+    :global(.dateformat-select .select-option) {
+        font-size: 11px !important;
+        font-weight: 500;
+        letter-spacing: 0.5px;
+    }
+    
+    :global(.dateformat-select .select-button),
+    :global(.dateformat-select .select-option:not(.selected)) {
+        color: var(--text-muted) !important;
+    }
+
+    :global(.dateformat-select .select-option.selected) {
+        color: #ffffff !important;
     }
 </style>

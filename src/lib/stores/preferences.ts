@@ -99,7 +99,13 @@ export const availableColumns = [
     { id: 'is_loaned', label: 'Is Loaned' },
     { id: 'loaned_to', label: 'Loaned To' },
     { id: 'loan_date', label: 'Loan Date' },
-    { id: 'expected_return_date', label: 'Expected Return' }
+    { id: 'expected_return_date', label: 'Expected Return' },
+    { id: 'description', label: 'Description' },
+    { id: 'table_of_contents', label: 'Table of Contents' },
+    { id: 'personal_notes', label: 'Personal Notes' },
+    { id: 'reading_notes', label: 'Reading Notes' },
+    { id: 'created_at', label: 'Date Added' },
+    { id: 'updated_at', label: 'Last Modified' }
 ];
 
 const defaultColumns = [
@@ -162,6 +168,7 @@ export const zoomLevel = createGenericStore<number>('library_zoom', 100);
 export const activeTheme = createGenericStore<string>('library_theme', 'sky');
 export const activeViewStore = createGenericStore<'table' | 'mosaic'>('library_active_view', 'table');
 export const autocompleteLimit = createGenericStore<number>('library_autocomplete_limit', 10);
+export const activeDateFormat = createGenericStore<string>('library_date_format', 'dd/mm/yyyy hh:mm:ss');
 
 export const appThemes = {
     sky: { name: 'Ocean Blue', primary: '#0284C7', hover: '#0369A1', secondary: '#F0F9FF', topbarBg: '#334155', topbarBorder: '#1E293B' },

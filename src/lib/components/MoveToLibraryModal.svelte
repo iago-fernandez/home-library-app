@@ -4,7 +4,7 @@
     import { X, Library as LibraryIcon } from 'lucide-svelte';
     import { libraryStore } from '$lib/stores/library';
     import { apiClient } from '$lib/api/client';
-    import { bookStore } from '$lib/store';
+    import { bookStore } from '$lib/stores/book';
 
     export let isOpen = false;
     export let selectedBookIds: string[] = [];
@@ -23,10 +23,10 @@
         errorMessage = '';
         try {
             for (const id of selectedBookIds) {
-                await apiClient.updateBook(id, { library_id: targetLibraryId });
+                await apiClient.patchBook(id, { library_id: targetLibraryId });
             }
             // Once moved, reload books in the current library (they will disappear from current view)
-            bookStore.loadBooks(true);
+            await bookStore.resetAndLoad();
             bookStore.clearSelection();
             close();
         } catch (e: any) {

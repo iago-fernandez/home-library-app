@@ -1,13 +1,14 @@
 <script lang="ts">
-    import { bookStore } from '$lib/store';
+    import { bookStore } from '$lib/stores/book';
     import { activeMosaicAttributes, zoomLevel } from '$lib/stores/preferences';
     import BookCover from './BookCover.svelte';
     import { Search, ChevronUp, ChevronDown, X, CaseSensitive } from 'lucide-svelte';
     import DropdownSelect from './DropdownSelect.svelte';
-    import { t } from '$lib/i18n';
-    import { activeColumns, availableColumns } from '$lib/stores/preferences';
+    import { t, locale } from '$lib/i18n';
+    import { activeColumns, availableColumns, activeDateFormat } from '$lib/stores/preferences';
     import { tick, onMount } from 'svelte';
     import { dialogStore } from '$lib/stores/dialog';
+    import { formatDate } from '$lib/utils/date';
 
     $: books = $bookStore;
     const selectedIds = bookStore.selectedIds;
@@ -54,6 +55,11 @@
 
     function formatAttribute(book: any, attrId: string): string {
         const val = book[attrId];
+        
+        if (['publish_date', 'original_publish_date', 'purchase_date', 'date_started', 'date_finished', 'loan_date', 'expected_return_date', 'created_at', 'updated_at'].includes(attrId)) {
+            return formatDate(val, $activeDateFormat, $locale || 'en');
+        }
+
         if (Array.isArray(val)) return val.join(', ');
         if (typeof val === 'boolean') return val ? 'Yes' : 'No';
         if (val === null || val === undefined || val === '') return '';
