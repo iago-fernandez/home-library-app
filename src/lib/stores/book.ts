@@ -1,7 +1,7 @@
 import { writable, get } from 'svelte/store';
-import type { Book, CreateBookPayload, UpdateBookPayload } from './types/book';
-import { apiClient } from './api/client';
-import { libraryStore } from './stores/library';
+import type { Book, CreateBookPayload, UpdateBookPayload } from '../types/book';
+import { apiClient } from '../api/client';
+import { libraryStore } from './library';
 
 function createBookStore() {
     const { subscribe, set, update } = writable<Book[]>([]);
