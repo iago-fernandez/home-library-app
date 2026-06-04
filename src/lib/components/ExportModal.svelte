@@ -1,6 +1,6 @@
 <script lang="ts">
     import { createEventDispatcher } from 'svelte';
-    import { bookStore } from '$lib/store';
+    import { bookStore } from '$lib/stores/book';
     import { activeColumns, availableColumns } from '$lib/stores/preferences';
     import { apiClient } from '$lib/api/client';
     import { X, AlertTriangle, GripVertical } from 'lucide-svelte';

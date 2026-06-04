@@ -1,6 +1,6 @@
 <script lang="ts">
     import { t } from '$lib/i18n';
-    import { bookStore } from '$lib/store';
+    import { bookStore } from '$lib/stores/book';
     import { Info } from 'lucide-svelte';
     import AutoExpandTextarea from './AutoExpandTextarea.svelte';
     import ChipInput from './ChipInput.svelte';
