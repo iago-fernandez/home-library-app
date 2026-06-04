@@ -1,7 +1,7 @@
 <script lang="ts">
-    import { bookStore } from '$lib/store';
-    import { t } from '$lib/i18n';
-    import { activeColumns, availableColumns, zoomLevel } from '$lib/stores/preferences';
+    import { bookStore } from '$lib/stores/book';
+    import { t, locale } from '$lib/i18n';
+    import { activeColumns, availableColumns, zoomLevel, activeDateFormat } from '$lib/stores/preferences';
     import { dialogStore } from '$lib/stores/dialog';
     import { createVirtualizer } from '@tanstack/svelte-virtual';
     import {
@@ -15,6 +15,7 @@
     import { createEventDispatcher, onMount, afterUpdate, tick } from 'svelte';
     import { Search, ChevronUp, ChevronDown, X, CaseSensitive } from 'lucide-svelte';
     import DropdownSelect from './DropdownSelect.svelte';
+    import { formatDate } from '$lib/utils/date';
 
     const totalBooks = bookStore.total;
     const selectedIds = bookStore.selectedIds;
@@ -48,6 +49,11 @@
     function getCellData(book: any, colId: string): string {
         if (!book) return '';
         const val = book[colId];
+        
+        if (['publish_date', 'original_publish_date', 'purchase_date', 'date_started', 'date_finished', 'loan_date', 'expected_return_date', 'created_at', 'updated_at'].includes(colId)) {
+            return formatDate(val, $activeDateFormat, $locale || 'en');
+        }
+
         if (Array.isArray(val)) return val.join(', ');
         if (typeof val === 'boolean') return val ? 'Yes' : 'No';
         return val ? String(val) : '';
