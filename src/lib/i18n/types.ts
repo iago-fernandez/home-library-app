@@ -1,4 +1,5 @@
 export interface TranslationDictionary {
+    appTitle: string;
     common: {
         add: string;
         edit: string;
