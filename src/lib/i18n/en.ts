@@ -1,6 +1,7 @@
 import type { TranslationDictionary } from './types';
 
 export const en: TranslationDictionary = {
+    appTitle: 'Home Library',
     common: {
         add: 'Add',
         edit: 'Edit',

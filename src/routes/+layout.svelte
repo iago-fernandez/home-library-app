@@ -73,6 +73,10 @@
 
 <svelte:window on:click={handleWindowClick} />
 
+<svelte:head>
+    <title>{$t.appTitle}</title>
+</svelte:head>
+
 {#if !isAuthenticated}
     <div
             class="gateway-wrapper"
