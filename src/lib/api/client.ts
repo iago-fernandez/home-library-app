@@ -5,8 +5,8 @@ import { sanitizeBookPayload } from './sanitizer';
 import { authStore } from '../stores/auth';
 import { get } from 'svelte/store';
 
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://raspberry.lan:3001/api';
-const AUTH_BASE_URL = import.meta.env.VITE_AUTH_URL || 'http://raspberry.lan:3001/auth';
+const API_BASE_URL = import.meta.env.VITE_API_URL || '/api';
+const AUTH_BASE_URL = import.meta.env.VITE_AUTH_URL || '/auth';
 
 function getHeaders(customHeaders: Record<string, string> = {}): Record<string, string> {
     const state = get(authStore);

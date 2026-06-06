@@ -1,7 +1,7 @@
 {
   "name": "home-library-app",
   "version": "1.0.0",
-  "description": "Desktop client for the Home Library system",
+  "description": "Frontend client for the Home Library system",
   "private": true,
   "type": "module",
   "scripts": {
