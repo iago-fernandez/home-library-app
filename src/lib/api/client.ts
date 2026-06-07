@@ -44,7 +44,14 @@ export const apiClient = {
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(payload)
         });
-        if (!response.ok) throw new Error('Login failed');
+        if (!response.ok) {
+            let errorText = 'Login failed';
+            try {
+                const errBody = await response.text();
+                if (errBody) errorText = errBody;
+            } catch (e) {}
+            throw new Error(errorText);
+        }
         const data = await response.json();
         authStore.set({ token: data.token, user: data.user });
         return data;

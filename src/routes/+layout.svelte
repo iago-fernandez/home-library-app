@@ -4,7 +4,7 @@
     import { apiClient } from '$lib/api/client';
     import { t, locale, setLocale } from '$lib/i18n';
     import { activeTheme, appThemes } from '$lib/stores/preferences';
-    import { Eye, EyeOff, Palette } from 'lucide-svelte';
+    import { Eye, EyeOff, Palette, AlertCircle } from 'lucide-svelte';
     import ConfirmModal from '$lib/components/ConfirmModal.svelte';
 
     $: currentTheme = appThemes[$activeTheme as keyof typeof appThemes] || appThemes.sky;
@@ -52,7 +52,7 @@
         try {
             await apiClient.login({ username, password });
         } catch (err: any) {
-            errorMsg = $t.auth.loginError;
+            errorMsg = err.message || $t.auth.loginError;
         } finally {
             isLoading = false;
         }
@@ -145,7 +145,10 @@
                 </div>
 
                 {#if errorMsg}
-                    <div class="gateway-error">{errorMsg}</div>
+                    <div class="gateway-error">
+                        <AlertCircle size={18} style="flex-shrink: 0;" />
+                        <span>{errorMsg}</span>
+                    </div>
                 {/if}
 
                 <button type="submit" class="gateway-btn" disabled={isLoading}>
@@ -345,11 +348,16 @@
         cursor: not-allowed;
     }
     .gateway-error {
-        color: #d32f2f;
-        font-size: 13px;
-        background-color: #ffebee;
-        padding: 10px;
-        border-radius: 4px;
-        border-left: 3px solid #d32f2f;
+        color: var(--error-text, #ff4d4f);
+        font-size: 14px;
+        background-color: rgba(255, 77, 79, 0.05);
+        border: 1px solid rgba(255, 77, 79, 0.2);
+        padding: 12px 16px;
+        border-radius: 8px;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        margin-bottom: 16px;
+        line-height: 1.4;
     }
 </style>
