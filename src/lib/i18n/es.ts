@@ -372,5 +372,72 @@ export const es: TranslationDictionary = {
             moveBtn: 'Mover',
             moveError: 'Error al mover los libros. Verifica los datos o actualiza la página.'
         }
+    },
+    userGuide: {
+        title: 'Guía de Usuario',
+        sections: {
+            introduction: 'Introducción',
+            interface: 'Interfaz de Usuario',
+            addingBooks: 'Añadir Libros',
+            editingDeleting: 'Editar y Eliminar',
+            searchFilter: 'Búsqueda y Filtros',
+            libraries: 'Gestión de Librerías',
+            shortcuts: 'Atajos de Teclado',
+            limitations: 'Limitaciones y Consejos'
+        },
+        introduction: {
+            title: 'Bienvenido a Home Library',
+            p1: 'Home Library es una aplicación completa y segura diseñada para gestionar tu colección de libros físicos digitalmente. Ofrece herramientas para catalogar, organizar y encontrar tus libros al instante.',
+            p2: 'Esta guía te mostrará todas las funcionalidades disponibles para que le saques el máximo partido a tu librería.'
+        },
+        interface: {
+            title: 'Entendiendo la Interfaz',
+            topbar: 'La Barra Superior',
+            topbarDesc: 'Situada en la parte superior, contiene el menú principal de la aplicación (Archivo, Editar, Ver, Herramientas, Ayuda), una barra de búsqueda rápida, el selector de temas y los ajustes de tu perfil.',
+            workspace: 'El Espacio de Trabajo',
+            workspaceDesc: 'El área principal donde se muestran tus libros. Puedes alternar entre diferentes vistas usando los iconos de la parte superior derecha.',
+            views: 'Vistas (Tabla vs Mosaico)',
+            viewsDesc: 'Usa la vista de Tabla para un listado detallado tipo Excel. Usa la vista de Mosaico para ver una hermosa galería visual con las carátulas de tus libros.'
+        },
+        addingBooks: {
+            title: 'Añadiendo Libros',
+            isbn: 'Autocompletado por ISBN',
+            isbnDesc: 'Haz clic en "Añadir Libro" y teclea el ISBN. Pulsa "Autocompletar con Open Library" para descargar automáticamente el título, autor, fecha y carátula desde internet.',
+            barcode: 'Escáner de Código de Barras',
+            barcodeDesc: 'Haz clic en el icono de la cámara junto al campo ISBN. Apunta con tu cámara al código de barras trasero del libro. La app lo escaneará y rellenará los datos. (Requiere conexión HTTPS segura)',
+            manual: 'Entrada Manual',
+            manualDesc: 'Si un libro es muy antiguo y no tiene ISBN, puedes teclear todos los datos manualmente e incluso subir tu propia foto de la carátula desde el dispositivo.'
+        },
+        editingDeleting: {
+            title: 'Editar y Eliminar Libros',
+            edit: 'Editar un Libro',
+            editDesc: 'Haz clic sobre un libro para seleccionarlo, luego pulsa el icono del lápiz en la parte inferior para editar sus detalles.',
+            batchEdit: 'Edición en Masa',
+            batchEditDesc: 'Mantén pulsado Ctrl (o usa la herramienta de multi-selección) para elegir varios libros. Haz clic en el lápiz para cambiar propiedades como Habitación, Estantería o Estado de Préstamo para todos a la vez.',
+            delete: 'Eliminar Libros',
+            deleteDesc: 'Selecciona uno o varios libros y pulsa el icono de la papelera. Aparecerá un aviso de confirmación para evitar borrados accidentales.'
+        },
+        searchFilter: {
+            title: 'Búsqueda y Filtros',
+            search: 'Búsqueda Rápida',
+            searchDesc: 'Usa la barra superior (o pulsa Ctrl+K) para buscar rápidamente libros por título, autor o ISBN en tu vista actual.',
+            filters: 'Filtros Avanzados',
+            filtersDesc: 'Haz clic en el icono del filtro en la barra inferior para crear consultas complejas. Puedes filtrar por cualquier atributo (ej: Páginas > 300, Y Autor contiene "Tolkien", Y NO Prestado).'
+        },
+        libraries: {
+            title: 'Gestión de Librerías',
+            concept: '¿Qué son las Librerías?',
+            conceptDesc: 'Son colecciones independientes. Puedes tener una "Librería Principal" en casa, y otra "Librería de Verano" en otra ubicación. Cada libro pertenece a una única librería.',
+            sharing: 'Compartir Librerías',
+            sharingDesc: 'Puedes invitar a otros usuarios registrados a ver o editar tu librería desde el Gestor de Librerías (Archivo > Gestionar Librerías). Ideal para compartir la colección en familia.'
+        },
+        shortcuts: {
+            title: 'Atajos de Teclado',
+            desc: 'Acelera tu trabajo con estos atajos de teclado. Puedes personalizarlos en Herramientas > Ajustes.'
+        },
+        limitations: {
+            title: 'Limitaciones y Consejos',
+            p1: 'Ten en cuenta que el autocompletado depende de las bases de datos de Open Library y Google Books. Ediciones muy raras o locales podrían no encontrarse automáticamente. Si el escáner de cámara va lento, asegúrate de tener buena luz y de enfocar bien el código de barras.'
+        }
     }
 };

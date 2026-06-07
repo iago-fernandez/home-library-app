@@ -431,7 +431,6 @@
         font-family: inherit; font-size: 0.9rem; transition: border-color 0.15s;
     }
     .form-input:focus { outline: none; border-color: var(--primary-color); }
-    textarea.form-input { resize: vertical; min-height: 80px; }
     
     .btn-create, .btn-primary {
         background: var(--primary-color); color: white; border: none; padding: 8px 16px;
