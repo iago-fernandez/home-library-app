@@ -317,4 +317,71 @@ export interface TranslationDictionary {
             moveError: string;
         };
     };
+    userGuide: {
+        title: string;
+        sections: {
+            introduction: string;
+            interface: string;
+            addingBooks: string;
+            editingDeleting: string;
+            searchFilter: string;
+            libraries: string;
+            shortcuts: string;
+            limitations: string;
+        };
+        introduction: {
+            title: string;
+            p1: string;
+            p2: string;
+        };
+        interface: {
+            title: string;
+            topbar: string;
+            topbarDesc: string;
+            workspace: string;
+            workspaceDesc: string;
+            views: string;
+            viewsDesc: string;
+        };
+        addingBooks: {
+            title: string;
+            isbn: string;
+            isbnDesc: string;
+            barcode: string;
+            barcodeDesc: string;
+            manual: string;
+            manualDesc: string;
+        };
+        editingDeleting: {
+            title: string;
+            edit: string;
+            editDesc: string;
+            batchEdit: string;
+            batchEditDesc: string;
+            delete: string;
+            deleteDesc: string;
+        };
+        searchFilter: {
+            title: string;
+            search: string;
+            searchDesc: string;
+            filters: string;
+            filtersDesc: string;
+        };
+        libraries: {
+            title: string;
+            concept: string;
+            conceptDesc: string;
+            sharing: string;
+            sharingDesc: string;
+        };
+        shortcuts: {
+            title: string;
+            desc: string;
+        };
+        limitations: {
+            title: string;
+            p1: string;
+        };
+    };
 }

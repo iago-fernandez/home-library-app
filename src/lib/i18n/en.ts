@@ -372,5 +372,72 @@ export const en: TranslationDictionary = {
             moveBtn: 'Move',
             moveError: 'Failed to move books. Please verify data and try again.'
         }
+    },
+    userGuide: {
+        title: 'User Guide',
+        sections: {
+            introduction: 'Introduction',
+            interface: 'User Interface',
+            addingBooks: 'Adding Books',
+            editingDeleting: 'Editing & Deleting',
+            searchFilter: 'Search & Filters',
+            libraries: 'Library Management',
+            shortcuts: 'Keyboard Shortcuts',
+            limitations: 'Limitations & Tips'
+        },
+        introduction: {
+            title: 'Welcome to Home Library',
+            p1: 'Home Library is a comprehensive and secure application designed to digitally manage your physical book collection. It offers tools for cataloging, organizing, and finding your books instantly.',
+            p2: 'This guide will walk you through all the features available to help you get the most out of your library.'
+        },
+        interface: {
+            title: 'Understanding the Interface',
+            topbar: 'The Top Bar',
+            topbarDesc: 'Located at the top of the screen, it contains the main application menu (File, Edit, View, Tools, Help), a quick search bar, the theme switcher, and your user profile settings.',
+            workspace: 'The Workspace',
+            workspaceDesc: 'The main area where your books are displayed. You can switch between different views using the top right icons.',
+            views: 'Views (Table vs Mosaic)',
+            viewsDesc: 'Use the Table view for a detailed, spreadsheet-like list of your books. Use the Mosaic view for a beautiful, visual gallery of your book covers.'
+        },
+        addingBooks: {
+            title: 'Adding Books to your Library',
+            isbn: 'Auto-fill by ISBN',
+            isbnDesc: 'Click "Add Book" and type the ISBN. Click "Auto-fill from Open Library" to automatically fetch the title, author, publish date, and cover image from the internet.',
+            barcode: 'Barcode Scanner (Mobile/Webcam)',
+            barcodeDesc: 'Click the camera icon next to the ISBN field. Point your camera at the barcode on the back of the book. The app will scan it and fetch the details automatically. (Requires HTTPS)',
+            manual: 'Manual Entry',
+            manualDesc: 'If a book is too old to have an ISBN, you can manually type all the information and even upload your own cover image from your device.'
+        },
+        editingDeleting: {
+            title: 'Editing and Deleting Books',
+            edit: 'Editing a Book',
+            editDesc: 'Click on a book to select it, then click the pencil icon at the bottom of the screen to edit any of its details.',
+            batchEdit: 'Batch Editing',
+            batchEditDesc: 'Hold Ctrl (or use the multi-select tool) to select multiple books. Click the pencil icon to edit properties like Room, Bookcase, or Loan Status for all selected books at once.',
+            delete: 'Deleting Books',
+            deleteDesc: 'Select one or more books and click the trash can icon. A confirmation dialog will appear to prevent accidental deletions.'
+        },
+        searchFilter: {
+            title: 'Searching and Filtering',
+            search: 'Quick Search',
+            searchDesc: 'Use the search bar in the top menu (or press Ctrl+K) to quickly find books by title, author, or ISBN in your current view.',
+            filters: 'Advanced Filters',
+            filtersDesc: 'Click the filter icon at the bottom to build complex queries. You can filter by any attribute (e.g., Pages > 300, AND Author contains "Tolkien", AND NOT Loaned).'
+        },
+        libraries: {
+            title: 'Library Management',
+            concept: 'What are Libraries?',
+            conceptDesc: 'Libraries are separate collections. You can have a "Main Library" for your home, and a "Summer House Library" for another location. Books belong to one specific library.',
+            sharing: 'Sharing Libraries',
+            sharingDesc: 'You can invite other registered users to view or edit your library from the Library Manager (File > Manage Libraries). This is perfect for sharing a collection with family members.'
+        },
+        shortcuts: {
+            title: 'Keyboard Shortcuts',
+            desc: 'Speed up your workflow with these keyboard shortcuts. You can customize them in Tools > Settings.'
+        },
+        limitations: {
+            title: 'Limitations & Tips',
+            p1: 'Note that the auto-fill feature relies on Open Library and Google Books databases. Very rare or local editions might not be found automatically. If your camera scanner is slow, ensure you have good lighting and the barcode is in focus.'
+        }
     }
 };

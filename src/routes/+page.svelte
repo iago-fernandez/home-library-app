@@ -12,6 +12,7 @@
   import BatchEditPanel from '$lib/components/BatchEditPanel.svelte';
   import LibraryManagerModal from '$lib/components/LibraryManagerModal.svelte';
   import MoveToLibraryModal from '$lib/components/MoveToLibraryModal.svelte';
+  import UserGuideModal from '$lib/components/UserGuideModal.svelte';
   import { zoomLevel, activeShortcuts, activeViewStore } from '$lib/stores/preferences';
   import { libraryStore } from '$lib/stores/library';
   import { dialogStore } from '$lib/stores/dialog';
@@ -23,6 +24,7 @@
   let showSettingsModal = false;
   let showLibraryManager = false;
   let showMoveToLibraryModal = false;
+  let showUserGuideModal = false;
   let isSubmitting = false;
 
   type FieldType = 'text' | 'numeric';
@@ -540,7 +542,7 @@
         <button class="menu-btn" class:active={openMenu === 'Help'} on:click={() => toggleMenu('Help')}>{$t.menu.help}</button>
         {#if openMenu === 'Help'}
           <div class="dropdown-menu">
-            <button class="dropdown-item" on:click={() => { closeMenus(); }}>{$t.menu.userGuide}</button>
+            <button class="dropdown-item" on:click={() => { showUserGuideModal = true; closeMenus(); }}>{$t.menu.userGuide}</button>
           </div>
         {/if}
       </div>
@@ -783,6 +785,10 @@
 
 {#if showSettingsModal}
   <SettingsModal onClose={() => showSettingsModal = false} />
+{/if}
+
+{#if showUserGuideModal}
+  <UserGuideModal onClose={() => showUserGuideModal = false} />
 {/if}
 
 <LibraryManagerModal bind:isOpen={showLibraryManager} />
