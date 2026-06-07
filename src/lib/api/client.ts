@@ -8,6 +8,11 @@ import { get } from 'svelte/store';
 const API_BASE_URL = import.meta.env.VITE_API_URL || '/api';
 const AUTH_BASE_URL = import.meta.env.VITE_AUTH_URL || '/auth';
 
+function buildUrl(path: string): URL {
+    const base = typeof window !== 'undefined' ? window.location.origin : 'http://localhost';
+    return new URL(path, base);
+}
+
 function getHeaders(customHeaders: Record<string, string> = {}): Record<string, string> {
     const state = get(authStore);
     const headers: Record<string, string> = { ...customHeaders };
@@ -69,7 +74,7 @@ export const apiClient = {
         queryJson?: string,
         libraryId?: string
     ): Promise<PaginatedResponse> {
-        const url = new URL(`${API_BASE_URL}/books`);
+        const url = buildUrl(`${API_BASE_URL}/books`);
         url.searchParams.append('limit', limit.toString());
         url.searchParams.append('offset', offset.toString());
 
@@ -154,7 +159,7 @@ export const apiClient = {
     },
 
     async searchMetadata(query: string): Promise<BookMetadataResponse[]> {
-        const url = new URL(`${API_BASE_URL}/lookup/search`);
+        const url = buildUrl(`${API_BASE_URL}/lookup/search`);
         url.searchParams.append('q', query);
         const response = await apiFetch(url.toString(), {
             method: 'GET',
@@ -165,7 +170,7 @@ export const apiClient = {
     },
 
     async getAutocomplete(field: string, query: string, limit: number = 10): Promise<string[]> {
-        const url = new URL(`${API_BASE_URL}/lookup/autocomplete`);
+        const url = buildUrl(`${API_BASE_URL}/lookup/autocomplete`);
         url.searchParams.append('field', field);
         url.searchParams.append('q', query);
         url.searchParams.append('limit', limit.toString());
