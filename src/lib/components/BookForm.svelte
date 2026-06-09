@@ -235,6 +235,7 @@
             <div class="smart-fetch-container">
                 <input
                         type="text"
+                        id="smart_fetch_input"
                         bind:value={fetchId}
                         placeholder={$t.form.fetchPlaceholder}
                         class="fetch-input"
@@ -288,6 +289,7 @@
                 <div class="cover-actions">
                     <input
                             type="file"
+                            id="cover_image_file"
                             accept="image/*"
                             capture="environment"
                             bind:this={fileInputRef}

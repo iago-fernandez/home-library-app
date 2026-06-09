@@ -1,6 +1,6 @@
 <script lang="ts">
     import { t } from '$lib/i18n';
-    import { X, Info, Layout, BookPlus, Edit3, Search, Library, Keyboard, AlertTriangle } from 'lucide-svelte';
+    import { X, Info, Layout, BookPlus, Edit3, Search, Library, Keyboard, AlertTriangle, DownloadCloud, Camera, PenTool, Trash2, SlidersHorizontal, Users } from 'lucide-svelte';
 
     export let onClose: () => void;
 
@@ -65,56 +65,80 @@
                             <h3 class="section-title">{$t.userGuide.addingBooks.title}</h3>
 
                             <h4 class="guide-subtitle">{$t.userGuide.addingBooks.isbn}</h4>
-                            <p class="guide-text">{$t.userGuide.addingBooks.isbnDesc}</p>
+                            <p class="guide-text">
+                                <span class="inline-icon-wrapper"><DownloadCloud size={16} /></span> {$t.userGuide.addingBooks.isbnDesc}
+                            </p>
 
                             <h4 class="guide-subtitle">{$t.userGuide.addingBooks.barcode}</h4>
-                            <p class="guide-text">{$t.userGuide.addingBooks.barcodeDesc}</p>
+                            <p class="guide-text">
+                                <span class="inline-icon-wrapper"><Camera size={16} /></span> {$t.userGuide.addingBooks.barcodeDesc}
+                            </p>
 
                             <h4 class="guide-subtitle">{$t.userGuide.addingBooks.manual}</h4>
-                            <p class="guide-text">{$t.userGuide.addingBooks.manualDesc}</p>
+                            <p class="guide-text">
+                                <span class="inline-icon-wrapper"><PenTool size={16} /></span> {$t.userGuide.addingBooks.manualDesc}
+                            </p>
                         </div>
                     {:else if activeTab === 'editingDeleting'}
                         <div class="setting-group">
                             <h3 class="section-title">{$t.userGuide.editingDeleting.title}</h3>
 
                             <h4 class="guide-subtitle">{$t.userGuide.editingDeleting.edit}</h4>
-                            <p class="guide-text">{$t.userGuide.editingDeleting.editDesc}</p>
+                            <p class="guide-text">
+                                <span class="inline-icon-wrapper"><Edit3 size={16} /></span> {$t.userGuide.editingDeleting.editDesc}
+                            </p>
 
                             <h4 class="guide-subtitle">{$t.userGuide.editingDeleting.batchEdit}</h4>
-                            <p class="guide-text">{$t.userGuide.editingDeleting.batchEditDesc}</p>
+                            <p class="guide-text">
+                                <span class="inline-icon-wrapper"><Layout size={16} /></span> {$t.userGuide.editingDeleting.batchEditDesc}
+                            </p>
 
                             <h4 class="guide-subtitle">{$t.userGuide.editingDeleting.delete}</h4>
-                            <p class="guide-text">{$t.userGuide.editingDeleting.deleteDesc}</p>
+                            <p class="guide-text">
+                                <span class="inline-icon-wrapper"><Trash2 size={16} /></span> {$t.userGuide.editingDeleting.deleteDesc}
+                            </p>
                         </div>
                     {:else if activeTab === 'searchFilter'}
                         <div class="setting-group">
                             <h3 class="section-title">{$t.userGuide.searchFilter.title}</h3>
 
                             <h4 class="guide-subtitle">{$t.userGuide.searchFilter.search}</h4>
-                            <p class="guide-text">{$t.userGuide.searchFilter.searchDesc}</p>
+                            <p class="guide-text">
+                                <span class="inline-icon-wrapper"><Search size={16} /></span> {$t.userGuide.searchFilter.searchDesc}
+                            </p>
 
                             <h4 class="guide-subtitle">{$t.userGuide.searchFilter.filters}</h4>
-                            <p class="guide-text">{$t.userGuide.searchFilter.filtersDesc}</p>
+                            <p class="guide-text">
+                                <span class="inline-icon-wrapper"><SlidersHorizontal size={16} /></span> {$t.userGuide.searchFilter.filtersDesc}
+                            </p>
                         </div>
                     {:else if activeTab === 'libraries'}
                         <div class="setting-group">
                             <h3 class="section-title">{$t.userGuide.libraries.title}</h3>
 
                             <h4 class="guide-subtitle">{$t.userGuide.libraries.concept}</h4>
-                            <p class="guide-text">{$t.userGuide.libraries.conceptDesc}</p>
+                            <p class="guide-text">
+                                <span class="inline-icon-wrapper"><Library size={16} /></span> {$t.userGuide.libraries.conceptDesc}
+                            </p>
 
                             <h4 class="guide-subtitle">{$t.userGuide.libraries.sharing}</h4>
-                            <p class="guide-text">{$t.userGuide.libraries.sharingDesc}</p>
+                            <p class="guide-text">
+                                <span class="inline-icon-wrapper"><Users size={16} /></span> {$t.userGuide.libraries.sharingDesc}
+                            </p>
                         </div>
                     {:else if activeTab === 'shortcuts'}
                         <div class="setting-group">
                             <h3 class="section-title">{$t.userGuide.shortcuts.title}</h3>
-                            <p class="guide-text">{$t.userGuide.shortcuts.desc}</p>
+                            <p class="guide-text">
+                                <span class="inline-icon-wrapper"><Keyboard size={16} /></span> {$t.userGuide.shortcuts.desc}
+                            </p>
                         </div>
                     {:else if activeTab === 'limitations'}
                         <div class="setting-group">
                             <h3 class="section-title">{$t.userGuide.limitations.title}</h3>
-                            <p class="guide-text">{$t.userGuide.limitations.p1}</p>
+                            <p class="guide-text">
+                                <span class="inline-icon-wrapper"><AlertTriangle size={16} /></span> {$t.userGuide.limitations.p1}
+                            </p>
                         </div>
                     {/if}
                 </div>
@@ -127,8 +151,8 @@
     .modal-overlay {
         position: fixed;
         top: 0; left: 0; right: 0; bottom: 0;
-        background-color: rgba(0, 0, 0, 0.6);
-        backdrop-filter: blur(8px);
+        background-color: rgba(0, 0, 0, 0.5);
+        backdrop-filter: blur(4px);
         display: flex;
         justify-content: center;
         align-items: center;
@@ -137,16 +161,16 @@
     }
 
     .modal-container.user-guide-modal {
-        background-color: var(--topbar-bg);
-        border: 1px solid var(--topbar-border);
-        border-radius: 12px;
+        background-color: var(--panel-bg);
+        border: 1px solid var(--border-color);
+        border-radius: 8px;
         width: 100%;
         max-width: 900px;
         height: 85vh;
         max-height: 800px;
         display: flex;
         flex-direction: column;
-        box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
+        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
         overflow: hidden;
     }
 
@@ -156,7 +180,7 @@
         align-items: center;
         padding: 20px 24px;
         border-bottom: 1px solid var(--border-color);
-        background: rgba(0, 0, 0, 0.2);
+        background-color: var(--bg-color);
     }
 
     .modal-header h2 {
@@ -171,7 +195,7 @@
         border: none;
         color: var(--text-muted);
         cursor: pointer;
-        padding: 4px;
+        padding: 6px;
         border-radius: 4px;
         display: flex;
         align-items: center;
@@ -180,7 +204,7 @@
     }
 
     .close-btn:hover {
-        background-color: rgba(255, 255, 255, 0.1);
+        background-color: var(--hover-color, rgba(0, 0, 0, 0.05));
         color: var(--text-main);
     }
 
@@ -192,7 +216,7 @@
 
     .settings-nav {
         width: 240px;
-        background-color: rgba(0, 0, 0, 0.1);
+        background-color: var(--bg-color);
         border-right: 1px solid var(--border-color);
         display: flex;
         flex-direction: column;
@@ -222,12 +246,12 @@
 
     .accordion-header:hover {
         color: var(--text-main);
-        background: rgba(255, 255, 255, 0.05);
+        background: var(--hover-color, rgba(0, 0, 0, 0.02));
     }
 
     .accordion-header.active {
         color: var(--primary-color);
-        background: rgba(255, 255, 255, 0.08);
+        background: var(--hover-color, rgba(0, 0, 0, 0.04));
         border-right: 3px solid var(--primary-color);
     }
 
@@ -264,6 +288,21 @@
         line-height: 1.6;
         color: var(--text-muted);
         margin: 0 0 16px 0;
+        display: flex;
+        align-items: flex-start;
+        gap: 8px;
+    }
+
+    .inline-icon-wrapper {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        color: var(--primary-color);
+        background-color: var(--bg-color);
+        padding: 4px;
+        border: 1px solid var(--border-color);
+        border-radius: 4px;
+        margin-top: -2px; /* align slightly better with text */
     }
 
     .scroll-pane::-webkit-scrollbar {
@@ -273,11 +312,11 @@
         background: transparent;
     }
     .scroll-pane::-webkit-scrollbar-thumb {
-        background-color: rgba(255,255,255,0.2);
+        background-color: var(--border-color);
         border-radius: 4px;
     }
     .scroll-pane::-webkit-scrollbar-thumb:hover {
-        background-color: rgba(255,255,255,0.3);
+        background-color: var(--text-muted);
     }
 
     @keyframes fadeIn {
