@@ -922,6 +922,7 @@
     color: var(--text-main);
     padding: 2px 0;
     -moz-appearance: textfield;
+    appearance: textfield;
     border-radius: 4px;
     transition: all 0.2s;
   }
