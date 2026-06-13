@@ -52,8 +52,13 @@ export const apiClient = {
         if (!response.ok) {
             let errorText = 'Login failed';
             try {
-                const errBody = await response.text();
-                if (errBody) errorText = errBody;
+                const contentType = response.headers.get('content-type');
+                if (contentType && contentType.includes('text/html')) {
+                    errorText = 'Connection Error: Invalid response from server (possible bad gateway or proxy issue).';
+                } else {
+                    const errBody = await response.text();
+                    if (errBody) errorText = errBody;
+                }
             } catch (e) {}
             throw new Error(errorText);
         }
