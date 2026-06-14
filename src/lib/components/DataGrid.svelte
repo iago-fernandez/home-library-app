@@ -16,6 +16,7 @@
     import { Search, ChevronUp, ChevronDown, X, CaseSensitive } from 'lucide-svelte';
     import DropdownSelect from './DropdownSelect.svelte';
     import { formatDate } from '$lib/utils/date';
+    import { apiClient } from '$lib/api/client';
 
     const totalBooks = bookStore.total;
     const selectedIds = bookStore.selectedIds;
@@ -28,6 +29,100 @@
     let sorting: SortingState = [];
     let columnSizing: Record<string, number> = {};
     let isMounted = false;
+
+    let editingCellId: string | null = null;
+    let editValue: any = '';
+    let justFinishedEditing = false;
+
+    function cancelEdit() {
+        editingCellId = null;
+        justFinishedEditing = true;
+        setTimeout(() => { justFinishedEditing = false; }, 150);
+    }
+
+    function focusInput(node: HTMLInputElement) {
+        setTimeout(() => {
+            if (node && node.focus) {
+                node.focus();
+                try {
+                    if (node.type !== 'checkbox') node.select();
+                } catch(e) {}
+            }
+        }, 10);
+        return { destroy() {} };
+    }
+
+    function getInputType(colId: string) {
+        if (['volume_in_collection', 'volume_in_series', 'page_count', 'purchase_price', 'location_position', 'rating'].includes(colId)) return 'number';
+        if (['publish_date', 'original_publish_date', 'purchase_date', 'date_started', 'date_finished', 'loan_date', 'expected_return_date'].includes(colId)) return 'date';
+        if (['is_first_edition', 'is_loaned'].includes(colId)) return 'checkbox';
+        return 'text';
+    }
+
+    function startEdit(bookId: string, colId: string, value: any) {
+        if (['cover_url', 'catalog_number', 'created_at', 'updated_at'].includes(colId)) return;
+        editingCellId = `${bookId}-${colId}`;
+        
+        const type = getInputType(colId);
+
+        if (Array.isArray(value)) {
+            editValue = value.join(', ');
+        } else if (type === 'checkbox') {
+            editValue = !!value;
+        } else if (type === 'date' && value) {
+            try { editValue = new Date(value).toISOString().split('T')[0]; }
+            catch(e) { editValue = ''; }
+        } else if (type === 'number') {
+            editValue = value !== null && value !== undefined ? Number(value) : null;
+        } else {
+            editValue = value !== null && value !== undefined ? String(value) : '';
+        }
+    }
+
+    async function saveEdit(bookId: string, colId: string) {
+        if (!editingCellId) return;
+        editingCellId = null;
+        justFinishedEditing = true;
+        setTimeout(() => { justFinishedEditing = false; }, 150);
+        
+        const book = $bookStore.find(b => b.id === bookId);
+        if (!book) return;
+        const rawValue = book[colId as keyof typeof book];
+        const type = getInputType(colId);
+        
+        let originalValueFormatted: any = rawValue;
+        if (Array.isArray(rawValue)) originalValueFormatted = rawValue.join(', ');
+        else if (type === 'checkbox') originalValueFormatted = !!rawValue;
+        else if (type === 'date' && rawValue) {
+            try { originalValueFormatted = new Date(rawValue as string).toISOString().split('T')[0]; }
+            catch(e) { originalValueFormatted = ''; }
+        } else if (type === 'number') {
+            originalValueFormatted = rawValue !== null && rawValue !== undefined ? Number(rawValue) : null;
+        } else {
+            originalValueFormatted = rawValue !== null && rawValue !== undefined ? String(rawValue) : '';
+        }
+
+        if (originalValueFormatted === editValue) return;
+
+        let finalValue: any = editValue;
+        const arrayFields = ['authors', 'translators', 'illustrators', 'subjects', 'genres'];
+
+        if (arrayFields.includes(colId)) {
+            finalValue = typeof editValue === 'string' ? editValue.split(',').map(s => s.trim()).filter(s => s) : [];
+        } else if (type === 'date') {
+            finalValue = editValue ? new Date(editValue).toISOString() : null;
+        } else if (type === 'number') {
+            finalValue = editValue;
+        } else if (type === 'checkbox') {
+            finalValue = editValue;
+        }
+
+        try {
+            await bookStore.updateBooksBatch([bookId], { [colId]: finalValue });
+        } catch (e) {
+            console.error('Failed to update book', e);
+        }
+    }
 
     if (typeof window !== 'undefined') {
         const storedSizes = localStorage.getItem('library_column_sizes');
@@ -125,7 +220,7 @@
     $: virtualizerOptions = {
         count: $totalBooks,
         getScrollElement: () => scrollContainer,
-        estimateSize: () => 36,
+        estimateSize: () => 44,
         overscan: 15,
     };
 
@@ -215,13 +310,33 @@
         }
     }
 
+    let clickTimeout: any;
+
     function handleRowClick(event: MouseEvent | KeyboardEvent, id: string, index: number) {
-        const isCtrl = $multiSelectMode || event.ctrlKey || event.metaKey;
-        const isShift = event.shiftKey;
+        if (justFinishedEditing) return;
+        
+        if (event instanceof MouseEvent) {
+            if (event.detail > 1) {
+                clearTimeout(clickTimeout);
+                return;
+            }
+            const isCtrl = event.ctrlKey || event.metaKey;
+            const isShift = event.shiftKey;
+            clearTimeout(clickTimeout);
+            clickTimeout = setTimeout(() => {
+                executeRowClick(isCtrl, isShift, id, index);
+            }, 200);
+        } else {
+            executeRowClick(event.ctrlKey || event.metaKey, event.shiftKey, id, index);
+        }
+    }
+
+    function executeRowClick(isCtrlModifier: boolean, isShiftModifier: boolean, id: string, index: number) {
+        const isCtrl = $multiSelectMode || isCtrlModifier;
+        const isShift = isShiftModifier;
         let newSelection = [...$selectedIds];
 
         if (isShift && lastSelectedIndex !== -1) {
-            if (event instanceof MouseEvent) event.preventDefault();
             const start = Math.min(lastSelectedIndex, index);
             const end = Math.max(lastSelectedIndex, index);
             const rangeIds = $bookStore.slice(start, end + 1).map(b => b.id);
@@ -300,14 +415,22 @@
                         <div
                                 class="grid-row"
                                 class:selected={$selectedIds.includes(row.original.id)}
+                                class:is-editing-row={editingCellId && editingCellId.startsWith(`${row.original.id}-`)}
                                 style="transform: translateY({virtualRow.start}px); height: {virtualRow.size}px; min-width: 100%; width: {$table.getTotalSize()}px"
                                 role="button" tabindex="0"
                                 on:click={(e) => handleRowClick(e, row.original.id, virtualRow.index)}
                                 on:keydown={(e) => e.key === 'Enter' && handleRowClick(e, row.original.id, virtualRow.index)}
                         >
                             {#each row.getVisibleCells() as cell}
-                                <div class="cell" style="width: {cell.column.getSize()}px" title={cell.column.id !== 'cover_url' && cell.getValue() ? String(cell.getValue()) : ''}>
-                                    {#if cell.column.id === 'cover_url'}
+                                <div class="cell" class:is-editing={editingCellId === `${row.original.id}-${cell.column.id}`} style="width: {cell.column.getSize()}px" role="button" tabindex="0" on:dblclick={(e) => { e.stopPropagation(); startEdit(row.original.id, cell.column.id, cell.getValue()); }} on:keydown={(e) => { if (e.key === 'Enter') { e.stopPropagation(); e.preventDefault(); startEdit(row.original.id, cell.column.id, cell.getValue()); } }}>
+                                    {#if editingCellId === `${row.original.id}-${cell.column.id}`}
+                                        <!-- svelte-ignore a11y_autofocus -->
+                                        {#if getInputType(cell.column.id) === 'checkbox'}
+                                            <input type="checkbox" class="inline-edit-checkbox" bind:checked={editValue} on:blur={() => saveEdit(row.original.id, cell.column.id)} on:keydown={(e) => { if (e.key === 'Enter') { e.stopPropagation(); e.preventDefault(); e.currentTarget.blur(); } else if (e.key === 'Escape') { e.stopPropagation(); e.preventDefault(); cancelEdit(); } }} on:click={(e) => e.stopPropagation()} use:focusInput />
+                                        {:else}
+                                            <input type={getInputType(cell.column.id)} class="inline-edit-input" bind:value={editValue} on:blur={() => saveEdit(row.original.id, cell.column.id)} on:keydown={(e) => { if (e.key === 'Enter') { e.stopPropagation(); e.preventDefault(); e.currentTarget.blur(); } else if (e.key === 'Escape') { e.stopPropagation(); e.preventDefault(); cancelEdit(); } }} on:click={(e) => e.stopPropagation()} use:focusInput />
+                                        {/if}
+                                    {:else if cell.column.id === 'cover_url'}
                                         {#if cell.getValue()}
                                             <img src={getCoverUrl(String(cell.getValue()))} alt={$t.grid.coverAlt} class="row-cover" loading="lazy" />
                                         {:else}
@@ -399,15 +522,49 @@
         box-sizing: border-box;
         cursor: pointer;
         user-select: none;
+        will-change: transform;
+    }
+
+    .inline-edit-input {
+        position: absolute;
+        top: -1px;
+        left: -1px;
+        width: calc(100% + 2px);
+        height: calc(100% + 2px);
+        box-sizing: border-box;
+        border: 2px solid var(--primary-color);
+        border-radius: 2px;
+        background: var(--bg-color);
+        color: var(--text-main);
+        padding: 0 11px;
+        font-family: inherit;
+        font-size: inherit;
+        font-weight: 500;
+        outline: none;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        z-index: 10;
+    }
+
+    .inline-edit-checkbox {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        width: 20px;
+        height: 20px;
+        cursor: pointer;
+        accent-color: var(--primary-color);
+        z-index: 10;
     }
 
     .grid-row:focus { outline: none; }
     .grid-row:focus-visible { outline: 2px solid var(--primary-color); outline-offset: -2px; }
     .grid-row:hover { background-color: var(--bg-color); }
     .grid-row.selected { background-color: var(--secondary-color); }
+    .grid-row.is-editing-row { z-index: 10; }
 
     .cell {
-        padding: 8px 12px;
+        padding: 10px 12px;
         white-space: nowrap;
         overflow: hidden;
         text-overflow: ellipsis;
@@ -415,6 +572,18 @@
         align-items: center;
         box-sizing: border-box;
         position: relative;
+        outline: none;
+    }
+    
+    .cell.is-editing {
+        overflow: visible;
+        z-index: 10;
+    }
+    
+    .cell:focus-visible {
+        outline: 2px solid var(--primary-color);
+        outline-offset: -2px;
+        border-radius: 2px;
     }
 
     .header-cell { user-select: none; }
@@ -448,7 +617,7 @@
     }
 
     .row-cover {
-        height: 24px;
+        height: 30px;
         width: auto;
         max-width: 100%;
         border-radius: 2px;
@@ -457,8 +626,8 @@
     }
 
     .row-cover-placeholder {
-        height: 24px;
-        width: 18px;
+        height: 30px;
+        width: 22px;
         background-color: #e0e0e0;
         border-radius: 2px;
     }
