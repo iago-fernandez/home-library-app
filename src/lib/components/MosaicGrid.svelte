@@ -144,9 +144,17 @@
     }
     
 
+    function handleEmptySpaceClick(e: MouseEvent) {
+        const target = e.target as HTMLElement;
+        if (target.classList.contains('mosaic-wrapper') || target.classList.contains('mosaic-container')) {
+            bookStore.clearSelection();
+        }
+    }
 </script>
 
-<div class="mosaic-wrapper">
+<!-- svelte-ignore a11y_click_events_have_key_events -->
+<!-- svelte-ignore a11y_no_static_element_interactions -->
+<div class="mosaic-wrapper" on:click={handleEmptySpaceClick}>
     <div class="mosaic-container" style="zoom: {$zoomLevel / 100}">
         {#each books as book, index (book.id)}
             <div

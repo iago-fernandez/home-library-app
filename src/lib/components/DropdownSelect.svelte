@@ -31,9 +31,15 @@
             isOpen = false;
         }
     }
+
+    function handleWindowKeydown(event: KeyboardEvent) {
+        if (isOpen && event.key === 'Escape') {
+            isOpen = false;
+        }
+    }
 </script>
 
-<svelte:window on:click={handleWindowClick} />
+<svelte:window on:click={handleWindowClick} on:keydown={handleWindowKeydown} />
 
 <div class="custom-select {customClass}" bind:this={selectElement} {id}>
     <button type="button" class="select-button" on:click={toggleOpen}>
