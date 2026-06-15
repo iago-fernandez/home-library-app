@@ -25,6 +25,7 @@
     const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001';
 
     let scrollContainer: HTMLDivElement;
+    let headerContainer: HTMLDivElement;
     let lastSelectedIndex = -1;
     let sorting: SortingState = [];
     let columnSizing: Record<string, number> = {};
@@ -265,8 +266,10 @@
     function toggleCaseSensitivity() { isCaseSensitive = !isCaseSensitive; executeLocalSearch(); }
 
     function executeLocalSearch() {
-        if (!localSearchQuery.trim()) {
-            matchIndices = []; currentMatchIndex = -1; return;
+        if (!localSearchQuery || !$localSearchActive) {
+            matchIndices = [];
+            currentMatchIndex = 0;
+            return;
         }
         const query = isCaseSensitive ? localSearchQuery : localSearchQuery.toLowerCase();
         matchIndices = $bookStore.reduce((acc: number[], book, index) => {
@@ -287,6 +290,12 @@
         }, []);
         if (matchIndices.length > 0) { currentMatchIndex = 0; scrollToMatch(); }
         else { currentMatchIndex = -1; }
+    }
+
+    function handleScroll(e: Event) {
+        if (headerContainer && scrollContainer) {
+            headerContainer.scrollLeft = scrollContainer.scrollLeft;
+        }
     }
 
     function nextMatch() {
@@ -331,6 +340,13 @@
         }
     }
 
+    function handleEmptySpaceClick(e: MouseEvent) {
+        const target = e.target as HTMLElement;
+        if (target.classList.contains('scroll-container') || target.classList.contains('grid-table-inner') || target.classList.contains('virtual-inner')) {
+            bookStore.clearSelection();
+        }
+    }
+
     function executeRowClick(isCtrlModifier: boolean, isShiftModifier: boolean, id: string, index: number) {
         const isCtrl = $multiSelectMode || isCtrlModifier;
         const isShift = isShiftModifier;
@@ -357,19 +373,14 @@
     }
 </script>
 
-
-
 <div class="table-wrapper" style="zoom: {$zoomLevel / 100}">
 
-
-    <div bind:this={scrollContainer} class="scroll-container">
+    <div bind:this={headerContainer} class="header-container">
         <div class="grid-table-inner" style="min-width: 100%; width: {$table.getTotalSize()}px">
             <div class="grid-header">
                 {#each $table.getHeaderGroups() as headerGroup}
                     <div class="header-row">
                         {#each headerGroup.headers as header}
-                            <!-- svelte-ignore a11y_no_noninteractive_element_interactions -->
-                            <!-- svelte-ignore a11y_interactive_supports_focus -->
                             <div
                                     class="cell header-cell sortable"
                                     style="width: {header.getSize()}px"
@@ -380,7 +391,6 @@
                             >
                                 {#if !header.isPlaceholder}
                                     <svelte:component this={flexRender(header.column.columnDef.header, header.getContext())} />
-
                                     {#if header.column.getIsSorted() === 'asc'}
                                         <span class="sort-indicator">↑</span>
                                     {:else if header.column.getIsSorted() === 'desc'}
@@ -407,7 +417,13 @@
                     </div>
                 {/each}
             </div>
+        </div>
+    </div>
 
+    <!-- svelte-ignore a11y_click_events_have_key_events -->
+    <!-- svelte-ignore a11y_no_static_element_interactions -->
+    <div bind:this={scrollContainer} class="scroll-container" on:scroll={handleScroll} on:click={handleEmptySpaceClick}>
+        <div class="grid-table-inner" style="min-width: 100%; width: {$table.getTotalSize()}px">
             <div class="virtual-inner" style="height: {$virtualizer.getTotalSize()}px; position: relative;">
                 {#each virtualItems as virtualRow (virtualRow.index)}
                     {@const row = $table.getRowModel().rows[virtualRow.index]}
@@ -424,7 +440,6 @@
                             {#each row.getVisibleCells() as cell}
                                 <div class="cell" class:is-editing={editingCellId === `${row.original.id}-${cell.column.id}`} style="width: {cell.column.getSize()}px" role="button" tabindex="0" on:dblclick={(e) => { e.stopPropagation(); startEdit(row.original.id, cell.column.id, cell.getValue()); }} on:keydown={(e) => { if (e.key === 'Enter') { e.stopPropagation(); e.preventDefault(); startEdit(row.original.id, cell.column.id, cell.getValue()); } }}>
                                     {#if editingCellId === `${row.original.id}-${cell.column.id}`}
-                                        <!-- svelte-ignore a11y_autofocus -->
                                         {#if getInputType(cell.column.id) === 'checkbox'}
                                             <input type="checkbox" class="inline-edit-checkbox" bind:checked={editValue} on:blur={() => saveEdit(row.original.id, cell.column.id)} on:keydown={(e) => { if (e.key === 'Enter') { e.stopPropagation(); e.preventDefault(); e.currentTarget.blur(); } else if (e.key === 'Escape') { e.stopPropagation(); e.preventDefault(); cancelEdit(); } }} on:click={(e) => e.stopPropagation()} use:focusInput />
                                         {:else}
@@ -493,17 +508,25 @@
     .icon-btn-small:disabled { opacity: 0.3; cursor: not-allowed; }
     .divider { width: 1px; height: 16px; background-color: var(--border-color); margin: 0 4px; }
 
-    .scroll-container { flex: 1; overflow: auto; position: relative; }
+    .header-container { overflow: hidden; background-color: var(--bg-color); flex-shrink: 0; border-bottom: 1px solid var(--border-color); border-top-left-radius: 3px; border-top-right-radius: 3px; }
+    .scroll-container { flex: 1; overflow: auto; position: relative; border-bottom-left-radius: 3px; border-bottom-right-radius: 3px; }
+    
+    :global(.animating-panel .scroll-container) { 
+        overflow-x: hidden !important; 
+        scrollbar-width: none !important;
+    }
+    :global(.animating-panel .scroll-container::-webkit-scrollbar:horizontal) {
+        display: none !important;
+        height: 0 !important;
+    }
+    
     .grid-table-inner { position: relative; min-height: 100%; }
 
     .grid-header {
         background-color: var(--bg-color);
-        border-bottom: 1px solid var(--border-color);
         font-weight: 600;
         font-size: 13px;
         color: var(--text-main);
-        position: sticky;
-        top: 0;
         z-index: 2;
     }
 
@@ -522,27 +545,24 @@
         box-sizing: border-box;
         cursor: pointer;
         user-select: none;
-        will-change: transform;
     }
 
     .inline-edit-input {
         position: absolute;
-        top: -1px;
-        left: -1px;
-        width: calc(100% + 2px);
-        height: calc(100% + 2px);
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
         box-sizing: border-box;
-        border: 2px solid var(--primary-color);
-        border-radius: 2px;
+        border: none;
         background: var(--bg-color);
         color: var(--text-main);
-        padding: 0 11px;
+        padding: 0 12px;
         font-family: inherit;
-        font-size: inherit;
-        font-weight: 500;
-        outline: none;
-        box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-        z-index: 10;
+        font-size: 13px;
+        outline: none !important;
+        box-shadow: inset 0 0 0 2px var(--primary-color);
+        z-index: 20;
     }
 
     .inline-edit-checkbox {
@@ -564,14 +584,14 @@
     .grid-row.is-editing-row { z-index: 10; }
 
     .cell {
-        padding: 10px 12px;
-        white-space: nowrap;
+        padding: 8px 12px;
+        box-sizing: border-box;
         overflow: hidden;
         text-overflow: ellipsis;
+        white-space: nowrap;
+        position: relative;
         display: flex;
         align-items: center;
-        box-sizing: border-box;
-        position: relative;
         outline: none;
     }
     
@@ -581,13 +601,13 @@
     }
     
     .cell:focus-visible {
-        outline: 2px solid var(--primary-color);
-        outline-offset: -2px;
+        box-shadow: inset 0 0 0 2px var(--primary-color);
+        outline: none;
         border-radius: 2px;
     }
 
     .header-cell { user-select: none; }
-    .header-cell:focus { outline: 1px solid var(--primary-color); outline-offset: -1px; }
+    .header-cell:focus-visible { box-shadow: inset 0 0 0 2px var(--primary-color); outline: none; border-radius: 2px; }
 
     .sortable { cursor: pointer; transition: background-color 0.1s; }
     .sortable:hover { background-color: var(--border-color); }

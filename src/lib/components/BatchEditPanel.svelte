@@ -533,6 +533,7 @@
     .form-scroll-area {
         flex: 1;
         overflow-y: auto;
+        overflow-x: hidden;
         padding-right: 8px;
         display: flex;
         flex-direction: column;

@@ -100,6 +100,20 @@
 
   $: selectedBook = $bookStore.find(b => b.id === $selectedId);
 
+  let isPanelAnimating = false;
+  let panelTimeout: any;
+
+  $: {
+    // Trigger animation state when panel changes to hide scrollbars during transition
+    if (activePanel !== undefined) {
+      isPanelAnimating = true;
+      clearTimeout(panelTimeout);
+      panelTimeout = setTimeout(() => {
+        isPanelAnimating = false;
+      }, 250);
+    }
+  }
+
   onMount(() => {
     bookStore.loadBooks();
   });
@@ -114,8 +128,27 @@
 
   function handleWindowClick(e: MouseEvent) {
     const target = e.target as HTMLElement;
+    // Do not process clicks on elements that were immediately removed from DOM (e.g. closing modals)
+    if (!document.contains(target)) return;
+
     if (!target.closest('.menu-container')) {
       closeMenus();
+    }
+    
+    if ($selectedIds.length > 0) {
+        const isOutsideGrid = !target.closest('.table-wrapper') && !target.closest('.mosaic-wrapper');
+        
+        const isModal = !!target.closest('.modal-overlay');
+        const isBatchPanel = !!target.closest('.batch-edit-panel');
+        const isEditPanel = activePanel === 'editBook' && !!target.closest('.side-panel');
+        
+        const inBar = !!(target.closest('.top-bar') || target.closest('.toolbar') || target.closest('.side-panel'));
+        const isInteractive = !!(target.closest('button') || target.closest('.dropdown-menu') || target.closest('input') || target.closest('select') || target.closest('textarea') || target.closest('label') || target.closest('a'));
+        const isProtectedBarClick = inBar && isInteractive;
+
+        if (isOutsideGrid && !isModal && !isBatchPanel && !isEditPanel && !isProtectedBarClick) {
+            bookStore.clearSelection();
+        }
     }
   }
 
@@ -565,7 +598,7 @@
     </div>
   </header>
 
-  <main class="workspace">
+  <main class="workspace" class:animating-panel={isPanelAnimating}>
     <section class="center-stage">
       <div class="grid-wrapper">
         <div class="view-container">
@@ -799,6 +832,7 @@
     display: flex;
     flex-direction: column;
     height: 100vh;
+    overflow-x: hidden;
   }
 
   .icon-btn.active {
@@ -836,7 +870,7 @@
     cursor: pointer;
     border-radius: 6px;
     color: #F8FAFC; /* Slate 50 - Off white */
-    transition: all 0.2s ease;
+    transition: background-color 0.2s ease, color 0.2s ease;
   }
 
   .menu-btn:hover, .menu-btn.active {
@@ -1123,6 +1157,7 @@
     transition: width 0.2s cubic-bezier(0.4, 0, 0.2, 1);
     display: flex;
     flex-direction: column;
+    overflow-x: hidden;
   }
 
   .side-panel.toolbar-mode {
@@ -1177,10 +1212,19 @@
   .icon-btn.primary {
     background-color: var(--primary-color);
     color: white;
+    transition: background-color 0.2s cubic-bezier(0.4, 0, 0.2, 1), transform 0.2s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.2s cubic-bezier(0.4, 0, 0.2, 1), color 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow: 0 2px 4px color-mix(in srgb, var(--primary-color) 30%, transparent);
   }
 
   .icon-btn.primary:hover {
     background-color: var(--primary-hover);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 6px color-mix(in srgb, var(--primary-color) 40%, transparent);
+  }
+  
+  .icon-btn.primary:active {
+    transform: scale(0.95);
+    box-shadow: 0 1px 2px color-mix(in srgb, var(--primary-color) 50%, transparent);
   }
 
   .icon-btn.danger {
