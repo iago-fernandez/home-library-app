@@ -749,6 +749,7 @@
     .form-scroll-area {
         flex: 1;
         overflow-y: auto;
+        overflow-x: hidden;
         padding-right: 8px;
         padding-left: 4px; /* for box shadow */
         padding-bottom: 4px;
