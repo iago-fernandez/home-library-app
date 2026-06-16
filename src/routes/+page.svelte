@@ -9,7 +9,7 @@
   import BookForm from '$lib/components/BookForm.svelte';
   import ExportModal from '$lib/components/ExportModal.svelte';
   import SettingsModal from '$lib/components/SettingsModal.svelte';
-  import BatchEditPanel from '$lib/components/BatchEditPanel.svelte';
+  import BatchEditForm from '$lib/components/BatchEditForm.svelte';
   import LibraryManagerModal from '$lib/components/LibraryManagerModal.svelte';
   import MoveToLibraryModal from '$lib/components/MoveToLibraryModal.svelte';
   import UserGuideModal from '$lib/components/UserGuideModal.svelte';
@@ -707,7 +707,7 @@
         </div>
       {:else if activePanel === 'batchEdit'}
         <div class="panel-content">
-          <BatchEditPanel onCancel={handleFormCancel} />
+          <BatchEditForm onCancel={handleFormCancel} />
         </div>
       {:else if activePanel === 'filter'}
         <div class="panel-content filter-panel">

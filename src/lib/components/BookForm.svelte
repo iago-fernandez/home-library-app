@@ -1,6 +1,7 @@
 <script lang="ts">
     import type { CreateBookPayload, Book } from '$lib/types/book';
     import { t } from '$lib/i18n';
+    import CollapsibleFieldset from './CollapsibleFieldset.svelte';
     import { apiClient } from '$lib/api/client';
     import AutoExpandTextarea from './AutoExpandTextarea.svelte';
     import ChipInput from './ChipInput.svelte';
@@ -256,8 +257,7 @@
             {/if}
         </div>
 
-        <fieldset class="form-group">
-            <legend>{$t.form.identifiers}</legend>
+        <CollapsibleFieldset id="identifiers" sectionTitle={$t.form.identifiers}>
             <div class="input-row" class:error={!!errors.isbn_13}>
                 <label for="isbn_13">{$t.form.isbn13}</label>
                 <input type="text" id="isbn_13" bind:value={formData.isbn_13} />
@@ -278,10 +278,9 @@
                     <input type="text" id="oclc_number" bind:value={formData.oclc_number} />
                 </div>
             </div>
-        </fieldset>
+        </CollapsibleFieldset>
 
-        <fieldset class="form-group">
-            <legend>{$t.form.coverImage}</legend>
+        <CollapsibleFieldset id="cover_image" sectionTitle={$t.form.coverImage}>
             <div class="cover-upload-container">
                 <div class="cover-preview" class:has-image={!!imagePreviewUrl}>
                     <BookCover src={imagePreviewUrl} alt={$t.form.coverPreviewAlt} />
@@ -310,10 +309,9 @@
                     </div>
                 </div>
             </div>
-        </fieldset>
+        </CollapsibleFieldset>
 
-        <fieldset class="form-group">
-            <legend>{$t.form.coreMetadata}</legend>
+        <CollapsibleFieldset id="core_metadata" sectionTitle={$t.form.coreMetadata}>
             <div class="input-row" class:error={!!errors.title}>
                 <label for="title">{$t.form.title} <span class="required">*</span></label>
                 <AutoExpandTextarea id="title" bind:value={formData.title} required={true} autocompleteField="title" />
@@ -340,10 +338,9 @@
                 <label for="illustrators">{$t.form.illustrators}</label>
                 <ChipInput id="illustrators" bind:values={formData.illustrators} placeholder="..." autocompleteField="illustrators" />
             </div>
-        </fieldset>
+        </CollapsibleFieldset>
 
-        <fieldset class="form-group">
-            <legend>{$t.form.pubDetails}</legend>
+        <CollapsibleFieldset id="pub_details" sectionTitle={$t.form.pubDetails}>
             <div class="input-row">
                 <label for="publisher">{$t.form.publisher}</label>
                 <AutoExpandTextarea id="publisher" bind:value={formData.publisher} autocompleteField="publisher" />
@@ -400,10 +397,9 @@
                     {#if errors.volume_in_series}<span class="error-text">{errors.volume_in_series}</span>{/if}
                 </div>
             </div>
-        </fieldset>
+        </CollapsibleFieldset>
 
-        <fieldset class="form-group">
-            <legend>{$t.form.physicalProps}</legend>
+        <CollapsibleFieldset id="physical_props" sectionTitle={$t.form.physicalProps}>
             <div class="input-grid">
                 <div class="input-row">
                     <label for="book_format">{$t.form.bookFormat}</label>
@@ -435,10 +431,9 @@
                     <AutoExpandTextarea id="original_language" bind:value={formData.original_language} autocompleteField="original_language" />
                 </div>
             </div>
-        </fieldset>
+        </CollapsibleFieldset>
 
-        <fieldset class="form-group">
-            <legend>{$t.form.classification}</legend>
+        <CollapsibleFieldset id="classification" sectionTitle={$t.form.classification}>
             <div class="input-row">
                 <label for="subjects">{$t.form.subjects}</label>
                 <ChipInput id="subjects" bind:values={formData.subjects} placeholder="..." autocompleteField="subjects" />
@@ -459,10 +454,9 @@
                 <label for="table_of_contents">{$t.form.tableOfContents}</label>
                 <AutoExpandTextarea id="table_of_contents" bind:value={formData.table_of_contents} />
             </div>
-        </fieldset>
+        </CollapsibleFieldset>
 
-        <fieldset class="form-group">
-            <legend>{$t.form.acquisition}</legend>
+        <CollapsibleFieldset id="acquisition" sectionTitle={$t.form.acquisition}>
             <div class="input-grid">
                 <div class="input-row" class:error={!!errors.purchase_date}>
                     <label for="purchase_date">{$t.form.purchaseDate}</label>
@@ -484,28 +478,27 @@
                     <input type="text" id="acquisition_type" bind:value={formData.acquisition_type} />
                 </div>
             </div>
-        </fieldset>
+        </CollapsibleFieldset>
 
-        <fieldset class="form-group">
-            <legend>{$t.form.physicalLoc}</legend>
+        <CollapsibleFieldset id="location" sectionTitle={$t.form.physicalLoc}>
             <div class="input-grid">
                 <div class="input-row">
                     <label for="location_property">{$t.form.locationProperty}</label>
-                    <input type="text" id="location_property" bind:value={formData.location_property} />
+                    <AutoExpandTextarea id="location_property" bind:value={formData.location_property} autocompleteField="location_property" />
                 </div>
                 <div class="input-row">
                     <label for="room">{$t.form.room}</label>
-                    <input type="text" id="room" bind:value={formData.location_room} />
+                    <AutoExpandTextarea id="room" bind:value={formData.location_room} autocompleteField="room" />
                 </div>
             </div>
             <div class="input-grid">
                 <div class="input-row">
                     <label for="bookcase">{$t.form.bookcase}</label>
-                    <input type="text" id="bookcase" bind:value={formData.location_bookcase} />
+                    <AutoExpandTextarea id="bookcase" bind:value={formData.location_bookcase} autocompleteField="bookcase" />
                 </div>
                 <div class="input-row">
                     <label for="location_shelf">{$t.form.shelf}</label>
-                    <input type="text" id="location_shelf" bind:value={formData.location_shelf} />
+                    <AutoExpandTextarea id="location_shelf" bind:value={formData.location_shelf} autocompleteField="shelf" />
                 </div>
                 <div class="input-row" class:error={!!errors.location_position}>
                     <label for="location_position">{$t.form.position}</label>
@@ -513,10 +506,9 @@
                     {#if errors.location_position}<span class="error-text">{errors.location_position}</span>{/if}
                 </div>
             </div>
-        </fieldset>
+        </CollapsibleFieldset>
 
-        <fieldset class="form-group">
-            <legend>{$t.form.conditionNotes}</legend>
+        <CollapsibleFieldset id="condition" sectionTitle={$t.form.conditionNotes}>
             <div class="input-row">
                 <label for="condition_state">{$t.form.conditionState}</label>
                 <input type="text" id="condition_state" bind:value={formData.condition_state} />
@@ -525,10 +517,9 @@
                 <label for="personal_notes">{$t.form.personalNotes}</label>
                 <AutoExpandTextarea id="personal_notes" bind:value={formData.personal_notes} />
             </div>
-        </fieldset>
+        </CollapsibleFieldset>
 
-        <fieldset class="form-group">
-            <legend>{$t.form.readingProgress}</legend>
+        <CollapsibleFieldset id="reading" sectionTitle={$t.form.readingProgress}>
             <div class="input-grid">
                 <div class="input-row">
                     <label for="read_status">{$t.form.readStatus}</label>
@@ -567,10 +558,9 @@
                 <label for="reading_notes">{$t.form.readingNotes}</label>
                 <AutoExpandTextarea id="reading_notes" bind:value={formData.reading_notes} />
             </div>
-        </fieldset>
+        </CollapsibleFieldset>
 
-        <fieldset class="form-group">
-            <legend>{$t.form.loanManagement}</legend>
+        <CollapsibleFieldset id="lending" sectionTitle={$t.form.loanManagement}>
             <div class="input-row checkbox-row">
                 <input type="checkbox" id="is_loaned" bind:checked={formData.is_loaned} />
                 <label for="is_loaned">{$t.form.isLoaned}</label>
@@ -578,7 +568,7 @@
             {#if formData.is_loaned}
                 <div class="input-row">
                     <label for="loaned_to">{$t.form.loanedTo}</label>
-                    <input type="text" id="loaned_to" bind:value={formData.loaned_to} />
+                    <AutoExpandTextarea id="loaned_to" bind:value={formData.loaned_to} autocompleteField="loaned_to" />
                 </div>
                 <div class="input-grid">
                     <div class="input-row">
@@ -591,7 +581,7 @@
                     </div>
                 </div>
             {/if}
-        </fieldset>
+        </CollapsibleFieldset>
     </div>
 </form>
 
@@ -755,29 +745,9 @@
         padding-bottom: 4px;
         display: flex;
         flex-direction: column;
-        gap: 32px;
+        gap: 20px; /* Reduced from 32px */
     }
 
-    .form-group {
-        border: none;
-        padding: 0;
-        margin: 0;
-        display: flex;
-        flex-direction: column;
-        gap: 12px;
-    }
-
-    legend {
-        font-weight: 600;
-        font-size: 12px;
-        color: var(--primary-color);
-        text-transform: uppercase;
-        letter-spacing: 0.5px;
-        margin-bottom: 16px;
-        padding-bottom: 4px;
-        border-bottom: 1px solid var(--border-color);
-        width: 100%;
-    }
 
     .cover-upload-container {
         display: flex;
@@ -856,8 +826,17 @@
         gap: 8px;
     }
 
-    .checkbox-row input {
-        width: auto;
+    .checkbox-row input[type="checkbox"] {
+        width: 16px;
+        height: 16px;
+        margin: 0;
+        cursor: pointer;
+    }
+
+    .checkbox-row input[type="checkbox"]:focus-visible {
+        outline: 2px solid var(--primary-color);
+        outline-offset: 2px;
+        border-radius: 2px;
     }
 
     .checkbox-row label {
@@ -884,7 +863,7 @@
         margin-left: 2px;
     }
 
-    input {
+    input:not([type="checkbox"]) {
         width: 100%;
         padding: 8px;
         margin: 0;
@@ -901,7 +880,7 @@
         min-height: 35px;
     }
 
-    input:focus {
+    input:not([type="checkbox"]):focus {
         outline: 2px solid var(--focus-ring);
         outline-offset: 0px;
         border-color: var(--input-focus);
