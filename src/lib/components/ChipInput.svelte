@@ -157,10 +157,8 @@
     }
 
     .chip-text {
-        max-width: 150px;
-        overflow: hidden;
-        text-overflow: ellipsis;
-        white-space: nowrap;
+        word-break: break-word;
+        white-space: normal;
     }
 
     .chip-remove {
