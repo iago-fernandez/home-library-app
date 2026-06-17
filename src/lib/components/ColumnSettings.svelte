@@ -237,6 +237,9 @@
         overflow-y: auto;
         padding-right: 8px;
         flex: 1;
+        overflow-x: hidden;
+        overscroll-behavior: contain;
+        transform: translateZ(0); /* Force GPU acceleration for smooth scroll */
     }
 
     .column-item {

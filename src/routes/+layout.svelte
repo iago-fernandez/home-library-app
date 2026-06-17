@@ -8,6 +8,7 @@
     import ConfirmModal from '$lib/components/ConfirmModal.svelte';
 
     $: currentTheme = appThemes[$activeTheme as keyof typeof appThemes] || appThemes.sky;
+    $: faviconDataUri = `data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='none' stroke='${encodeURIComponent(currentTheme.primary)}' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'><path d='m16 6 4 14'/><path d='M12 6v14'/><path d='M8 8v12'/><path d='M4 4v16'/></svg>`;
 
     $: if (typeof document !== 'undefined') {
         document.documentElement.style.setProperty('--primary-color', currentTheme.primary);
@@ -28,6 +29,16 @@
     let mouseY = 0;
 
     $: isAuthenticated = !!$authStore.token;
+
+    let prevAuthenticated = false;
+    $: {
+        const currentlyAuth = !!$authStore.token;
+        if (prevAuthenticated && !currentlyAuth) {
+            username = '';
+            password = '';
+        }
+        prevAuthenticated = currentlyAuth;
+    }
 
     function handleWindowClick(event: MouseEvent) {
         if (showThemeMenu) {
@@ -75,6 +86,8 @@
 
 <svelte:head>
     <title>{$t.appTitle}</title>
+    <link rel="icon" type="image/svg+xml" href={faviconDataUri} />
+    <link rel="apple-touch-icon" href={faviconDataUri} />
 </svelte:head>
 
 {#if !isAuthenticated}
@@ -114,6 +127,7 @@
                             type="text"
                             bind:value={username}
                             required
+                            autocomplete="off"
                             class="gateway-input"
                     />
                 </div>
@@ -126,6 +140,7 @@
                                 type={showPassword ? 'text' : 'password'}
                                 bind:value={password}
                                 required
+                                autocomplete="off"
                                 class="gateway-input"
                                 style="padding-right: 40px;"
                         />

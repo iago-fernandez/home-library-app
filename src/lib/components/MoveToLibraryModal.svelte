@@ -68,10 +68,10 @@
                             <span class="lib-name">{lib.name}</span>
                         </button>
                     {/each}
-                    {#if availableLibraries.length === 0}
-                        <p class="no-libs">No other libraries available.</p>
-                    {/if}
                 </div>
+                {#if availableLibraries.length === 0}
+                    <p class="no-libs">{$t.modals.moveToLibrary.noLibraries}</p>
+                {/if}
                 {#if errorMessage}
                     <div class="error-banner">
                         {errorMessage}
@@ -157,7 +157,7 @@
         color: var(--primary-color);
         transform: scale(1.02);
     }
-    .no-libs { color: var(--text-muted); font-style: italic; }
+    .no-libs { color: var(--text-muted); padding: 16px 0; text-align: center; }
 
     .modal-footer {
         display: flex; justify-content: flex-end; gap: 12px; padding: 16px 24px;

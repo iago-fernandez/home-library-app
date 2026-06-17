@@ -270,6 +270,9 @@
                                             { value: 'yyyy-mm-dd', label: $t.settings.dateFormats?.yyyy_mm_dd || 'YYYY-MM-DD' }
                                         ]}
                                     />
+                                    {#if $t.settings.dateFormatHint && $activeDateFormat.includes('hh:mm:ss')}
+                                        <p class="setting-hint">{$t.settings.dateFormatHint}</p>
+                                    {/if}
                                 </div>
                             </div>
 
@@ -561,6 +564,12 @@
         box-shadow: none;
         cursor: pointer;
         accent-color: var(--primary-color);
+    }
+    .setting-hint {
+        font-size: 12px;
+        color: var(--text-muted);
+        margin-top: 8px;
+        line-height: 1.4;
     }
     .zoom-slider:focus {
         box-shadow: none;

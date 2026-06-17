@@ -295,6 +295,7 @@ export const es: TranslationDictionary = {
         accountTab: 'Cuenta',
         preferencesTab: 'Preferencias',
         dateFormat: 'Formato de Fecha',
+        dateFormatHint: 'La hora (HH:MM:SS) sólo se mostrará en variables de sistema (como Fecha de Creación). Fechas puras (como Fecha de Publicación) nunca mostrarán horas.',
         dateFormats: {
             dd_mm_yyyy_hh_mm_ss: 'DD/MM/AAAA HH:MM:SS',
             dd_mm_yyyy: 'DD/MM/AAAA',
@@ -370,7 +371,8 @@ export const es: TranslationDictionary = {
             selectDestinationSingular: 'Selecciona la librería de destino para este libro:',
             selectDestinationPlural: 'Selecciona la librería de destino para {count} libros:',
             moveBtn: 'Mover',
-            moveError: 'Error al mover los libros. Verifica los datos o actualiza la página.'
+            moveError: 'Error al mover los libros. Por favor, verifica los datos e inténtalo de nuevo.',
+            noLibraries: 'No hay otras bibliotecas disponibles.'
         }
     },
     userGuide: {

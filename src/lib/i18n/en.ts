@@ -295,6 +295,7 @@ export const en: TranslationDictionary = {
         accountTab: 'Account',
         preferencesTab: 'Preferences',
         dateFormat: 'Date Format',
+        dateFormatHint: 'Time (HH:MM:SS) will only be displayed for system variables (like Creation Date). Pure dates (like Publication Date) will never show time.',
         dateFormats: {
             dd_mm_yyyy_hh_mm_ss: 'DD/MM/YYYY HH:MM:SS',
             dd_mm_yyyy: 'DD/MM/YYYY',
@@ -370,7 +371,8 @@ export const en: TranslationDictionary = {
             selectDestinationSingular: 'Select destination library for this book:',
             selectDestinationPlural: 'Select destination library for {count} books:',
             moveBtn: 'Move',
-            moveError: 'Failed to move books. Please verify data and try again.'
+            moveError: 'Failed to move books. Please verify data and try again.',
+            noLibraries: 'No other libraries available.'
         }
     },
     userGuide: {

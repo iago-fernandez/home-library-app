@@ -849,7 +849,7 @@
     align-items: center;
     padding: 0 16px;
     flex-shrink: 0;
-    z-index: 100;
+    z-index: 2000;
   }
 
   .menu-bar {
