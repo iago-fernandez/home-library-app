@@ -239,6 +239,7 @@ export interface TranslationDictionary {
         accountTab: string;
         preferencesTab: string;
         dateFormat: string;
+        dateFormatHint: string;
         dateFormats: {
             dd_mm_yyyy_hh_mm_ss: string;
             dd_mm_yyyy: string;
@@ -315,6 +316,7 @@ export interface TranslationDictionary {
             selectDestinationPlural: string;
             moveBtn: string;
             moveError: string;
+            noLibraries: string;
         };
     };
     userGuide: {
