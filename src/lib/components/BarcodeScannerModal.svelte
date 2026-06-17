@@ -33,12 +33,12 @@
                     close();
                 },
                 (errorMessage) => {
-                    // Ignorar errores de escaneo continuos (ocurre cuando no hay código en pantalla)
+                    // Ignore continuous scanning errors (happens when no code is visible in the frame)
                 }
             );
         } catch (err) {
             console.error("Camera access error:", err);
-            cameraError = 'No se pudo acceder a la cámara. Revisa los permisos del navegador.';
+            cameraError = 'Could not access the camera. Please check your browser permissions.';
         }
     }
 

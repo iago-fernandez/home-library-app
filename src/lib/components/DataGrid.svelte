@@ -25,7 +25,6 @@
     const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001';
 
     let scrollContainer: HTMLDivElement;
-    let headerContainer: HTMLDivElement;
     let lastSelectedIndex = -1;
     let sorting: SortingState = [];
     let columnSizing: Record<string, number> = {};
@@ -164,7 +163,7 @@
             }
         }
 
-        const calculatedWidth = Math.min(Math.max(maxLen * 8 + 32, 100), 500);
+        const calculatedWidth = Math.min(Math.max(Math.ceil(maxLen * 6.5) + 32, 100), 500);
         columnSizing = { ...columnSizing, [colId]: calculatedWidth };
 
         if (typeof window !== 'undefined') {
@@ -293,9 +292,7 @@
     }
 
     function handleScroll(e: Event) {
-        if (headerContainer && scrollContainer) {
-            headerContainer.scrollLeft = scrollContainer.scrollLeft;
-        }
+        // Scroll is now handled natively via CSS sticky
     }
 
     function nextMatch() {
@@ -375,7 +372,9 @@
 
 <div class="table-wrapper" style="zoom: {$zoomLevel / 100}">
 
-    <div bind:this={headerContainer} class="header-container">
+    <!-- svelte-ignore a11y_click_events_have_key_events -->
+    <!-- svelte-ignore a11y_no_static_element_interactions -->
+    <div bind:this={scrollContainer} class="scroll-container" on:click={handleEmptySpaceClick}>
         <div class="grid-table-inner" style="min-width: 100%; width: {$table.getTotalSize()}px">
             <div class="grid-header">
                 {#each $table.getHeaderGroups() as headerGroup}
@@ -417,13 +416,7 @@
                     </div>
                 {/each}
             </div>
-        </div>
-    </div>
-
-    <!-- svelte-ignore a11y_click_events_have_key_events -->
-    <!-- svelte-ignore a11y_no_static_element_interactions -->
-    <div bind:this={scrollContainer} class="scroll-container" on:scroll={handleScroll} on:click={handleEmptySpaceClick}>
-        <div class="grid-table-inner" style="min-width: 100%; width: {$table.getTotalSize()}px">
+            
             <div class="virtual-inner" style="height: {$virtualizer.getTotalSize()}px; position: relative;">
                 {#each virtualItems as virtualRow (virtualRow.index)}
                     {@const row = $table.getRowModel().rows[virtualRow.index]}
@@ -508,7 +501,7 @@
     .icon-btn-small:disabled { opacity: 0.3; cursor: not-allowed; }
     .divider { width: 1px; height: 16px; background-color: var(--border-color); margin: 0 4px; }
 
-    .header-container { overflow: hidden; background-color: var(--bg-color); flex-shrink: 0; border-bottom: 1px solid var(--border-color); border-top-left-radius: 3px; border-top-right-radius: 3px; }
+
     .scroll-container { flex: 1; overflow: auto; position: relative; border-bottom-left-radius: 3px; border-bottom-right-radius: 3px; }
     
     :global(.animating-panel .scroll-container) { 
@@ -523,11 +516,14 @@
     .grid-table-inner { position: relative; min-height: 100%; }
 
     .grid-header {
+        position: sticky;
+        top: 0;
         background-color: var(--bg-color);
         font-weight: 600;
         font-size: 13px;
         color: var(--text-main);
-        z-index: 2;
+        z-index: 100;
+        border-bottom: 1px solid var(--border-color);
     }
 
     .header-row { display: flex; min-width: 100%; }

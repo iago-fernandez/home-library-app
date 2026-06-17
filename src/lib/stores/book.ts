@@ -115,6 +115,17 @@ function createBookStore() {
             await bookStore.loadBooks(true);
         },
 
+        purge: () => {
+            currentRequestId += 1;
+            set([]);
+            totalBooks.set(0);
+            selectedBookId.set(null);
+            selectedIdsList.set([]);
+            currentOffset = 0;
+            hasMore = true;
+            isFetching = false;
+        },
+
         applySort: async (column: string | undefined, order: 'asc' | 'desc' | undefined) => {
             sortParam.set(column);
             orderParam.set(order);
@@ -280,6 +291,8 @@ libraryStore.subscribe(state => {
         previousLibraryId = state.activeLibraryId;
         if (state.activeLibraryId) {
             bookStore.resetAndLoad();
+        } else {
+            bookStore.purge();
         }
     }
 });

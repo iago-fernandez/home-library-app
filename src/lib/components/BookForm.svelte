@@ -573,11 +573,11 @@
                 <div class="input-grid">
                     <div class="input-row">
                         <label for="loan_date">{$t.form.loanDate}</label>
-                        <input type="datetime-local" id="loan_date" bind:value={formData.loan_date} />
+                        <input type="date" id="loan_date" bind:value={formData.loan_date} />
                     </div>
                     <div class="input-row">
                         <label for="expected_return_date">{$t.form.expectedReturnDate}</label>
-                        <input type="datetime-local" id="expected_return_date" bind:value={formData.expected_return_date} />
+                        <input type="date" id="expected_return_date" bind:value={formData.expected_return_date} />
                     </div>
                 </div>
             {/if}
