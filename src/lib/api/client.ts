@@ -201,7 +201,7 @@ export const apiClient = {
         return response.json();
     },
 
-    async exportData(format: string, payload: any): Promise<void> {
+    async exportData(format: string, payload: any, filename?: string): Promise<void> {
         const response = await apiFetch(`${API_BASE_URL}/export/${format}`, {
             method: 'POST',
             headers: getHeaders({ 'Content-Type': 'application/json' }),
@@ -214,7 +214,7 @@ export const apiClient = {
         const url = window.URL.createObjectURL(blob);
         const a = document.createElement('a');
         a.href = url;
-        a.download = `library_export.${format}`;
+        a.download = filename ? `${filename}.${format}` : `library_export.${format}`;
         document.body.appendChild(a);
         a.click();
         window.URL.revokeObjectURL(url);

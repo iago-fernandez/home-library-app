@@ -288,7 +288,8 @@ export const en: TranslationDictionary = {
         exportingState: 'Exporting...',
         exportAction: 'Export Data',
         pdfWarningPrefix: 'For PDF export, we highly recommend a maximum of 7 columns to maintain document legibility. Current selection:',
-        pdfWarningSuffix: 'columns.'
+        pdfWarningSuffix: 'columns.',
+        filenamePrefix: 'inventory'
     },
     settings: {
         title: 'System Settings',

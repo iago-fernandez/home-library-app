@@ -456,7 +456,7 @@
                                 on:keydown={(e) => e.key === 'Enter' && handleRowClick(e, row.original.id, virtualRow.index)}
                         >
                             {#each row.getVisibleCells() as cell}
-                                <div class="cell" class:is-editing={editingCellId === `${row.original.id}-${cell.column.id}`} style="width: {cell.column.getSize()}px" role="button" tabindex="0" on:dblclick={(e) => { e.stopPropagation(); startEdit(row.original.id, cell.column.id, cell.getValue()); }} on:keydown={(e) => { if (e.key === 'Enter') { e.stopPropagation(); e.preventDefault(); startEdit(row.original.id, cell.column.id, cell.getValue()); } }}>
+                                <div class="cell" class:is-editing={editingCellId === `${row.original.id}-${cell.column.id}`} style="width: {cell.column.getSize()}px" on:dblclick={(e) => { e.stopPropagation(); startEdit(row.original.id, cell.column.id, cell.getValue()); }}>
                                     {#if editingCellId === `${row.original.id}-${cell.column.id}`}
                                         {#if getInputType(cell.column.id) === 'checkbox'}
                                             <input type="checkbox" class="inline-edit-checkbox" bind:checked={editValue} on:blur={() => saveEdit(row.original.id, cell.column.id)} on:keydown={(e) => { if (e.key === 'Enter') { e.stopPropagation(); e.preventDefault(); e.currentTarget.blur(); } else if (e.key === 'Escape') { e.stopPropagation(); e.preventDefault(); cancelEdit(); } }} on:click={(e) => e.stopPropagation()} use:focusInput />
@@ -634,12 +634,6 @@
     .cell.is-editing {
         overflow: visible;
         z-index: 10;
-    }
-    
-    .cell:focus-visible {
-        box-shadow: inset 0 0 0 2px var(--primary-color);
-        outline: none;
-        border-radius: 2px;
     }
 
     .header-cell { user-select: none; }
