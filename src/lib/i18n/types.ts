@@ -233,6 +233,7 @@ export interface TranslationDictionary {
         exportAction: string;
         pdfWarningPrefix: string;
         pdfWarningSuffix: string;
+        filenamePrefix: string;
     };
     settings: {
         title: string;

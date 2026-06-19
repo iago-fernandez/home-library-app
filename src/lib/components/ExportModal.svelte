@@ -1,7 +1,7 @@
 <script lang="ts">
     import { createEventDispatcher } from 'svelte';
     import { bookStore } from '$lib/stores/book';
-    import { activeColumns, availableColumns } from '$lib/stores/preferences';
+    import { activeColumns, availableColumns, activeDateFormat } from '$lib/stores/preferences';
     import { apiClient } from '$lib/api/client';
     import { X, AlertTriangle, GripVertical } from 'lucide-svelte';
     import { t } from '$lib/i18n';
@@ -68,10 +68,18 @@
                     query: $filterConfig || undefined
                 },
                 columns: columnsToExport,
-                specific_ids: exportScope === 'selected' && $selectedIds.length > 0 ? $selectedIds : null
+                specific_ids: exportScope === 'selected' && $selectedIds.length > 0 ? $selectedIds : null,
+                column_labels: Object.fromEntries(columnsToExport.map(id => [id, getColumnLabel(id, $t)])),
+                date_format: $activeDateFormat
             };
 
-            await apiClient.exportData(selectedFormat, payload);
+            const now = new Date();
+            const pad = (n: number) => n.toString().padStart(2, '0');
+            const dateStr = `${now.getFullYear()}-${pad(now.getMonth() + 1)}-${pad(now.getDate())}_${pad(now.getHours())}-${pad(now.getMinutes())}`;
+            const prefix = $t.exportManager?.filenamePrefix || 'export';
+            const filename = `${prefix}-${dateStr}`;
+
+            await apiClient.exportData(selectedFormat, payload, filename);
             dispatch('close');
         } catch (error) {
             console.error(error);

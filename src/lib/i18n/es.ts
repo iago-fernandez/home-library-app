@@ -287,8 +287,9 @@ export const es: TranslationDictionary = {
         dataMatrixPreview: 'Vista Previa de Matriz de Datos',
         exportingState: 'Exportando...',
         exportAction: 'Exportar Datos',
-        pdfWarningPrefix: 'Para la exportación a PDF, recomendamos encarecidamente un máximo de 7 columnas para mantener la legibilidad. Selección actual:',
-        pdfWarningSuffix: 'columnas.'
+        pdfWarningPrefix: 'Para la exportación en PDF, recomendamos un máximo de 7 columnas para mantener la legibilidad. Selección actual:',
+        pdfWarningSuffix: 'columnas.',
+        filenamePrefix: 'inventario'
     },
     settings: {
         title: 'Ajustes del Sistema',
