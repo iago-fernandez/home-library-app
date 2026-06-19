@@ -25,6 +25,7 @@
     const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001';
 
     let scrollContainer: HTMLDivElement;
+    let headerContainer: HTMLDivElement;
     let lastSelectedIndex = -1;
     let sorting: SortingState = [];
     let columnSizing: Record<string, number> = {};
@@ -154,16 +155,34 @@
         return val ? String(val) : '';
     }
 
+    let _canvas: HTMLCanvasElement;
+    function getTextWidth(text: string, font: string = '13px Inter, sans-serif') {
+        if (typeof document === 'undefined') return text.length * 7;
+        if (!_canvas) _canvas = document.createElement('canvas');
+        const context = _canvas.getContext('2d');
+        if (context) {
+            context.font = font;
+            return context.measureText(text).width;
+        }
+        return text.length * 7;
+    }
+
     function autoSizeColumn(colId: string) {
-        let maxLen = colId.length;
+        const headerText = ($t.grid as Record<string, string>)['col_' + colId] || availableColumns.find(c => c.id === colId)?.label || colId;
+        let maxWidth = getTextWidth(headerText, '600 13px Inter, sans-serif');
+
         for (const book of $bookStore) {
             const val = getCellData(book, colId);
-            if (val && val.length > maxLen) {
-                maxLen = val.length;
+            if (val) {
+                const width = getTextWidth(val, '13px Inter, sans-serif');
+                if (width > maxWidth) {
+                    maxWidth = width;
+                }
             }
         }
 
-        const calculatedWidth = Math.min(Math.max(Math.ceil(maxLen * 6.5) + 32, 100), 500);
+        // Add padding (12px on each side + sort icon space)
+        const calculatedWidth = Math.min(Math.max(Math.ceil(maxWidth) + 32, 100), 500);
         columnSizing = { ...columnSizing, [colId]: calculatedWidth };
 
         if (typeof window !== 'undefined') {
@@ -292,7 +311,9 @@
     }
 
     function handleScroll(e: Event) {
-        // Scroll is now handled natively via CSS sticky
+        if (headerContainer && scrollContainer) {
+            headerContainer.scrollLeft = scrollContainer.scrollLeft;
+        }
     }
 
     function nextMatch() {
@@ -372,9 +393,7 @@
 
 <div class="table-wrapper" style="zoom: {$zoomLevel / 100}">
 
-    <!-- svelte-ignore a11y_click_events_have_key_events -->
-    <!-- svelte-ignore a11y_no_static_element_interactions -->
-    <div bind:this={scrollContainer} class="scroll-container" on:click={handleEmptySpaceClick}>
+    <div bind:this={headerContainer} class="grid-header-container">
         <div class="grid-table-inner" style="min-width: 100%; width: {$table.getTotalSize()}px">
             <div class="grid-header">
                 {#each $table.getHeaderGroups() as headerGroup}
@@ -416,7 +435,13 @@
                     </div>
                 {/each}
             </div>
-            
+        </div>
+    </div>
+
+    <!-- svelte-ignore a11y_click_events_have_key_events -->
+    <!-- svelte-ignore a11y_no_static_element_interactions -->
+    <div bind:this={scrollContainer} class="scroll-container" on:scroll={handleScroll} on:click={handleEmptySpaceClick}>
+        <div class="grid-table-inner" style="min-width: 100%; width: {$table.getTotalSize()}px">
             <div class="virtual-inner" style="height: {$virtualizer.getTotalSize()}px; position: relative;">
                 {#each virtualItems as virtualRow (virtualRow.index)}
                     {@const row = $table.getRowModel().rows[virtualRow.index]}
@@ -488,7 +513,26 @@
 </div>
 
 <style>
-    .table-wrapper { display: flex; flex-direction: column; height: 100%; background-color: var(--panel-bg); border: 1px solid var(--border-color); border-radius: 4px; overflow: hidden; transition: border-color 0.2s; }
+    .table-wrapper { display: flex; flex-direction: column; height: 100%; background-color: var(--panel-bg); border: 1px solid var(--border-color); border-radius: 4px; overflow: hidden; transition: border-color 0.2s; position: relative; }
+    
+    .grid-header-container {
+        overflow-x: hidden;
+        overflow-y: scroll;
+        flex-shrink: 0;
+        background-color: var(--bg-color);
+        border-bottom: 1px solid var(--border-color);
+        scrollbar-width: auto;
+        scrollbar-color: transparent var(--bg-color);
+    }
+    
+    .grid-header-container::-webkit-scrollbar-thumb {
+        background-color: transparent !important;
+        border-color: transparent !important;
+    }
+    
+    .grid-header-container::-webkit-scrollbar-track {
+        background-color: var(--bg-color) !important;
+    }
     .local-search-bar { display: flex; align-items: center; background-color: var(--bg-color); border-top: 1px solid var(--border-color); padding: 4px 8px; gap: 8px; box-shadow: 0 -2px 4px rgba(0,0,0,0.02); z-index: 10; flex-shrink: 0; }
     .local-search-bar input { border: none; outline: none; flex: 1; font-family: inherit; font-size: 13px; padding: 4px; background-color: transparent; color: var(--text-main); }
     .match-count { font-size: 12px; color: var(--text-muted); white-space: nowrap; }
@@ -502,7 +546,7 @@
     .divider { width: 1px; height: 16px; background-color: var(--border-color); margin: 0 4px; }
 
 
-    .scroll-container { flex: 1; overflow: auto; position: relative; border-bottom-left-radius: 3px; border-bottom-right-radius: 3px; }
+    .scroll-container { flex: 1; overflow: auto; position: relative; border-bottom-left-radius: 3px; border-bottom-right-radius: 3px; overscroll-behavior-x: contain; }
     
     :global(.animating-panel .scroll-container) { 
         overflow-x: hidden !important; 
@@ -513,17 +557,13 @@
         height: 0 !important;
     }
     
-    .grid-table-inner { position: relative; min-height: 100%; }
+    .grid-table-inner { position: relative; min-height: 100%; will-change: transform; transform: translateZ(0); }
 
     .grid-header {
-        position: sticky;
-        top: 0;
         background-color: var(--bg-color);
         font-weight: 600;
         font-size: 13px;
         color: var(--text-main);
-        z-index: 100;
-        border-bottom: 1px solid var(--border-color);
     }
 
     .header-row { display: flex; min-width: 100%; }
