@@ -5,6 +5,7 @@
     import { apiClient } from '$lib/api/client';
     import { X, AlertTriangle, GripVertical } from 'lucide-svelte';
     import { t } from '$lib/i18n';
+    import { formatDate } from '$lib/utils/date';
 
     const dispatch = createEventDispatcher();
 
@@ -53,6 +54,9 @@
         const val = book[colId];
         if (Array.isArray(val)) return val.join(', ');
         if (typeof val === 'boolean') return val ? (tObj.common.yes || 'Yes') : (tObj.common.no || 'No');
+        if (val && (colId.includes('date') || colId.endsWith('_at'))) {
+            return formatDate(val, $activeDateFormat);
+        }
         return val ? String(val) : '';
     }
 
