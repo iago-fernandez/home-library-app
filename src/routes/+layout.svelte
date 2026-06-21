@@ -58,12 +58,17 @@
         e.preventDefault();
         if (isLoading) return;
 
+        if (!username.trim() || !password) {
+            errorMsg = $t.auth.emptyFields;
+            return;
+        }
+
         errorMsg = '';
         isLoading = true;
         try {
             await apiClient.login({ username, password });
         } catch (err: any) {
-            errorMsg = err.message || $t.auth.loginError;
+            errorMsg = $t.auth.loginError;
         } finally {
             isLoading = false;
         }
@@ -119,14 +124,13 @@
         <div class="gateway-container">
             <h1 class="gateway-title">{$t.auth.accessWorkspace}</h1>
 
-            <form on:submit={handleAuth} class="gateway-form">
+            <form class="gateway-form" on:submit|preventDefault={handleAuth} novalidate>
                 <div class="input-group">
                     <label for="username">{$t.auth.profileName}</label>
                     <input
                             id="username"
                             type="text"
                             bind:value={username}
-                            required
                             autocomplete="off"
                             class="gateway-input"
                     />
@@ -139,8 +143,7 @@
                                 id="password"
                                 type={showPassword ? 'text' : 'password'}
                                 bind:value={password}
-                                required
-                                autocomplete="off"
+                                autocomplete="current-password"
                                 class="gateway-input"
                                 style="padding-right: 40px;"
                         />

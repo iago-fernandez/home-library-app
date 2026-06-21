@@ -31,6 +31,7 @@ export const en: TranslationDictionary = {
         passwordsMismatch: 'Passwords do not match.',
         registerError: 'Failed to create profile. Username may be taken.',
         loginError: 'Invalid profile credentials.',
+        emptyFields: 'Please fill in all required fields.',
         processing: 'Processing...',
         registerBtn: 'Register',
         loginBtn: 'Authenticate',
