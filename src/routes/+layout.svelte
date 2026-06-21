@@ -196,6 +196,8 @@
         font-family: system-ui, -apple-system, sans-serif;
         transition: background-image 0.2s ease-out;
         position: relative;
+        padding: 20px;
+        box-sizing: border-box;
     }
     .lang-toggle {
         position: absolute;
@@ -377,5 +379,34 @@
         gap: 8px;
         margin-bottom: 16px;
         line-height: 1.4;
+    }
+
+    /* Mobile Gateway Adjustments */
+    @media (max-width: 768px) {
+        .gateway-container {
+            padding: 32px 24px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+            margin-top: 60px; /* Make space for top-right toggles */
+        }
+        
+        .gateway-title {
+            font-size: 22px;
+            margin-bottom: 24px;
+        }
+
+        .lang-toggle {
+            top: 16px;
+            right: 16px;
+            padding: 8px 12px; /* Bigger hit target */
+        }
+        
+        .theme-selector-container {
+            top: 16px;
+            right: 76px;
+        }
+
+        .theme-toggle {
+            padding: 8px; /* Bigger hit target */
+        }
     }
 </style>
