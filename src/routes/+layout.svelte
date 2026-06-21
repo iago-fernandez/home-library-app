@@ -58,12 +58,17 @@
         e.preventDefault();
         if (isLoading) return;
 
+        if (!username.trim() || !password) {
+            errorMsg = $t.auth.emptyFields;
+            return;
+        }
+
         errorMsg = '';
         isLoading = true;
         try {
             await apiClient.login({ username, password });
         } catch (err: any) {
-            errorMsg = err.message || $t.auth.loginError;
+            errorMsg = $t.auth.loginError;
         } finally {
             isLoading = false;
         }
@@ -119,14 +124,13 @@
         <div class="gateway-container">
             <h1 class="gateway-title">{$t.auth.accessWorkspace}</h1>
 
-            <form on:submit={handleAuth} class="gateway-form">
+            <form class="gateway-form" on:submit|preventDefault={handleAuth} novalidate>
                 <div class="input-group">
                     <label for="username">{$t.auth.profileName}</label>
                     <input
                             id="username"
                             type="text"
                             bind:value={username}
-                            required
                             autocomplete="off"
                             class="gateway-input"
                     />
@@ -139,8 +143,7 @@
                                 id="password"
                                 type={showPassword ? 'text' : 'password'}
                                 bind:value={password}
-                                required
-                                autocomplete="off"
+                                autocomplete="current-password"
                                 class="gateway-input"
                                 style="padding-right: 40px;"
                         />
@@ -193,6 +196,8 @@
         font-family: system-ui, -apple-system, sans-serif;
         transition: background-image 0.2s ease-out;
         position: relative;
+        padding: 20px;
+        box-sizing: border-box;
     }
     .lang-toggle {
         position: absolute;
@@ -374,5 +379,34 @@
         gap: 8px;
         margin-bottom: 16px;
         line-height: 1.4;
+    }
+
+    /* Mobile Gateway Adjustments */
+    @media (max-width: 768px) {
+        .gateway-container {
+            padding: 32px 24px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+            margin-top: 60px; /* Make space for top-right toggles */
+        }
+        
+        .gateway-title {
+            font-size: 22px;
+            margin-bottom: 24px;
+        }
+
+        .lang-toggle {
+            top: 16px;
+            right: 16px;
+            padding: 8px 12px; /* Bigger hit target */
+        }
+        
+        .theme-selector-container {
+            top: 16px;
+            right: 76px;
+        }
+
+        .theme-toggle {
+            padding: 8px; /* Bigger hit target */
+        }
     }
 </style>

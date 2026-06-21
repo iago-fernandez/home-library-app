@@ -29,6 +29,7 @@ export interface TranslationDictionary {
         passwordsMismatch: string;
         registerError: string;
         loginError: string;
+        emptyFields: string;
         processing: string;
         registerBtn: string;
         loginBtn: string;

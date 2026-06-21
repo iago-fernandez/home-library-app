@@ -71,5 +71,27 @@ input[type="checkbox"], input[type="radio"] {
     accent-color: var(--primary-color);
 }
 
+/* Mobile Utilities & Media Queries */
+@media (max-width: 768px) {
+    .hidden-mobile {
+        display: none !important;
+    }
+    
+    html, body {
+        /* Prevent elastic bouncing on iOS */
+        overscroll-behavior-y: none;
+        /* Ensure font size is at least 16px to prevent iOS auto-zoom on inputs */
+        font-size: 16px;
+    }
 
-
+    ::-webkit-scrollbar {
+        width: 6px;
+        height: 6px;
+    }
+}
+
+@media (min-width: 769px) {
+    .hidden-desktop {
+        display: none !important;
+    }
+}
