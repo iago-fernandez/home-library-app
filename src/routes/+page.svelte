@@ -17,7 +17,7 @@
   import { libraryStore } from '$lib/stores/library';
   import { dialogStore } from '$lib/stores/dialog';
   import type { CreateBookPayload } from '$lib/types/book';
-  import { Plus, Pencil, Trash2, Filter, Settings, X, Search, CheckSquare, Download, Table, LayoutGrid, Library, Minus, RotateCcw, FolderOutput } from 'lucide-svelte';
+  import { Plus, Pencil, Trash2, Filter, Settings, X, Search, CheckSquare, Download, Table, LayoutGrid, Library, Minus, RotateCcw, FolderOutput, Menu } from 'lucide-svelte';
 
   let activePanel: 'actions' | 'addBook' | 'editBook' | 'filter' | 'batchEdit' = 'actions';
   let showExportModal = false;
@@ -47,6 +47,8 @@
   let matchType: 'AND' | 'OR' = 'AND';
 
   let openMenu: string | null = null;
+  let mobileDrawerOpen = false;
+  let mobileNavOpen = false;
 
   const localSearchActive = bookStore.localSearchActive;
   const selectedIds = bookStore.selectedIds;
@@ -124,6 +126,7 @@
 
   function closeMenus() {
     openMenu = null;
+    mobileNavOpen = false;
   }
 
   function handleWindowClick(e: MouseEvent) {
@@ -451,7 +454,10 @@
 
 <div class="app-container">
   <header class="top-bar" style="background-color: var(--topbar-bg);">
-    <nav class="menu-bar">
+    <button class="hamburger-btn hidden-desktop" on:click|stopPropagation={() => mobileNavOpen = !mobileNavOpen} aria-label="Toggle Menu">
+      <Menu size={20} />
+    </button>
+    <nav class="menu-bar" class:hidden-mobile={!mobileNavOpen} class:mobile-nav-open={mobileNavOpen}>
       <div class="menu-container">
         <button class="menu-btn" class:active={openMenu === 'File'} on:click={() => toggleMenu('File')}>{$t.menu.file}</button>
         {#if openMenu === 'File'}
@@ -632,10 +638,25 @@
             <button class="btn-exit-mode" on:click={bookStore.toggleMultiSelectMode}>{$t.actions.exit}</button>
           </div>
         {/if}
+        
+        <button class="fab hidden-desktop" on:click={() => activePanel = 'addBook'} aria-label="Add Book">
+          <Plus size={24} strokeWidth={2} />
+        </button>
       </div>
     </section>
 
-    <aside class="side-panel" class:wide-panel={activePanel === 'addBook' || activePanel === 'editBook' || activePanel === 'filter' || activePanel === 'batchEdit'} class:toolbar-mode={activePanel === 'actions'}>
+    {#if activePanel !== 'actions'}
+      <!-- svelte-ignore a11y-click-events-have-key-events -->
+      <!-- svelte-ignore a11y-no-static-element-interactions -->
+      <div class="drawer-backdrop hidden-desktop" on:click={() => activePanel = 'actions'}></div>
+    {/if}
+
+    <aside class="side-panel" class:drawer-open={activePanel !== 'actions'} class:wide-panel={activePanel === 'addBook' || activePanel === 'editBook' || activePanel === 'filter' || activePanel === 'batchEdit'} class:toolbar-mode={activePanel === 'actions'}>
+      <div class="drawer-header hidden-desktop">
+        <span>{activePanel === 'addBook' ? $t.menu.addBook : activePanel === 'editBook' ? $t.menu.editBook : activePanel === 'filter' ? $t.menu.advancedFilter : activePanel === 'batchEdit' ? $t.menu.editBooks : ''}</span>
+        <button class="drawer-close-btn" on:click={() => activePanel = 'actions'}><X size={20} /></button>
+      </div>
+
       {#if activePanel === 'actions'}
         <div class="toolbar">
           {#if $selectedIds.length > 0}
@@ -1439,6 +1460,28 @@
     overflow: hidden;
   }
 
+  .fab {
+    position: fixed;
+    bottom: 24px;
+    right: 24px;
+    width: 56px;
+    height: 56px;
+    border-radius: 50%;
+    background-color: var(--primary-color);
+    color: white;
+    border: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+    cursor: pointer;
+    z-index: 90;
+    transition: transform 0.2s, background-color 0.2s;
+  }
+  .fab:active {
+    transform: scale(0.95);
+  }
+
   :global(.library-dropdown) {
     width: 200px;
   }
@@ -1452,5 +1495,147 @@
   }
   :global(.library-dropdown .select-button:hover), :global(.library-dropdown .select-button:focus) {
     border-color: rgba(255, 255, 255, 0.5) !important;
+  }
+
+  /* --- Mobile App Shell (Drawer & Topbar) --- */
+  .hamburger-btn {
+    background: transparent;
+    border: none;
+    color: var(--text-color);
+    padding: 8px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 4px;
+    margin-right: 8px;
+  }
+  
+  .hamburger-btn:hover {
+    background-color: var(--surface-color);
+  }
+
+  .drawer-backdrop {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background-color: rgba(0, 0, 0, 0.5);
+    z-index: 99; /* Below side-panel (100) */
+  }
+
+  /* Utility Classes for Responsive Visibility */
+  @media (min-width: 769px) {
+    .hidden-desktop {
+      display: none !important;
+    }
+  }
+
+  @media (max-width: 768px) {
+    .hidden-mobile {
+      display: none !important;
+    }
+
+    .mobile-nav-open {
+      position: absolute;
+      top: 48px;
+      left: 0;
+      width: 100%;
+      background-color: var(--topbar-bg);
+      flex-direction: column;
+      align-items: stretch;
+      padding: 8px 16px 16px 16px;
+      box-shadow: 0 8px 16px rgba(0,0,0,0.2);
+      z-index: 100;
+      gap: 4px;
+      border-bottom: 1px solid var(--border-color);
+    }
+
+    .mobile-nav-open .menu-btn {
+      width: 100%;
+      text-align: left;
+      padding: 12px 16px;
+      font-size: 15px;
+      border-radius: 8px;
+    }
+
+    .mobile-nav-open .dropdown-menu {
+      position: static;
+      width: 100%;
+      box-shadow: inset 0 2px 4px rgba(0,0,0,0.05);
+      border: none;
+      background-color: rgba(0,0,0,0.15);
+      margin-top: 4px;
+      margin-bottom: 4px;
+      padding: 8px;
+    }
+    
+    .mobile-nav-open .dropdown-item {
+      padding: 12px 16px;
+      font-size: 14px;
+      color: #F8FAFC;
+    }
+
+    .mobile-nav-open .dropdown-item:hover {
+      background-color: rgba(255,255,255,0.1);
+    }
+
+    .mobile-nav-open .menu-divider {
+      background-color: rgba(255,255,255,0.1) !important;
+    }
+
+    /* Transform Sidebar into an Off-canvas Drawer */
+    .side-panel {
+      position: fixed;
+      top: 0;
+      right: -100%; /* Hidden by default off-screen */
+      width: 85% !important; /* Take up most of the screen */
+      max-width: 400px;
+      height: 100vh;
+      z-index: 100;
+      transition: right 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      box-shadow: -4px 0 24px rgba(0, 0, 0, 0.15);
+      display: flex;
+      flex-direction: column;
+    }
+
+    .side-panel.drawer-open {
+      right: 0; /* Slide in */
+    }
+
+    /* Drawer Header */
+    .drawer-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 16px;
+      border-bottom: 1px solid var(--border-color);
+      font-weight: 600;
+      font-size: 16px;
+      color: var(--text-color);
+    }
+
+    .drawer-close-btn {
+      background: transparent;
+      border: none;
+      color: var(--text-muted);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 4px;
+      border-radius: 4px;
+    }
+    
+    /* Hide toolbar mode completely on mobile to rely on FAB */
+    .side-panel.toolbar-mode {
+      display: none !important;
+    }
+
+    /* Top bar adjustments for mobile */
+    .top-bar {
+      padding: 0 16px;
+    }
   }
 </style>
