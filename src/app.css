@@ -78,15 +78,58 @@ input[type="checkbox"], input[type="radio"] {
     }
     
     html, body {
-        /* Prevent elastic bouncing on iOS */
         overscroll-behavior-y: none;
-        /* Ensure font size is at least 16px to prevent iOS auto-zoom on inputs */
         font-size: 16px;
     }
 
     ::-webkit-scrollbar {
         width: 6px;
         height: 6px;
+    }
+
+    .modal-container, .modal-content {
+        width: 100% !important;
+        height: 100% !important;
+        max-width: 100% !important;
+        max-height: 100% !important;
+        margin: 0 !important;
+        border-radius: 0 !important;
+        display: flex !important;
+        flex-direction: column !important;
+        overflow: hidden !important;
+        background-color: var(--panel-bg);
+    }
+    
+    .modal-header {
+        position: sticky;
+        top: 0;
+        z-index: 10;
+        flex-shrink: 0;
+        background-color: var(--panel-bg);
+    }
+    
+    .modal-body {
+        flex: 1;
+        overflow-y: auto;
+        -webkit-overflow-scrolling: touch;
+        padding-bottom: 24px;
+    }
+    
+    .modal-footer {
+        position: sticky;
+        bottom: 0;
+        z-index: 10;
+        flex-shrink: 0;
+        background-color: var(--panel-bg);
+        padding-bottom: max(16px, env(safe-area-inset-bottom));
+        border-top: 1px solid var(--border-color);
+    }
+
+    /* Enlarge touch targets for accessibility */
+    input[type="text"], input[type="number"], input[type="date"], input[type="password"], input[type="email"], select, textarea {
+        padding: 12px !important;
+        font-size: 16px !important;
+        min-height: 44px;
     }
 }
 

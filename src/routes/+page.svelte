@@ -1585,19 +1585,20 @@
       background-color: rgba(255,255,255,0.1) !important;
     }
 
-    /* Transform Sidebar into an Off-canvas Drawer */
+    /* Transform Sidebar into an Off-canvas Drawer / Full Screen overlay on mobile */
     .side-panel {
       position: fixed;
       top: 0;
       right: -100%; /* Hidden by default off-screen */
-      width: 85% !important; /* Take up most of the screen */
-      max-width: 400px;
+      width: 100vw !important; /* Full screen */
+      max-width: 100vw !important;
       height: 100vh;
       z-index: 100;
       transition: right 0.3s cubic-bezier(0.4, 0, 0.2, 1);
       box-shadow: -4px 0 24px rgba(0, 0, 0, 0.15);
       display: flex;
       flex-direction: column;
+      background-color: var(--panel-bg); /* Ensure it has background */
     }
 
     .side-panel.drawer-open {
