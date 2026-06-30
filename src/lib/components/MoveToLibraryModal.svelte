@@ -93,7 +93,7 @@
     .modal-backdrop {
         position: fixed; top: 0; left: 0; width: 100%; height: 100%;
         background: rgba(0,0,0,0.5); display: flex; justify-content: center; align-items: center;
-        z-index: 1000;
+        z-index: 2000;
     }
     .modal-content {
         background: var(--panel-bg, #fff); color: var(--text-main, #333);
@@ -114,18 +114,35 @@
     }
     .close-btn:hover { background: rgba(0,0,0,0.05); color: var(--text-main); }
     
-    .modal-body { padding: 24px; }
+    .modal-body { 
+        padding: 24px;
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        overflow-y: hidden;
+    }
     
     .description {
         margin: 0 0 16px 0; font-size: 14px; color: var(--text-main);
+        flex-shrink: 0;
     }
 
     .library-grid {
         display: grid; grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
-        gap: 12px; max-height: 300px; overflow-y: auto; overflow-x: hidden; padding: 4px; margin: -4px;
+        gap: 12px; max-height: 100%; overflow-y: auto; overflow-x: hidden; padding: 4px; margin: -4px;
+        flex: 1;
     }
     .library-grid::-webkit-scrollbar { width: 8px; }
     .library-grid::-webkit-scrollbar-thumb { background: var(--border-color); border-radius: 4px; }
+
+    @media (max-width: 768px) {
+        .modal-body {
+            padding: 16px;
+        }
+        .library-grid {
+            grid-template-columns: 1fr;
+        }
+    }
 
     .error-banner {
         background-color: rgba(239, 68, 68, 0.1);
