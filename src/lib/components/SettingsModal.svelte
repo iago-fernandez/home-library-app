@@ -440,6 +440,84 @@
         display: flex;
         flex-direction: column;
         border-right: 1px solid var(--border-color);
+        flex-shrink: 0;
+    }
+
+    @media (max-width: 768px) {
+        .modal-body {
+            flex-direction: column;
+            height: auto !important;
+            overflow-y: hidden;
+        }
+
+        .settings-nav {
+            width: 100%;
+            border-right: none;
+            border-bottom: 1px solid var(--border-color);
+            padding: 0;
+            display: flex;
+            flex-direction: row;
+            justify-content: space-around;
+            background-color: var(--panel-bg);
+            z-index: 10;
+        }
+
+        .settings-content {
+            flex: 1 !important;
+            padding: 16px 12px !important;
+            overflow-y: auto;
+            background-color: var(--bg-color);
+            overflow-x: hidden;
+        }
+        
+        .workspace-wrapper {
+            margin: -16px -12px !important;
+        }
+        
+        .accordion-header {
+            flex-direction: column;
+            justify-content: center;
+            gap: 4px;
+            padding: 12px 8px;
+            border-right: none !important;
+            border-bottom: 2px solid transparent;
+            font-size: 11px;
+            text-align: center;
+            color: var(--text-muted);
+            flex: 1;
+        }
+        .accordion-header :global(svg) {
+            margin-bottom: 2px;
+            width: 20px;
+            height: 20px;
+        }
+        .accordion-header.active {
+            border-bottom: 2px solid var(--primary-color) !important;
+            color: var(--primary-color);
+            background: transparent;
+        }
+
+        /* Hide sub-menus on mobile, users can scroll down */
+        .accordion-content {
+            display: none !important;
+        }
+
+        /* Make settings sections look like premium cards on mobile */
+        .setting-group {
+            background: var(--panel-bg);
+            border-radius: 12px;
+            padding: 16px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+            border: 1px solid var(--border-color);
+            margin-bottom: 16px !important;
+        }
+        
+        .section-title {
+            font-size: 15px;
+            margin-bottom: 16px !important;
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 8px;
+        }
     }
 
     .nav-section {
