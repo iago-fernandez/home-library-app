@@ -222,6 +222,31 @@
         flex-direction: column;
         overflow-y: auto;
         padding: 16px 0;
+        flex-shrink: 0;
+    }
+
+    @media (max-width: 768px) {
+        .modal-body {
+            flex-direction: column;
+            overflow-y: auto;
+        }
+
+        .settings-nav {
+            width: 100%;
+            border-right: none;
+            border-bottom: 1px solid var(--border-color);
+            flex-direction: row;
+            overflow-x: auto;
+            padding: 8px 0;
+            white-space: nowrap;
+            -webkit-overflow-scrolling: touch;
+        }
+
+        .settings-content {
+            flex: 1 !important;
+            padding: 16px !important;
+            overflow-y: auto;
+        }
     }
 
     .nav-section {

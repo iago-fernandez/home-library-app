@@ -819,6 +819,12 @@
         gap: 12px;
     }
 
+    @media (max-width: 768px) {
+        .input-grid {
+            grid-template-columns: 1fr !important;
+        }
+    }
+
     .checkbox-row {
         display: flex;
         flex-direction: row;

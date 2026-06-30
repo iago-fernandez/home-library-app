@@ -131,9 +131,9 @@
 
         <div class="modal-body">
             <div class="config-section">
-                <div class="config-group">
+                <div class="export-cfg-box">
                     <h3>{$t.exportManager.format}</h3>
-                    <div class="button-group">
+                    <div class="export-btn-group">
                         <button class="toggle-btn" class:active={selectedFormat === 'csv'} on:click={() => selectedFormat = 'csv'}>CSV</button>
                         <button class="toggle-btn" class:active={selectedFormat === 'xml'} on:click={() => selectedFormat = 'xml'}>XML</button>
                         <button class="toggle-btn" class:active={selectedFormat === 'pdf'} on:click={() => selectedFormat = 'pdf'}>PDF</button>
@@ -147,9 +147,9 @@
                     {/if}
                 </div>
 
-                <div class="config-group">
+                <div class="export-cfg-box">
                     <h3>{$t.exportManager.scope}</h3>
-                    <div class="button-group">
+                    <div class="export-btn-group">
                         <button class="toggle-btn" class:active={exportScope === 'view'} on:click={() => exportScope = 'view'}>{$t.exportManager.currentView}</button>
                         <button class="toggle-btn" class:active={exportScope === 'selected'} disabled={$selectedIds.length === 0} on:click={() => exportScope = 'selected'}>
                             {$t.exportManager.selectedScope} ({$selectedIds.length})
@@ -158,7 +158,7 @@
                 </div>
             </div>
 
-            <div class="columns-section">
+            <div class="export-cols-wrapper">
                 <h3>{$t.exportManager.activeColumns}</h3>
                 <div class="columns-list">
                     {#each columnsToExport as colId, index}
@@ -226,13 +226,13 @@
         position: fixed;
         top: 0;
         left: 0;
-        width: 100vw;
-        height: 100vh;
+        width: 100%;
+        height: 100%;
         background: rgba(0, 0, 0, 0.5);
         display: flex;
         align-items: center;
         justify-content: center;
-        z-index: 1000;
+        z-index: 2000;
     }
 
     .modal-content {
@@ -285,13 +285,86 @@
         gap: 24px;
     }
 
+    @media (max-width: 768px) {
+        .modal-body {
+            grid-template-columns: 1fr !important;
+            height: auto !important;
+            padding: 16px;
+            gap: 16px;
+            overflow-x: hidden;
+        }
+        
+        .export-btn-group {
+            background-color: var(--button-bg, #f1f5f9);
+            padding: 4px;
+            border-radius: 8px;
+            gap: 4px;
+            width: 100%;
+            flex-wrap: wrap;
+            box-sizing: border-box;
+        }
+        
+        .toggle-btn {
+            flex: 1;
+            padding: 8px 4px;
+            background: transparent;
+            border: none;
+            justify-content: center;
+            border-radius: 6px;
+            box-shadow: none;
+            text-align: center;
+            min-width: 0;
+            color: var(--text-main);
+        }
+        
+        .toggle-btn.active {
+            background: var(--panel-bg, #ffffff) !important;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1) !important;
+            color: var(--primary-color) !important;
+            border: none !important;
+        }
+
+        .export-cfg-box {
+            background: var(--panel-bg);
+            border-radius: 12px;
+            padding: 16px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+            border: 1px solid var(--border-color);
+            box-sizing: border-box;
+            max-width: 100%;
+        }
+
+        .export-cols-wrapper {
+            background: var(--panel-bg);
+            border-radius: 12px;
+            padding: 16px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+            border: 1px solid var(--border-color);
+            box-sizing: border-box;
+            max-width: 100%;
+        }
+
+        .modal-footer {
+            padding: 16px;
+            flex-direction: row;
+            width: 100%;
+            box-sizing: border-box;
+        }
+
+        .modal-footer button {
+            flex: 1;
+        }
+    }
+
     .config-section {
         display: flex;
         flex-direction: column;
         gap: 24px;
+        max-width: 100%;
+        box-sizing: border-box;
     }
 
-    .config-group h3, .columns-section h3, .preview-section h3 {
+    .export-cfg-box h3, .export-cols-wrapper h3, .preview-section h3 {
         margin: 0 0 12px 0;
         font-size: 14px;
         color: var(--text-main);
@@ -299,8 +372,9 @@
         letter-spacing: 0.5px;
     }
 
-    .button-group {
+    .export-btn-group {
         display: flex;
+        flex-wrap: wrap;
         gap: 8px;
     }
 

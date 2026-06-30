@@ -161,9 +161,7 @@
         display: flex;
         justify-content: space-between;
         align-items: center;
-        margin-bottom: 12px;
-        padding-bottom: 12px;
-        border-bottom: 1px solid var(--border-color);
+        margin-bottom: 24px;
     }
 
     .view-tabs {
@@ -189,6 +187,52 @@
         border-color: var(--primary-color);
         color: var(--primary-color);
         font-weight: 500;
+    }
+
+    @media (max-width: 768px) {
+        .workspace-panel {
+            padding: 0;
+            position: relative;
+        }
+        .column-list {
+            padding-right: 0 !important;
+        }
+        
+        .panel-header {
+            flex-direction: row;
+            align-items: center;
+            gap: 12px;
+            padding-bottom: 12px;
+        }
+
+        .reset-btn {
+            flex-shrink: 0;
+            align-self: center;
+        }
+
+        .view-tabs {
+            background-color: var(--button-bg, #f1f5f9) !important;
+            padding: 4px !important;
+            border-radius: 8px !important;
+            gap: 4px !important;
+            flex: 1;
+        }
+
+        .view-tabs button {
+            background: transparent !important;
+            border: none !important;
+            flex: 1;
+            justify-content: center;
+            transition: all 0.2s ease;
+            box-shadow: none !important;
+        }
+
+        .view-tabs button.active {
+            background: var(--panel-bg, #ffffff) !important;
+            color: var(--primary-color) !important;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1) !important;
+            border: none !important;
+        }
     }
 
     .panel-info {
