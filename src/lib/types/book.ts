@@ -16,7 +16,6 @@ export interface Book {
     publish_date?: string;
     original_publish_date?: string;
     edition?: string;
-    edition?: string;
     edition_number?: number;
     printing_number?: string;
     original_edition?: string;

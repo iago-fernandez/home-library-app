@@ -358,9 +358,15 @@
                 </div>
             </div>
             <div class="input-grid">
-                <div class="input-row">
+                <div class="input-row" class:error={!!errors.edition}>
+                    <label for="edition">{$t.form.edition}</label>
+                    <input type="text" id="edition" bind:value={formData.edition} />
+                    {#if errors.edition}<span class="error-text">{errors.edition}</span>{/if}
+                </div>
+                <div class="input-row" class:error={!!errors.edition_number}>
                     <label for="edition_number">{$t.form.editionNumber}</label>
-                    <input type="text" id="edition_number" bind:value={formData.edition_number} />
+                    <input type="number" id="edition_number" bind:value={formData.edition_number} min="1" />
+                    {#if errors.edition_number}<span class="error-text">{errors.edition_number}</span>{/if}
                 </div>
                 <div class="input-row">
                     <label for="printing_number">{$t.form.printingNumber}</label>
