@@ -25,7 +25,8 @@
         { id: 'publisher', type: 'text' },
         { id: 'publish_date', type: 'date' },
         { id: 'original_publish_date', type: 'date' },
-        { id: 'edition_number', type: 'text' },
+        { id: 'edition', type: 'text' },
+        { id: 'edition_number', type: 'number' },
         { id: 'printing_number', type: 'text' },
         { id: 'original_edition', type: 'text' },
         { id: 'is_first_edition', type: 'boolean' },
@@ -269,9 +270,13 @@
                 </div>
             </div>
             <div class="input-grid">
+                <div class="input-row" class:modified={isModified['edition']}>
+                    <label for="edition">{$t.form.edition}</label>
+                    <input type="text" id="edition" bind:value={formData.edition} />
+                </div>
                 <div class="input-row" class:modified={isModified['edition_number']}>
                     <label for="edition_number">{$t.form.editionNumber}</label>
-                    <input type="text" id="edition_number" bind:value={formData.edition_number} />
+                    <input type="number" id="edition_number" bind:value={formData.edition_number} min="1" />
                 </div>
                 <div class="input-row" class:modified={isModified['printing_number']}>
                     <label for="printing_number">{$t.form.printingNumber}</label>
