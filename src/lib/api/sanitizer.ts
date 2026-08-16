@@ -5,7 +5,7 @@ export function sanitizeBookPayload(payload: any): any {
 
     const stringFields = [
         'library_id', 'isbn_13', 'isbn_10', 'open_library_id', 'oclc_number', 'title', 'subtitle',
-        'original_title', 'publisher', 'edition_number', 'printing_number',
+        'original_title', 'publisher', 'edition', 'edition_number', 'printing_number',
         'original_edition', 'collection_name', 'series_name', 'book_format',
         'dimensions', 'weight', 'language', 'original_language', 'target_audience',
         'description', 'table_of_contents', 'cover_url', 'store_or_vendor',

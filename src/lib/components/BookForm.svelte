@@ -38,7 +38,7 @@
         }
         // Basic type checks
         // Positive Number checks
-        const positiveFields = ['page_count', 'volume_in_collection', 'volume_in_series', 'location_position'];
+        const positiveFields = ['page_count', 'volume_in_collection', 'volume_in_series', 'location_position', 'edition_number'];
         positiveFields.forEach(field => {
             if (formData[field as keyof CreateBookPayload] !== undefined && (formData[field as keyof CreateBookPayload] as number) < 0) {
                 errors[field] = $t.form?.validationPositiveNumber || 'Must be a positive number';
@@ -86,7 +86,7 @@
             authors: [], translators: [], illustrators: [],
             publisher: '', publish_date: '', original_publish_date: '',
             isbn_13: '', isbn_10: '', open_library_id: '', oclc_number: '',
-            edition_number: '', printing_number: '', original_edition: '', is_first_edition: false,
+            edition: '', edition_number: undefined, printing_number: '', original_edition: '', is_first_edition: false,
             collection_name: '', volume_in_collection: undefined, series_name: '', volume_in_series: undefined,
             book_format: '', page_count: undefined, dimensions: '', weight: '',
             language: '', original_language: '',

@@ -61,7 +61,7 @@
       let type: FieldType = 'text';
       let inputType: InputHTMLType = 'text';
       
-      const numFields = ['catalog_number', 'page_count', 'rating', 'volume_in_collection', 'volume_in_series', 'purchase_price', 'location_position'];
+      const numFields = ['catalog_number', 'page_count', 'rating', 'volume_in_collection', 'volume_in_series', 'purchase_price', 'location_position', 'edition_number'];
       const dateFields = ['publish_date', 'original_publish_date', 'purchase_date', 'date_started', 'date_finished', 'loan_date', 'expected_return_date', 'created_at', 'updated_at'];
       const boolFields = ['is_first_edition', 'is_loaned'];
       
