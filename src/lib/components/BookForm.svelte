@@ -900,9 +900,13 @@
 
     .fetch-error-message {
         color: var(--danger-color);
-        font-size: 12px;
-        margin-top: -12px;
-        margin-bottom: 12px;
+        font-size: 13px;
+        margin-top: 12px;
+        margin-bottom: 0;
         font-weight: 500;
+        padding: 8px 12px;
+        background-color: color-mix(in srgb, var(--danger-color) 10%, transparent);
+        border-radius: 4px;
+        border: 1px solid color-mix(in srgb, var(--danger-color) 30%, transparent);
     }
 </style>

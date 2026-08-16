@@ -14,17 +14,6 @@
     let isAutocompleteOpen = false;
     let autocompleteComponent: AutocompleteDropdown;
 
-    function resize() {
-        if (textareaElement) {
-            textareaElement.style.height = 'auto';
-            textareaElement.style.height = textareaElement.scrollHeight + 'px';
-        }
-    }
-
-    $: if (value !== undefined) {
-        setTimeout(resize, 0);
-    }
-
     function handleKeydown(event: KeyboardEvent) {
         if (isAutocompleteOpen && (event.key === 'ArrowDown' || event.key === 'ArrowUp' || event.key === 'Escape')) {
             if (autocompleteComponent) {
@@ -45,7 +34,6 @@
     }
 
     function handleInput() {
-        resize();
         if (autocompleteField) {
             isAutocompleteOpen = true;
         }
@@ -74,21 +62,23 @@
 </script>
 
 <div class="textarea-wrapper" bind:this={containerElement}>
-    <textarea
-            {id}
-            bind:value
-            {required}
-            bind:this={textareaElement}
-            on:input={handleInput}
-            on:focus={handleFocus}
-            on:blur={handleBlur}
-            on:keydown={handleKeydown}
-            rows="1"
-            autocomplete="off"
-            {placeholder}
-            class={customClass}
-            style={customStyle}
-    ></textarea>
+    <div class="textarea-container" data-replicated-value={(value || '') + ' '}>
+        <textarea
+                {id}
+                bind:value
+                {required}
+                bind:this={textareaElement}
+                on:input={handleInput}
+                on:focus={handleFocus}
+                on:blur={handleBlur}
+                on:keydown={handleKeydown}
+                rows="1"
+                autocomplete="off"
+                {placeholder}
+                class={customClass}
+                style={customStyle}
+        ></textarea>
+    </div>
     
     {#if autocompleteField}
         <AutocompleteDropdown
@@ -107,15 +97,38 @@
         position: relative;
         width: 100%;
         display: flex;
+        flex-direction: column;
+    }
+
+    .textarea-container {
+        display: grid;
+        width: 100%;
+    }
+
+    .textarea-container::after {
+        content: attr(data-replicated-value);
+        white-space: pre-wrap;
+        visibility: hidden;
+        grid-area: 1 / 1 / 2 / 2;
+        padding: 8px;
+        border: 1px solid transparent;
+        font-family: inherit;
+        font-size: 13px;
+        line-height: normal;
+        word-break: break-word;
+        min-height: 35px;
+        box-sizing: border-box;
     }
 
     textarea {
+        grid-area: 1 / 1 / 2 / 2;
         width: 100%;
         padding: 8px;
         border: 1px solid var(--border-color, #cbd5e1);
         border-radius: 4px;
         font-family: inherit;
         font-size: 13px;
+        line-height: normal;
         box-sizing: border-box;
         background-color: var(--panel-bg, #ffffff);
         color: var(--text-main, #334155);
