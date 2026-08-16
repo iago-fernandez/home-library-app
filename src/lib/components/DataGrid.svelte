@@ -54,7 +54,7 @@
     }
 
     function getInputType(colId: string) {
-        if (['volume_in_collection', 'volume_in_series', 'page_count', 'purchase_price', 'location_position', 'rating'].includes(colId)) return 'number';
+        if (['volume_in_collection', 'volume_in_series', 'page_count', 'purchase_price', 'location_position', 'rating', 'edition_number'].includes(colId)) return 'number';
         if (['publish_date', 'original_publish_date', 'purchase_date', 'date_started', 'date_finished', 'loan_date', 'expected_return_date'].includes(colId)) return 'date';
         if (['is_first_edition', 'is_loaned'].includes(colId)) return 'checkbox';
         return 'text';

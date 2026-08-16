@@ -15,7 +15,9 @@ export interface Book {
     publisher?: string;
     publish_date?: string;
     original_publish_date?: string;
-    edition_number?: string;
+    edition?: string;
+    edition?: string;
+    edition_number?: number;
     printing_number?: string;
     original_edition?: string;
     is_first_edition?: boolean;
