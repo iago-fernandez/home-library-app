@@ -60,7 +60,7 @@
     async function executeDeleteAccount(event: CustomEvent<string>) {
         const pwd = event.detail;
         if (!pwd) {
-            deleteError = $t.auth?.loginError || 'Password is required';
+            deleteError = 'Password is required';
             return;
         }
         

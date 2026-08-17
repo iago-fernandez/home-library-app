@@ -20,38 +20,19 @@ export interface TranslationDictionary {
         yes: string;
         no: string;
     };
-    auth: {
-        createWorkspace: string;
-        accessWorkspace: string;
-        profileName: string;
-        securityKey: string;
-        confirmKey: string;
-        passwordsMismatch: string;
-        registerError: string;
-        loginError: string;
-        emptyFields: string;
-        processing: string;
-        registerBtn: string;
-        loginBtn: string;
-        toggleToLogin: string;
-        toggleToRegister: string;
-    };
+
     menu: {
         file: string;
         edit: string;
         view: string;
         tools: string;
         help: string;
-        newLibrary: string;
         settings: string;
         exit: string;
         findInView: string;
         advancedFilter: string;
-        toggleSidebar: string;
-        importIsbn: string;
         exportCsv: string;
         userGuide: string;
-        about: string;
         enterMultiSelect: string;
         exitMultiSelect: string;
         addBook: string;
@@ -67,7 +48,6 @@ export interface TranslationDictionary {
     };
     grid: {
         allColumns: string;
-        catalogNumber: string;
         title: string;
         authors: string;
         publisher: string;
@@ -80,8 +60,6 @@ export interface TranslationDictionary {
         of: string;
         manageColumns: string;
         manageAttributes: string;
-        columnsHelp: string;
-        attributesHelp: string;
         columns: string;
         attributes: string;
         noCover: string;
@@ -114,9 +92,7 @@ export interface TranslationDictionary {
     actions: {
         addBook: string;
         editSelected: string;
-        removeSelected: string;
         toggleMultiSelect: string;
-        systemSettings: string;
         clearSelection: string;
         exportSelected: string;
         deleteSelected: string;
@@ -153,7 +129,6 @@ export interface TranslationDictionary {
         authors: string;
         translators: string;
         illustrators: string;
-        coverUrl: string;
         publisher: string;
         pubDate: string;
         origPubDate: string;
@@ -197,8 +172,6 @@ export interface TranslationDictionary {
         loanedTo: string;
         loanDate: string;
         expectedReturnDate: string;
-        createdAt: string;
-        updatedAt: string;
         autofill: string;
         autofillLoading: string;
         autofillBannerTitle: string;
@@ -280,9 +253,7 @@ export interface TranslationDictionary {
     batchEdit: {
         title: string;
         multipleValues: string;
-        applyChanges: string;
         warning: string;
-        successMessage: string;
     };
     libraryManager: {
         title: string;
@@ -303,13 +274,10 @@ export interface TranslationDictionary {
         roleViewer: string;
         roleEditor: string;
         addMember: string;
-        memberAddSuccess: string;
         memberUsername: string;
         memberError: string;
-        memberRemoveSuccess: string;
         noMembers: string;
         removeMember: string;
-        changeRole: string;
         cannotAddSelf: string;
     };
     modals: {
