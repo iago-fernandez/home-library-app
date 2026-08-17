@@ -358,9 +358,15 @@
                 </div>
             </div>
             <div class="input-grid">
-                <div class="input-row">
+                <div class="input-row" class:error={!!errors.edition}>
+                    <label for="edition">{$t.form.edition}</label>
+                    <input type="text" id="edition" bind:value={formData.edition} />
+                    {#if errors.edition}<span class="error-text">{errors.edition}</span>{/if}
+                </div>
+                <div class="input-row" class:error={!!errors.edition_number}>
                     <label for="edition_number">{$t.form.editionNumber}</label>
-                    <input type="text" id="edition_number" bind:value={formData.edition_number} />
+                    <input type="number" id="edition_number" bind:value={formData.edition_number} min="1" />
+                    {#if errors.edition_number}<span class="error-text">{errors.edition_number}</span>{/if}
                 </div>
                 <div class="input-row">
                     <label for="printing_number">{$t.form.printingNumber}</label>
@@ -894,9 +900,13 @@
 
     .fetch-error-message {
         color: var(--danger-color);
-        font-size: 12px;
-        margin-top: -12px;
-        margin-bottom: 12px;
+        font-size: 13px;
+        margin-top: 12px;
+        margin-bottom: 0;
         font-weight: 500;
+        padding: 8px 12px;
+        background-color: color-mix(in srgb, var(--danger-color) 10%, transparent);
+        border-radius: 4px;
+        border: 1px solid color-mix(in srgb, var(--danger-color) 30%, transparent);
     }
 </style>

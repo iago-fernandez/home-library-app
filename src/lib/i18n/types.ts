@@ -157,6 +157,7 @@ export interface TranslationDictionary {
         publisher: string;
         pubDate: string;
         origPubDate: string;
+        edition: string;
         editionNumber: string;
         printingNumber: string;
         origEdition: string;
