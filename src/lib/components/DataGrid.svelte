@@ -442,8 +442,13 @@
     <!-- svelte-ignore a11y_no_static_element_interactions -->
     <div bind:this={scrollContainer} class="scroll-container" on:scroll={handleScroll} on:click={handleEmptySpaceClick}>
         <div class="grid-table-inner" style="min-width: 100%; width: {$table.getTotalSize()}px">
-            <div class="virtual-inner" style="height: {$virtualizer.getTotalSize()}px; position: relative;">
-                {#each virtualItems as virtualRow (virtualRow.index)}
+            {#if $bookStore.length === 0}
+                <div class="empty-state">
+                    <p>{$t.common.emptyLibrary}</p>
+                </div>
+            {:else}
+                <div class="virtual-inner" style="height: {$virtualizer.getTotalSize()}px; position: relative;">
+                    {#each virtualItems as virtualRow (virtualRow.index)}
                     {@const row = $table.getRowModel().rows[virtualRow.index]}
                     {#if row}
                         <div
@@ -484,6 +489,7 @@
                     {/if}
                 {/each}
             </div>
+            {/if}
         </div>
     </div>
 
@@ -568,6 +574,17 @@
 
     .header-row { display: flex; min-width: 100%; }
     .virtual-inner { position: relative; }
+    
+    .empty-state {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        padding: 48px 24px;
+        color: var(--text-muted);
+        font-size: 14px;
+        width: 100%;
+        text-align: center;
+    }
 
     .grid-row {
         position: absolute;

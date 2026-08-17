@@ -233,6 +233,7 @@
                 <Search size={18} />
                 <h4>{$t.form.autofillBannerTitle || 'Smart Fetch'}</h4>
             </div>
+            <p class="autofill-desc">{$t.form.autofillBannerDesc}</p>
             <div class="smart-fetch-container">
                 <input
                         type="text"
@@ -675,6 +676,12 @@
         margin: 0;
         font-size: 15px;
         font-weight: 600;
+    }
+
+    .autofill-desc {
+        margin: 0 0 16px 0;
+        font-size: 13px;
+        color: var(--text-muted);
     }
 
     .smart-fetch-container {

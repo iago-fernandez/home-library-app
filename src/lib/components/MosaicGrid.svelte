@@ -156,34 +156,40 @@
 <!-- svelte-ignore a11y_no_static_element_interactions -->
 <div class="mosaic-wrapper" on:click={handleEmptySpaceClick}>
     <div class="mosaic-container" style="zoom: {$zoomLevel / 100}">
-        {#each books as book, index (book.id)}
-            <div
-                    id="mosaic-card-{book.id}"
-                    class="book-card"
-                class:selected={$selectedIds.includes(book.id)}
-                on:click={(e) => handleSelect(e, book.id, index)}
-                on:keydown={(e) => e.key === 'Enter' && handleSelect(e, book.id, index)}
-                role="button"
-                tabindex="0"
-        >
-            <div class="cover-wrapper">
-                <BookCover src={book.cover_url} alt={book.title} />
+        {#if books.length === 0}
+            <div class="empty-state" style="grid-column: 1 / -1;">
+                <p>{$t.common.emptyLibrary}</p>
             </div>
-            <div class="info">
-                <h4>{book.title}</h4>
-                {#if book.authors}
-                    <p class="attr-text authors-text" title={formatAttribute(book, 'authors')}>{formatAttribute(book, 'authors')}</p>
-                {/if}
-                <div class="attributes-list">
-                    {#each $activeMosaicAttributes.filter(id => id !== 'title' && id !== 'authors') as attrId}
-                        {#if formatAttribute(book, attrId)}
-                            <p class="attr-text" title={formatAttribute(book, attrId)}>{formatAttribute(book, attrId)}</p>
+        {:else}
+            {#each books as book, index (book.id)}
+                <div
+                        id="mosaic-card-{book.id}"
+                        class="book-card"
+                    class:selected={$selectedIds.includes(book.id)}
+                    on:click={(e) => handleSelect(e, book.id, index)}
+                    on:keydown={(e) => e.key === 'Enter' && handleSelect(e, book.id, index)}
+                    role="button"
+                    tabindex="0"
+                >
+                    <div class="cover-wrapper">
+                        <BookCover src={book.cover_url} alt={book.title} />
+                    </div>
+                    <div class="info">
+                        <h4>{book.title}</h4>
+                        {#if book.authors}
+                            <p class="attr-text authors-text" title={formatAttribute(book, 'authors')}>{formatAttribute(book, 'authors')}</p>
                         {/if}
-                    {/each}
+                        <div class="attributes-list">
+                            {#each $activeMosaicAttributes.filter(id => id !== 'title' && id !== 'authors') as attrId}
+                                {#if formatAttribute(book, attrId)}
+                                    <p class="attr-text" title={formatAttribute(book, attrId)}>{formatAttribute(book, attrId)}</p>
+                                {/if}
+                            {/each}
+                        </div>
+                    </div>
                 </div>
-            </div>
-        </div>
-    {/each}
+            {/each}
+        {/if}
     </div>
 
     {#if $localSearchActive}
@@ -232,6 +238,17 @@
         flex: 1;
         background-color: var(--bg-color);
         box-sizing: border-box;
+    }
+    .empty-state {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        padding: 48px 24px;
+        color: var(--text-muted);
+        font-size: 14px;
+        text-align: center;
+        height: 100%;
+        min-height: 200px;
     }
     .book-card {
         background: var(--panel-bg);
