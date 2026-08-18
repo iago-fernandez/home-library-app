@@ -440,16 +440,18 @@
 
     <!-- svelte-ignore a11y_click_events_have_key_events -->
     <!-- svelte-ignore a11y_no_static_element_interactions -->
-    <div bind:this={scrollContainer} class="scroll-container" on:scroll={handleScroll} on:click={handleEmptySpaceClick}>
-        <div class="grid-table-inner" style="min-width: 100%; width: {$table.getTotalSize()}px">
-            {#if $bookStore.length === 0}
-                <div class="empty-state">
-                    <p>{$t.common.emptyLibrary}</p>
-                </div>
-            {:else}
-                <div class="virtual-inner" style="height: {$virtualizer.getTotalSize()}px; position: relative;">
-                    {#each virtualItems as virtualRow (virtualRow.index)}
-                    {@const row = $table.getRowModel().rows[virtualRow.index]}
+    <div style="position: relative; flex: 1; display: flex; flex-direction: column; min-height: 0;">
+        {#if $bookStore.length === 0}
+            <div class="empty-state">
+                <p>{$t.common.emptyLibrary}</p>
+            </div>
+        {/if}
+        <div bind:this={scrollContainer} class="scroll-container" on:scroll={handleScroll} on:click={handleEmptySpaceClick}>
+            <div class="grid-table-inner" style="min-width: 100%; width: {$table.getTotalSize()}px">
+                {#if $bookStore.length > 0}
+                    <div class="virtual-inner" style="height: {$virtualizer.getTotalSize()}px; position: relative;">
+                        {#each virtualItems as virtualRow (virtualRow.index)}
+                        {@const row = $table.getRowModel().rows[virtualRow.index]}
                     {#if row}
                         <div
                                 class="grid-row"
@@ -489,7 +491,8 @@
                     {/if}
                 {/each}
             </div>
-            {/if}
+                {/if}
+            </div>
         </div>
     </div>
 
@@ -567,7 +570,7 @@
 
     .grid-header {
         background-color: var(--bg-color);
-        font-weight: 600;
+        font-weight: 500;
         font-size: 13px;
         color: var(--text-main);
     }
@@ -576,14 +579,19 @@
     .virtual-inner { position: relative; }
     
     .empty-state {
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        padding: 48px 24px;
+        padding: 100px 24px;
         color: var(--text-muted);
-        font-size: 14px;
+        font-size: 15px;
         width: 100%;
         text-align: center;
+    }
+
+    .empty-state p {
+        position: sticky;
+        left: 50%;
+        transform: translateX(-50%);
+        display: inline-block;
+        margin: 0;
     }
 
     .grid-row {
@@ -659,7 +667,7 @@
     .sortable { cursor: pointer; transition: background-color 0.1s; }
     .sortable:hover { background-color: var(--border-color); }
 
-    .sort-indicator { margin-left: 6px; color: var(--primary-color); font-weight: bold; }
+    .sort-indicator { margin-left: 6px; color: var(--primary-color); font-weight: 600; }
 
     .resizer {
         position: absolute;
@@ -668,7 +676,7 @@
         height: 100%;
         width: 5px;
         background: transparent;
-        cursor: col-resize;
+        cursor: ew-resize;
         user-select: none;
         touch-action: none;
     }

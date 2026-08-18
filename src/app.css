@@ -66,9 +66,18 @@ html, body {
     scrollbar-width: thin;
 }
 
+
 * {
     box-sizing: border-box;
 }
+
+input, button, select, textarea {
+    font-family: inherit;
+    font-size: inherit;
+    color: inherit;
+    font-weight: inherit;
+}
+
 
 input[type="checkbox"], input[type="radio"] {
     accent-color: var(--primary-color);

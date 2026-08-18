@@ -1050,7 +1050,7 @@
 
   .active-filters-label {
     font-size: 12px;
-    font-weight: 600;
+    font-weight: 500;
     color: var(--text-muted);
     white-space: nowrap;
   }
@@ -1150,7 +1150,7 @@
     gap: 16px;
     z-index: 50;
     font-size: 13px;
-    font-weight: 600;
+    font-weight: 500;
   }
 
   .btn-exit-mode {
@@ -1161,7 +1161,7 @@
     padding: 4px 12px;
     font-size: 12px;
     cursor: pointer;
-    font-weight: 600;
+    font-weight: 500;
     transition: background-color 0.2s, transform 0.1s;
   }
 
@@ -1385,7 +1385,7 @@
     border-radius: 4px;
     padding: 4px 8px;
     font-size: 11px;
-    font-weight: 600;
+    font-weight: 500;
     color: var(--text-muted);
     cursor: pointer;
     transition: all 0.1s;
@@ -1612,7 +1612,7 @@
       align-items: center;
       padding: 16px;
       border-bottom: 1px solid var(--border-color);
-      font-weight: 600;
+      font-weight: 500;
       font-size: 16px;
       color: var(--text-color);
     }
