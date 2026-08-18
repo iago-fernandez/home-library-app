@@ -1,5 +1,18 @@
 export interface TranslationDictionary {
     appTitle: string;
+    auth: {
+        createWorkspace: string;
+        accessWorkspace: string;
+        profileName: string;
+        securityKey: string;
+        confirmKey: string;
+        passwordsMismatch: string;
+        registerError: string;
+        loginError: string;
+        emptyFields: string;
+        processing: string;
+        loginBtn: string;
+    };
     common: {
         add: string;
         edit: string;
