@@ -247,6 +247,8 @@ export const en: TranslationDictionary = {
         autofillBannerTitle: 'Smart Fetch',
         autofillBannerDesc: 'Scan or enter an ISBN to automatically retrieve book details.',
         fetchErrorEmpty: 'No metadata found for this identifier.',
+        fetchErrorNetwork: 'Failed to connect to the metadata service.',
+        fetchSuccess: 'Metadata retrieved successfully.',
         fetchPlaceholder: 'Enter ISBN, OCLC, or OLID...',
         coverImage: 'Cover Image',
         coverPreviewAlt: 'Cover Preview',

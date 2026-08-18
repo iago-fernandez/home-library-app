@@ -18,6 +18,7 @@
     let isLookingUp = false;
     let fetchId = '';
     let fetchError = '';
+    let fetchSuccess = '';
     let showBarcodeScanner = false;
     let showCameraCapture = false;
 
@@ -105,6 +106,7 @@
 
         isLookingUp = true;
         fetchError = '';
+        fetchSuccess = '';
         try {
             const queryParam = fetchId.trim();
             const cleanQuery = queryParam.replace(/-/g, '').replace(/\s/g, '');
@@ -113,6 +115,7 @@
 
             if (!metadata.title && !metadata.authors) {
                 fetchError = $t.form.fetchErrorEmpty;
+                return;
             }
 
             formData.title = metadata.title || '';
@@ -151,8 +154,11 @@
                 formData.isbn_13 = queryParam;
             }
 
+            fetchSuccess = $t.form.fetchSuccess;
+
         } catch (error) {
             console.error(error);
+            fetchError = $t.form.fetchErrorNetwork;
         } finally {
             isLookingUp = false;
         }
@@ -255,6 +261,8 @@
             </div>
             {#if fetchError}
                 <div class="fetch-error-message">{fetchError}</div>
+            {:else if fetchSuccess}
+                <div class="fetch-success-message">{fetchSuccess}</div>
             {/if}
         </div>
 
@@ -905,15 +913,24 @@
         border-color: var(--input-focus);
     }
 
-    .fetch-error-message {
-        color: var(--danger-color);
+    .fetch-error-message, .fetch-success-message {
         font-size: 13px;
         margin-top: 12px;
         margin-bottom: 0;
         font-weight: 500;
         padding: 8px 12px;
-        background-color: color-mix(in srgb, var(--danger-color) 10%, transparent);
         border-radius: 4px;
+    }
+
+    .fetch-error-message {
+        color: var(--danger-color);
+        background-color: color-mix(in srgb, var(--danger-color) 10%, transparent);
         border: 1px solid color-mix(in srgb, var(--danger-color) 30%, transparent);
+    }
+
+    .fetch-success-message {
+        color: #059669; /* emerald 600 */
+        background-color: color-mix(in srgb, #10b981 10%, transparent);
+        border: 1px solid color-mix(in srgb, #10b981 30%, transparent);
     }
 </style>

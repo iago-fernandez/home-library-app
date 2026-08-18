@@ -190,6 +190,8 @@ export interface TranslationDictionary {
         autofillBannerTitle: string;
         autofillBannerDesc: string;
         fetchErrorEmpty: string;
+        fetchErrorNetwork: string;
+        fetchSuccess: string;
         fetchPlaceholder: string;
         coverImage: string;
         coverPreviewAlt: string;
