@@ -193,7 +193,8 @@
                 var(--bg-color) 100%
         );
         color: var(--text-main);
-        font-family: system-ui, -apple-system, sans-serif;
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu, Cantarell, "Fira Sans", "Droid Sans", "Helvetica Neue", Arial, sans-serif;
+        font-synthesis: none;
         transition: background-image 0.2s ease-out;
         position: relative;
         padding: 20px;
