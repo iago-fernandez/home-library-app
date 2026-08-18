@@ -2,6 +2,19 @@ import type { TranslationDictionary } from './types';
 
 export const es: TranslationDictionary = {
     appTitle: 'Biblioteca Personal',
+    auth: {
+        createWorkspace: 'Crear espacio',
+        accessWorkspace: 'Acceder al espacio',
+        profileName: 'Nombre de perfil',
+        securityKey: 'Clave de seguridad',
+        confirmKey: 'Confirmar clave',
+        passwordsMismatch: 'Las claves no coinciden.',
+        registerError: 'No se pudo crear el espacio.',
+        loginError: 'Nombre de perfil o clave incorrectos.',
+        emptyFields: 'Por favor completa todos los campos.',
+        processing: 'Procesando...',
+        loginBtn: 'Entrar al espacio'
+    },
     common: {
         add: 'Añadir',
         edit: 'Editar',
@@ -234,6 +247,8 @@ export const es: TranslationDictionary = {
         autofillBannerTitle: 'Búsqueda inteligente',
         autofillBannerDesc: 'Escanear o introducir un ISBN para obtener los datos automáticamente.',
         fetchErrorEmpty: 'No se han encontrado datos para este identificador.',
+        fetchErrorNetwork: 'No se pudo conectar al servicio de metadatos.',
+        fetchSuccess: 'Metadatos obtenidos exitosamente.',
         fetchPlaceholder: 'Introducir ISBN, OCLC o ID de OpenLibrary...',
         coverImage: 'Portada',
         coverPreviewAlt: 'Vista previa',

@@ -2,6 +2,19 @@ import type { TranslationDictionary } from './types';
 
 export const en: TranslationDictionary = {
     appTitle: 'Home Library',
+    auth: {
+        createWorkspace: 'Create Workspace',
+        accessWorkspace: 'Access Workspace',
+        profileName: 'Profile Name',
+        securityKey: 'Security Key',
+        confirmKey: 'Confirm Key',
+        passwordsMismatch: 'Passwords do not match.',
+        registerError: 'Failed to create workspace.',
+        loginError: 'Invalid profile name or security key.',
+        emptyFields: 'Please fill in all fields.',
+        processing: 'Processing...',
+        loginBtn: 'Enter Workspace'
+    },
     common: {
         add: 'Add',
         edit: 'Edit',
@@ -234,6 +247,8 @@ export const en: TranslationDictionary = {
         autofillBannerTitle: 'Smart Fetch',
         autofillBannerDesc: 'Scan or enter an ISBN to automatically retrieve book details.',
         fetchErrorEmpty: 'No metadata found for this identifier.',
+        fetchErrorNetwork: 'Failed to connect to the metadata service.',
+        fetchSuccess: 'Metadata retrieved successfully.',
         fetchPlaceholder: 'Enter ISBN, OCLC, or OLID...',
         coverImage: 'Cover Image',
         coverPreviewAlt: 'Cover Preview',
