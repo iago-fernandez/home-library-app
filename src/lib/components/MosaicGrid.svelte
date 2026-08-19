@@ -7,6 +7,7 @@
     import { t, locale } from '$lib/i18n';
     import { activeColumns, availableColumns, activeDateFormat } from '$lib/stores/preferences';
     import { tick, onMount } from 'svelte';
+    import { createVirtualizer } from '@tanstack/svelte-virtual';
     import { dialogStore } from '$lib/stores/dialog';
     import { formatDate } from '$lib/utils/date';
 
@@ -73,9 +74,36 @@
     let matchIndices: number[] = [];
     let currentMatchIndex = -1;
     let localSearchInput: HTMLInputElement;
+    
     let isMounted = false;
+    let scrollContainer: HTMLDivElement | undefined;
+    let containerWidth = 1000;
+    
+    // We use a fixed base width for columns to calculate how many fit
+    $: itemsPerRow = Math.max(1, Math.floor(containerWidth / (160 + 16)));
+    
+    $: rowChunks = books.reduce((resultArray, item, index) => { 
+        const chunkIndex = Math.floor(index / itemsPerRow);
+        if(!resultArray[chunkIndex]) {
+            resultArray[chunkIndex] = [];
+        }
+        resultArray[chunkIndex].push(item);
+        return resultArray;
+    }, [] as any[][]);
 
-    $: searchColumns = [
+    $: rowHeight = 270 + ($activeMosaicAttributes.length * 24);
+    
+    let virtualizerOptions: any;
+    $: virtualizerOptions = {
+        count: rowChunks.length,
+        getScrollElement: () => scrollContainer,
+        estimateSize: () => rowHeight,
+        overscan: 10,
+    };
+
+    $: virtualizer = createVirtualizer(virtualizerOptions);
+    $: virtualItems = $virtualizer.getVirtualItems();
+$: searchColumns = [
         { value: 'all', label: $t.grid.allColumns },
         ...$activeMosaicAttributes.map(id => {
             const key = `col_${id}` as keyof typeof $t.grid;
@@ -155,40 +183,54 @@
 <!-- svelte-ignore a11y_click_events_have_key_events -->
 <!-- svelte-ignore a11y_no_static_element_interactions -->
 <div class="mosaic-wrapper" on:click={handleEmptySpaceClick}>
-    <div class="mosaic-container" style="zoom: {$zoomLevel / 100}">
+    
+    <div class="mosaic-container" bind:this={scrollContainer} bind:clientWidth={containerWidth} style="zoom: {$zoomLevel / 100}">
         {#if books.length === 0}
-            <div class="empty-state" style="grid-column: 1 / -1;">
+            <div class="empty-state">
                 <p>{$t.common.emptyLibrary}</p>
             </div>
         {:else}
-            {#each books as book, index (book.id)}
-                <div
-                        id="mosaic-card-{book.id}"
-                        class="book-card"
-                    class:selected={$selectedIds.includes(book.id)}
-                    on:click={(e) => handleSelect(e, book.id, index)}
-                    on:keydown={(e) => e.key === 'Enter' && handleSelect(e, book.id, index)}
-                    role="button"
-                    tabindex="0"
-                >
-                    <div class="cover-wrapper">
-                        <BookCover src={book.cover_url} alt={book.title} />
+            <div style="height: {$virtualizer.getTotalSize()}px; width: 100%; position: relative;">
+                {#each virtualItems as virtualRow (virtualRow.index)}
+                    {@const row = rowChunks[virtualRow.index]}
+                    <div 
+                        style="position: absolute; top: 0; left: 0; width: 100%; transform: translateY({virtualRow.start}px); display: grid; grid-template-columns: repeat({itemsPerRow}, minmax(0, 1fr)); gap: 16px; padding: 16px; box-sizing: border-box;"
+                        data-index={virtualRow.index}
+                    >
+                        {#each row as book (book.id)}
+                            {@const index = books.indexOf(book)}
+                            <!-- svelte-ignore a11y_click_events_have_key_events -->
+                            <!-- svelte-ignore a11y_no_static_element_interactions -->
+                            <div
+                                    id="mosaic-card-{book.id}"
+                                    class="book-card"
+                                class:selected={$selectedIds.includes(book.id)}
+                                on:click={(e) => handleSelect(e, book.id, index)}
+                                on:keydown={(e) => e.key === 'Enter' && handleSelect(e, book.id, index)}
+                                role="button"
+                                tabindex="0"
+                            >
+                                <div class="cover-wrapper">
+                                    <BookCover src={book.cover_url} alt={book.title} />
+                                </div>
+                                <div class="info">
+                                    <h4>{book.title}</h4>
+                                    {#if book.authors}
+                                        <p class="attr-text authors-text" title={formatAttribute(book, 'authors')}>{formatAttribute(book, 'authors')}</p>
+                                    {/if}
+                                    <div class="attributes-list">
+                                        {#each $activeMosaicAttributes.filter(id => id !== 'title' && id !== 'authors') as attrId}
+                                            {#if formatAttribute(book, attrId)}
+                                                <p class="attr-text" title={formatAttribute(book, attrId)}>{formatAttribute(book, attrId)}</p>
+                                            {/if}
+                                        {/each}
+                                    </div>
+                                </div>
+                            </div>
+                        {/each}
                     </div>
-                    <div class="info">
-                        <h4>{book.title}</h4>
-                        {#if book.authors}
-                            <p class="attr-text authors-text" title={formatAttribute(book, 'authors')}>{formatAttribute(book, 'authors')}</p>
-                        {/if}
-                        <div class="attributes-list">
-                            {#each $activeMosaicAttributes.filter(id => id !== 'title' && id !== 'authors') as attrId}
-                                {#if formatAttribute(book, attrId)}
-                                    <p class="attr-text" title={formatAttribute(book, attrId)}>{formatAttribute(book, attrId)}</p>
-                                {/if}
-                            {/each}
-                        </div>
-                    </div>
-                </div>
-            {/each}
+                {/each}
+            </div>
         {/if}
     </div>
 
@@ -230,10 +272,7 @@
     }
     .mosaic-container {
         display: grid;
-        grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
-        grid-auto-rows: max-content;
-        gap: 16px;
-        padding: 16px;
+        /* Layout managed by virtualizer */
         overflow-y: auto;
         flex: 1;
         background-color: var(--bg-color);
