@@ -237,7 +237,7 @@ $: searchColumns = [
     {#if $localSearchActive}
         <div class="local-search-bar">
             <Search size={16} color="var(--text-muted)" />
-            <div style="width: 140px;">
+            <div style="width: 210px;">
                 <DropdownSelect
                     options={searchColumns}
                     bind:value={localSearchColumn}
