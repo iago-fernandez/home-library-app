@@ -515,7 +515,7 @@
 </div>
 
 <style>
-    .table-wrapper { display: flex; flex-direction: column; height: 100%; background-color: var(--panel-bg); border: 1px solid var(--border-color); border-radius: 4px; overflow: hidden; transition: border-color 0.2s; position: relative; }
+    .table-wrapper { display: flex; flex-direction: column; flex: 1; min-height: 0; background-color: var(--panel-bg); border: 1px solid var(--border-color); border-radius: 4px; overflow: hidden; transition: border-color 0.2s; position: relative; }
     
     .grid-header-container {
         overflow-x: hidden;
