@@ -240,20 +240,13 @@
         count: $totalBooks,
         getScrollElement: () => scrollContainer,
         estimateSize: () => 44,
-        overscan: 15,
+        overscan: 40,
     };
 
     $: virtualizer = createVirtualizer(virtualizerOptions);
     $: virtualItems = $virtualizer.getVirtualItems();
 
-    $: {
-        if (isMounted) {
-            const lastItem = virtualItems[virtualItems.length - 1];
-            if (lastItem && lastItem.index >= $bookStore.length - 10 && $bookStore.length < $totalBooks) {
-                bookStore.loadBooks();
-            }
-        }
-    }
+    // Background sync fetches everything. No need for infinite scroll.
 
     let localSearchQuery = '';
     let localSearchColumn = 'all';

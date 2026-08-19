@@ -206,7 +206,7 @@
 
         const targetIds = [...$selectedIds];
 
-        bookStore.updateBooksBatch(targetIds, payload).catch(e => {
+        bookStore.updateBooksBatch(targetIds, payload).catch((e: any) => {
             console.error(e);
         });
 
