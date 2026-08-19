@@ -32,6 +32,8 @@ export interface TranslationDictionary {
         emptyLibrary: string;
         yes: string;
         no: string;
+        showingBooksSingular: string;
+        showingBooksPlural: (count: number) => string;
     };
 
     menu: {
