@@ -492,7 +492,7 @@
     {#if $localSearchActive}
         <div class="local-search-bar">
             <Search size={16} color="var(--text-muted)" />
-            <div style="width: 140px;">
+            <div style="width: 210px;">
                 <DropdownSelect
                     options={searchColumns}
                     bind:value={localSearchColumn}
@@ -515,7 +515,7 @@
 </div>
 
 <style>
-    .table-wrapper { display: flex; flex-direction: column; height: 100%; background-color: var(--panel-bg); border: 1px solid var(--border-color); border-radius: 4px; overflow: hidden; transition: border-color 0.2s; position: relative; }
+    .table-wrapper { display: flex; flex-direction: column; flex: 1; min-height: 0; background-color: var(--panel-bg); border: 1px solid var(--border-color); border-radius: 4px; overflow: hidden; transition: border-color 0.2s; position: relative; }
     
     .grid-header-container {
         overflow-x: hidden;

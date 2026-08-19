@@ -33,7 +33,9 @@ export const es: TranslationDictionary = {
         notSet: 'Sin especificar',
         emptyLibrary: 'Tu biblioteca está vacía. Añade un libro para empezar.',
         yes: 'Sí',
-        no: 'No'
+        no: 'No',
+        showingBooksSingular: 'Mostrando 1 libro',
+        showingBooksPlural: (count) => `Mostrando ${count} libros`,
     },
 
     menu: {

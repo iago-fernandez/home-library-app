@@ -54,6 +54,7 @@
   const selectedIds = bookStore.selectedIds;
   const selectedId = bookStore.selectedId;
   const multiSelectMode = bookStore.multiSelectMode;
+  const bookStoreTotal = bookStore.total;
 
   import { availableColumns } from '$lib/stores/preferences';
 
@@ -643,6 +644,9 @@
           <Plus size={24} strokeWidth={2} />
         </button>
       </div>
+      <div class="status-bar-count">
+        {$bookStoreTotal === 1 ? $t.common.showingBooksSingular : $t.common.showingBooksPlural($bookStoreTotal)}
+      </div>
     </section>
 
     {#if activePanel !== 'actions'}
@@ -1036,6 +1040,16 @@
     overflow: hidden;
   }
 
+  .status-bar-count {
+    padding: 0 16px 12px 16px;
+    font-size: 12px;
+    color: var(--text-muted);
+    background-color: transparent;
+    border-top: none;
+    text-align: right;
+    flex-shrink: 0;
+  }
+
   .active-filters-bar {
     display: flex;
     align-items: center;
@@ -1131,7 +1145,7 @@
     background-color: var(--panel-bg);
     border: 1px solid var(--border-color);
     border-radius: 8px;
-    margin: 16px 16px 16px 16px;
+    margin: 16px 16px 4px 16px;
     box-shadow: 0 4px 12px rgba(0,0,0,0.02);
   }
 
@@ -1456,6 +1470,8 @@
 
   .view-container {
     flex: 1;
+    display: flex;
+    flex-direction: column;
     position: relative;
     overflow: hidden;
   }
