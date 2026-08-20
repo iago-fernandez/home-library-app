@@ -107,6 +107,9 @@
 
   $: selectedBook = $bookStore.find(b => b.id === $selectedId);
 
+  
+
+
   let isPanelAnimating = false;
   let panelTimeout: any;
 
@@ -813,18 +816,12 @@
                     </button>
                   {:else if rule.inputType === 'number'}
                     <input
-                            type="number"
+                            type="number" min="1000" max="2100"
                             bind:value={rule.value}
                             placeholder="0"
                             class="rule-input"
                             on:input={triggerDebouncedFilter}
-                            on:keydown={(e) => { 
-                                if (e.key === 'ArrowUp' && !rule.value && ['publish_date', 'original_publish_date'].includes(rule.field)) { 
-                                    e.preventDefault(); 
-                                    rule.value = new Date().getFullYear().toString(); 
-                                    triggerDebouncedFilter();
-                                } 
-                            }}
+
                     />
                   {:else if rule.inputType === 'date'}
                     <input
