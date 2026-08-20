@@ -73,8 +73,14 @@
 
     function getInitialFormData(data: Book | null): Partial<CreateBookPayload> {
         if (data) {
+            let pd = data.publish_date || '';
+            let opd = data.original_publish_date || '';
+            if (pd.endsWith('-01-01')) pd = pd.substring(0, 4);
+            if (opd.endsWith('-01-01')) opd = opd.substring(0, 4);
             return {
                 ...data,
+                publish_date: pd,
+                original_publish_date: opd,
                 authors: data.authors || [],
                 translators: data.translators || [],
                 illustrators: data.illustrators || [],
@@ -128,7 +134,7 @@
             if (metadata.publish_date) {
                 const parsedDate = new Date(metadata.publish_date);
                 if (!isNaN(parsedDate.getTime())) {
-                    formData.publish_date = parsedDate.toISOString().split('T')[0];
+                    formData.publish_date = parsedDate.getUTCFullYear().toString();
                 }
             }
 
@@ -357,12 +363,12 @@
             <div class="input-grid">
                 <div class="input-row" class:error={!!errors.publish_date}>
                     <label for="publish_date">{$t.form.pubDate}</label>
-                    <input type="date" id="publish_date" bind:value={formData.publish_date} />
+                    <input type="number" id="publish_date" bind:value={formData.publish_date} min="1000" max="2100" on:keydown={(e) => { if (e.key === 'ArrowUp' && !formData.publish_date) { e.preventDefault(); formData.publish_date = new Date().getFullYear().toString(); } }} />
                     {#if errors.publish_date}<span class="error-text">{errors.publish_date}</span>{/if}
                 </div>
                 <div class="input-row" class:error={!!errors.original_publish_date}>
                     <label for="original_publish_date">{$t.form.origPubDate}</label>
-                    <input type="date" id="original_publish_date" bind:value={formData.original_publish_date} />
+                    <input type="number" id="original_publish_date" bind:value={formData.original_publish_date} min="1000" max="2100" on:keydown={(e) => { if (e.key === 'ArrowUp' && !formData.original_publish_date) { e.preventDefault(); formData.original_publish_date = new Date().getFullYear().toString(); } }} />
                     {#if errors.original_publish_date}<span class="error-text">{errors.original_publish_date}</span>{/if}
                 </div>
             </div>

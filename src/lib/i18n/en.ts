@@ -289,7 +289,7 @@ export const en: TranslationDictionary = {
         accountTab: 'Account',
         preferencesTab: 'Preferences',
         dateFormat: 'Date Format',
-        dateFormatHint: 'Time (HH:MM:SS) will only be displayed for system variables (like Creation Date). Pure dates (like Publication Date) will never show time.',
+        dateFormatHint: 'Time is only displayed for system timestamps (like Added Date). Publication fields strictly show the year and bypass these settings.',
         dateFormats: {
             dd_mm_yyyy_hh_mm_ss: 'DD/MM/YYYY HH:MM:SS',
             dd_mm_yyyy: 'DD/MM/YYYY',

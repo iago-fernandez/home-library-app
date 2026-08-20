@@ -55,7 +55,8 @@
 
     function getInputType(colId: string) {
         if (['volume_in_collection', 'volume_in_series', 'page_count', 'purchase_price', 'location_position', 'rating', 'edition_number'].includes(colId)) return 'number';
-        if (['publish_date', 'original_publish_date', 'purchase_date', 'date_started', 'date_finished', 'loan_date', 'expected_return_date'].includes(colId)) return 'date';
+        if (['purchase_date', 'date_started', 'date_finished', 'loan_date', 'expected_return_date'].includes(colId)) return 'date';
+        if (['publish_date', 'original_publish_date'].includes(colId)) return 'text';
         if (['is_first_edition', 'is_loaned'].includes(colId)) return 'checkbox';
         return 'text';
     }
@@ -147,7 +148,7 @@
         const val = book[colId];
         
         if (['publish_date', 'original_publish_date', 'purchase_date', 'date_started', 'date_finished', 'loan_date', 'expected_return_date', 'created_at', 'updated_at'].includes(colId)) {
-            return formatDate(val, $activeDateFormat, $locale || 'en');
+            return formatDate(val, $activeDateFormat, $locale || 'en', colId);
         }
 
         if (Array.isArray(val)) return val.join(', ');

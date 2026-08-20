@@ -1,4 +1,4 @@
-export function formatDate(dateString: string | undefined | null, format: string, locale: string = 'en'): string {
+export function formatDate(dateString: string | undefined | null, format: string, locale: string = 'en', fieldName?: string): string {
     if (!dateString) return '';
     const date = new Date(dateString);
     if (isNaN(date.getTime())) return dateString;
@@ -10,8 +10,15 @@ export function formatDate(dateString: string | undefined | null, format: string
     // To prevent local timezone shifting the date to the previous day, we must use getUTC* methods.
     const isPureDate = !dateString.includes('T');
 
+
     const yearRaw = isPureDate ? date.getUTCFullYear() : date.getFullYear();
+    
+    if (fieldName === 'publish_date' || fieldName === 'original_publish_date') {
+        return yearRaw.toString();
+    }
+    
     const monthRaw = isPureDate ? date.getUTCMonth() + 1 : date.getMonth() + 1;
+
     const dayRaw = isPureDate ? date.getUTCDate() : date.getDate();
     
     const year = yearRaw;

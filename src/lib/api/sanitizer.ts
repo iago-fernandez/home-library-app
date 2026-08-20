@@ -40,7 +40,8 @@ export function sanitizeBookPayload(payload: any): any {
     }
 
     for (const field of dateFields) {
-        const val = payload[field];
+        let val = payload[field];
+        if (typeof val === 'number') val = String(val);
         if (val && typeof val === 'string' && val.trim() !== '') {
             const date = new Date(val);
             if (!isNaN(date.getTime())) {
