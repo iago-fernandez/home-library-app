@@ -363,12 +363,12 @@
             <div class="input-grid">
                 <div class="input-row" class:error={!!errors.publish_date}>
                     <label for="publish_date">{$t.form.pubDate}</label>
-                    <input type="number" id="publish_date" bind:value={formData.publish_date} min="1000" max="2100" on:keydown={(e) => { if (e.key === 'ArrowUp' && !formData.publish_date) { e.preventDefault(); formData.publish_date = new Date().getFullYear().toString(); } }} />
+                    <input type="number" id="publish_date" bind:value={formData.publish_date} min="1000" max="2100" />
                     {#if errors.publish_date}<span class="error-text">{errors.publish_date}</span>{/if}
                 </div>
                 <div class="input-row" class:error={!!errors.original_publish_date}>
                     <label for="original_publish_date">{$t.form.origPubDate}</label>
-                    <input type="number" id="original_publish_date" bind:value={formData.original_publish_date} min="1000" max="2100" on:keydown={(e) => { if (e.key === 'ArrowUp' && !formData.original_publish_date) { e.preventDefault(); formData.original_publish_date = new Date().getFullYear().toString(); } }} />
+                    <input type="number" id="original_publish_date" bind:value={formData.original_publish_date} min="1000" max="2100" />
                     {#if errors.original_publish_date}<span class="error-text">{errors.original_publish_date}</span>{/if}
                 </div>
             </div>
