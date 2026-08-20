@@ -214,9 +214,6 @@
         onSortingChange: (updater) => {
             sorting = typeof updater === 'function' ? updater(sorting) : updater;
             if (isMounted) {
-                if (scrollContainer) {
-                    scrollContainer.scrollTop = 0;
-                }
                 if (sorting.length > 0) {
                     bookStore.applySort(sorting[0].id, sorting[0].desc ? 'desc' : 'asc');
                 } else {
