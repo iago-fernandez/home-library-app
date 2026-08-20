@@ -289,7 +289,7 @@ export const es: TranslationDictionary = {
         accountTab: 'Cuenta',
         preferencesTab: 'Preferencias',
         dateFormat: 'Formato de fecha',
-        dateFormatHint: 'La hora (HH:MM) solo aparecerá en fechas generadas por el sistema (como la fecha de adición).',
+        dateFormatHint: 'La hora solo se muestra en campos de sistema (como Fecha de adición). Los campos de publicación muestran estrictamente el año y omiten estos ajustes.',
         dateFormats: {
             dd_mm_yyyy_hh_mm_ss: 'DD/MM/AAAA HH:MM:SS',
             dd_mm_yyyy: 'DD/MM/AAAA',

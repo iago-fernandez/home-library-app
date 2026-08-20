@@ -58,7 +58,7 @@
         const val = book[attrId];
         
         if (['publish_date', 'original_publish_date', 'purchase_date', 'date_started', 'date_finished', 'loan_date', 'expected_return_date', 'created_at', 'updated_at'].includes(attrId)) {
-            return formatDate(val, $activeDateFormat, $locale || 'en');
+            return formatDate(val, $activeDateFormat, $locale || 'en', attrId);
         }
 
         if (Array.isArray(val)) return val.join(', ');

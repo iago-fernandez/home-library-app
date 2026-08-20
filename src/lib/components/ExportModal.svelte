@@ -55,7 +55,7 @@
         if (Array.isArray(val)) return val.join(', ');
         if (typeof val === 'boolean') return val ? (tObj.common.yes || 'Yes') : (tObj.common.no || 'No');
         if (val && (colId.includes('date') || colId.endsWith('_at'))) {
-            return formatDate(val, $activeDateFormat);
+            return formatDate(val, $activeDateFormat, 'en', colId);
         }
         return val ? String(val) : '';
     }

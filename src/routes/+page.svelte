@@ -63,10 +63,14 @@
       let inputType: InputHTMLType = 'text';
       
       const numFields = ['catalog_number', 'page_count', 'rating', 'volume_in_collection', 'volume_in_series', 'purchase_price', 'location_position', 'edition_number'];
-      const dateFields = ['publish_date', 'original_publish_date', 'purchase_date', 'date_started', 'date_finished', 'loan_date', 'expected_return_date', 'created_at', 'updated_at'];
+      const yearFields = ['publish_date', 'original_publish_date'];
+      const dateFields = ['purchase_date', 'date_started', 'date_finished', 'loan_date', 'expected_return_date', 'created_at', 'updated_at'];
       const boolFields = ['is_first_edition', 'is_loaned'];
       
       if (numFields.includes(col.id)) {
+          type = 'numeric';
+          inputType = 'number';
+      } else if (yearFields.includes(col.id)) {
           type = 'numeric';
           inputType = 'number';
       } else if (dateFields.includes(col.id)) {
@@ -366,7 +370,7 @@
   function triggerDebouncedFilter() {
     clearTimeout(filterTimer);
     filterTimer = setTimeout(async () => {
-      const validRules = activeFilters.filter(rule => rule.value.trim() !== '');
+      const validRules = activeFilters.filter(rule => String(rule.value).trim() !== '');
 
       if (validRules.length === 0) {
         if (lastAppliedFilters !== undefined) {
@@ -386,7 +390,7 @@
           type: "CONDITION",
           field: rule.field,
           operator: finalOperator,
-          value: rule.value.trim()
+          value: String(rule.value).trim()
         };
 
         if (rule.isNot) {
@@ -616,11 +620,11 @@
           {/if}
         </div>
 
-        {#if activeFilters.filter(r => r.value.trim() !== '').length > 0}
+        {#if activeFilters.filter(r => String(r.value).trim() !== '').length > 0}
           <div class="active-filters-bar">
             <span class="active-filters-label">{$t.filters.activeFilters} {matchType === 'OR' ? '(Any)' : '(All)'}:</span>
             <div class="filter-chips">
-              {#each activeFilters.filter(r => r.value.trim() !== '') as rule (rule.id)}
+              {#each activeFilters.filter(r => String(r.value).trim() !== '') as rule (rule.id)}
                 <div class="filter-chip">
                   <button class="chip-text-btn" on:click={handleFilterClick}>{formatRuleForDisplay(rule)}</button>
                   <button class="chip-remove" on:click={() => removeFilterRule(rule.id)}>
@@ -706,7 +710,7 @@
             <button class="icon-btn" title={$t.menu.findInView} class:active={$localSearchActive} on:click={bookStore.toggleLocalSearch}>
               <Search size={20} strokeWidth={1.5} />
             </button>
-            <button class="icon-btn" title={$t.menu.advancedFilter} class:active={activeFilters.filter(r => r.value.trim() !== '').length > 0} on:click={handleFilterClick}>
+            <button class="icon-btn" title={$t.menu.advancedFilter} class:active={activeFilters.filter(r => String(r.value).trim() !== '').length > 0} on:click={handleFilterClick}>
               <Filter size={20} strokeWidth={1.5} />
             </button>
 
@@ -814,6 +818,13 @@
                             placeholder="0"
                             class="rule-input"
                             on:input={triggerDebouncedFilter}
+                            on:keydown={(e) => { 
+                                if (e.key === 'ArrowUp' && !rule.value && ['publish_date', 'original_publish_date'].includes(rule.field)) { 
+                                    e.preventDefault(); 
+                                    rule.value = new Date().getFullYear().toString(); 
+                                    triggerDebouncedFilter();
+                                } 
+                            }}
                     />
                   {:else if rule.inputType === 'date'}
                     <input
