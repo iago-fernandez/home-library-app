@@ -1,4 +1,5 @@
 <script lang="ts">
+    import { Settings2 } from 'lucide-svelte';
     import { bookStore } from '$lib/stores/book';
     import { t, locale } from '$lib/i18n';
     import { activeColumns, availableColumns, zoomLevel, activeDateFormat } from '$lib/stores/preferences';
@@ -18,14 +19,23 @@
     import { formatDate } from '$lib/utils/date';
     import { apiClient } from '$lib/api/client';
 
+    const dispatch = createEventDispatcher();
     const totalBooks = bookStore.total;
     const selectedIds = bookStore.selectedIds;
     const localSearchActive = bookStore.localSearchActive;
     const multiSelectMode = bookStore.multiSelectMode;
     const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001';
 
+    
     let scrollContainer: HTMLDivElement;
     let headerContainer: HTMLDivElement;
+    let draggedColumnId: string | null = null;
+    let dragOverColumnId: string | null = null;
+    let disableDrag = false;
+
+
+
+
     let lastSelectedIndex = -1;
     let sorting: SortingState = [];
     let columnSizing: Record<string, number> = {};
@@ -35,7 +45,19 @@
     let editValue: any = '';
     let justFinishedEditing = false;
 
+
+    function moveColumn(cols: string[], fromId: string, toId: string) {
+        const fromIndex = cols.indexOf(fromId);
+        const toIndex = cols.indexOf(toId);
+        if (fromIndex < 0 || toIndex < 0) return cols;
+        const newCols = [...cols];
+        const [removed] = newCols.splice(fromIndex, 1);
+        newCols.splice(toIndex, 0, removed);
+        return newCols;
+    }
+    
     function cancelEdit() {
+
         editingCellId = null;
         justFinishedEditing = true;
         setTimeout(() => { justFinishedEditing = false; }, 150);
@@ -383,6 +405,11 @@
 </script>
 
 <div class="table-wrapper" style="zoom: {$zoomLevel / 100}">
+    <div class="column-menu-wrapper" style="position: absolute; right: 0; top: 0; height: 33px; z-index: 50; background: var(--bg-color); border-left: 1px solid var(--border-color); border-bottom: 1px solid var(--border-color); display: flex; align-items: center;">
+        <button class="icon-btn-small" on:click={() => dispatch('openSettings', 'workspace')} style="height: 100%; padding: 0 12px; border-radius: 0; display: flex; align-items: center; justify-content: center; background: transparent; border: none; cursor: pointer; color: var(--text-muted);" title="{$t.menu.settings}">
+            <Settings2 size={16} />
+        </button>
+    </div>
 
     <div bind:this={headerContainer} class="grid-header-container">
         <div class="grid-table-inner" style="min-width: 100%; width: {$table.getTotalSize()}px">
@@ -390,13 +417,35 @@
                 {#each $table.getHeaderGroups() as headerGroup}
                     <div class="header-row">
                         {#each headerGroup.headers as header}
+                            <!-- svelte-ignore a11y_no_static_element_interactions -->
                             <div
-                                    class="cell header-cell sortable"
+                                    class="cell header-cell sortable {dragOverColumnId === header.column.id ? 'drag-over' : ''}"
                                     style="width: {header.getSize()}px"
                                     role="button"
                                     tabindex="0"
+                                    draggable={!disableDrag}
                                     on:click={header.column.getToggleSortingHandler()}
                                     on:keydown={(e) => e.key === 'Enter' && header.column.toggleSorting()}
+                                    on:dragstart={(e) => {
+                                        const target = e.target as HTMLElement;
+                                        if (target.classList.contains('resizer')) {
+                                            e.preventDefault();
+                                            return;
+                                        }
+                                        if(e.dataTransfer) e.dataTransfer.effectAllowed = 'move'; 
+                                        draggedColumnId = header.column.id; 
+                                    }}
+                                    on:dragover={(e) => { if(header.column.id !== draggedColumnId) { e.preventDefault(); dragOverColumnId = header.column.id; } }}
+                                    on:dragleave={() => { if(dragOverColumnId === header.column.id) dragOverColumnId = null; }}
+                                    on:drop={(e) => {
+                                        e.preventDefault();
+                                        if (draggedColumnId && dragOverColumnId && draggedColumnId !== dragOverColumnId) {
+                                            $activeColumns = moveColumn($activeColumns, draggedColumnId, dragOverColumnId);
+                                        }
+                                        draggedColumnId = null;
+                                        dragOverColumnId = null;
+                                    }}
+                                    on:dragend={() => { draggedColumnId = null; dragOverColumnId = null; }}
                             >
                                 {#if !header.isPlaceholder}
                                     <svelte:component this={flexRender(header.column.columnDef.header, header.getContext())} />
@@ -414,6 +463,10 @@
                                             on:dblclick={(e) => { e.stopPropagation(); autoSizeColumn(header.column.id); }}
                                             class="resizer"
                                             class:isResizing={header.column.getIsResizing()}
+                                            draggable="false"
+                                            on:mouseenter={() => disableDrag = true}
+                                            on:mouseleave={() => disableDrag = false}
+                                            on:dragstart|preventDefault|stopPropagation
                                             on:click={(e) => e.stopPropagation()}
                                             on:keydown={(e) => e.key === 'Enter' && e.stopPropagation()}
                                             role="separator"
@@ -423,6 +476,7 @@
                                 {/if}
                             </div>
                         {/each}
+
                     </div>
                 {/each}
             </div>
@@ -512,7 +566,18 @@
     {/if}
 </div>
 
+
 <style>
+    .column-menu-wrapper {
+        position: relative;
+        display: flex;
+    }
+
+    .drag-over {
+        background-color: var(--primary-color) !important;
+        opacity: 0.2;
+    }
+
     .table-wrapper { display: flex; flex-direction: column; flex: 1; min-height: 0; background-color: var(--panel-bg); border: 1px solid var(--border-color); border-radius: 4px; overflow: hidden; transition: border-color 0.2s; position: relative; }
     
     .grid-header-container {

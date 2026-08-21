@@ -12,7 +12,8 @@
 
     export let onClose: () => void;
 
-    let activeTab: 'account' | 'preferences' | 'workspace' = 'preferences';
+    export let initialTab: 'account' | 'preferences' | 'workspace' = 'preferences';
+    let activeTab: 'account' | 'preferences' | 'workspace' = initialTab;
 
     let accountUsername = '';
     let accountPassword = '';
