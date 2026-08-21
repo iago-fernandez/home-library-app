@@ -16,8 +16,18 @@
 
     $: selectedLabel = options.find(o => o.value === value)?.label || placeholder;
 
+
+    let focusedIndex = -1;
+    let searchString = '';
+    let searchTimeout: ReturnType<typeof setTimeout>;
+
     function toggleOpen() {
         isOpen = !isOpen;
+        if (isOpen) {
+            focusedIndex = options.findIndex(o => o.value === value);
+            if (focusedIndex === -1) focusedIndex = 0;
+            scrollToFocused();
+        }
     }
 
     function selectOption(optionValue: string) {
@@ -26,22 +36,67 @@
         dispatch('change', { value });
     }
 
+    function scrollToFocused() {
+        setTimeout(() => {
+            if (selectElement && isOpen && focusedIndex >= 0) {
+                const optionsEl = selectElement.querySelectorAll('.select-option');
+                if (optionsEl[focusedIndex]) {
+                    optionsEl[focusedIndex].scrollIntoView({ block: 'nearest' });
+                }
+            }
+        }, 10);
+    }
+
+    function handleKeydown(event: KeyboardEvent) {
+        if (!isOpen) {
+            if (event.key === 'Enter' || event.key === ' ' || event.key === 'ArrowDown') {
+                event.preventDefault();
+                toggleOpen();
+            }
+            return;
+        }
+
+        if (event.key === 'Escape') {
+            isOpen = false;
+        } else if (event.key === 'ArrowDown') {
+            event.preventDefault();
+            focusedIndex = Math.min(focusedIndex + 1, options.length - 1);
+            scrollToFocused();
+        } else if (event.key === 'ArrowUp') {
+            event.preventDefault();
+            focusedIndex = Math.max(focusedIndex - 1, 0);
+            scrollToFocused();
+        } else if (event.key === 'Enter') {
+            event.preventDefault();
+            if (focusedIndex >= 0 && focusedIndex < options.length) {
+                selectOption(options[focusedIndex].value);
+            }
+        } else if (event.key.length === 1) {
+            searchString += event.key.toLowerCase();
+            clearTimeout(searchTimeout);
+            searchTimeout = setTimeout(() => searchString = '', 500);
+            
+            const matchIndex = options.findIndex(o => o.label.toLowerCase().startsWith(searchString));
+            if (matchIndex >= 0) {
+                focusedIndex = matchIndex;
+                scrollToFocused();
+            }
+        }
+    }
+
     function handleWindowClick(event: MouseEvent) {
+
         if (isOpen && selectElement && !selectElement.contains(event.target as Node)) {
             isOpen = false;
         }
     }
 
-    function handleWindowKeydown(event: KeyboardEvent) {
-        if (isOpen && event.key === 'Escape') {
-            isOpen = false;
-        }
-    }
 </script>
 
-<svelte:window on:click={handleWindowClick} on:keydown={handleWindowKeydown} />
+<svelte:window on:click={handleWindowClick}  />
 
-<div class="custom-select {customClass}" bind:this={selectElement} {id}>
+<!-- svelte-ignore a11y_no_static_element_interactions -->
+<div class="custom-select {customClass}" bind:this={selectElement} {id} on:keydown={handleKeydown}>
     <button type="button" class="select-button" on:click={toggleOpen}>
         <span class="select-label">{selectedLabel}</span>
         <ChevronDown size={14} class="select-icon {isOpen ? 'open' : ''}" />
@@ -49,12 +104,14 @@
 
     {#if isOpen}
         <div class="select-dropdown" class:up={direction === 'up'} class:align-right={align === 'right'}>
-            {#each options as option}
+                        {#each options as option, i}
                 <button
                     type="button"
                     class="select-option"
                     class:selected={option.value === value}
+                    class:focused={i === focusedIndex}
                     on:click={() => selectOption(option.value)}
+                    on:mouseenter={() => focusedIndex = i}
                 >
                     {option.label}
                 </button>
@@ -71,6 +128,7 @@
     }
 
     .select-button {
+        min-width: 0;
         display: flex;
         align-items: center;
         justify-content: space-between;
@@ -97,12 +155,16 @@
     }
 
     .select-label {
+        flex: 1 1 0;
+        min-width: 0;
         overflow: hidden;
         text-overflow: ellipsis;
         white-space: nowrap;
     }
 
     :global(.select-icon) {
+        flex: 0 0 auto;
+        margin-left: 8px;
         color: var(--text-muted);
         transition: transform 0.2s ease;
     }
@@ -166,5 +228,10 @@
     .select-option.selected {
         background-color: var(--primary-color);
         color: white;
+    }
+    
+    .select-option.focused:not(.selected) {
+        background-color: var(--bg-color);
+        outline: 1px solid var(--primary-color);
     }
 </style>

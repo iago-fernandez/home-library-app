@@ -22,6 +22,7 @@
   let activePanel: 'actions' | 'addBook' | 'editBook' | 'filter' | 'batchEdit' = 'actions';
   let showExportModal = false;
   let showSettingsModal = false;
+  let settingsTab: 'account' | 'preferences' | 'workspace' = 'preferences';
   let showLibraryManager = false;
   let showMoveToLibraryModal = false;
   let showUserGuideModal = false;
@@ -470,7 +471,7 @@
         <button class="menu-btn" class:active={openMenu === 'File'} on:click={() => toggleMenu('File')}>{$t.menu.file}</button>
         {#if openMenu === 'File'}
           <div class="dropdown-menu">
-            <button class="dropdown-item" on:click={() => { showSettingsModal = true; closeMenus(); }}>
+            <button class="dropdown-item" on:click={() => { settingsTab = 'preferences'; showSettingsModal = true; closeMenus(); }}>
               <div style="display:flex; justify-content:space-between; align-items:center; width:100%; gap:16px;">
                 <span>{$t.menu.settings}</span>
                 <span class="shortcut-hint" style="opacity:0.6; font-size:0.9em;">({formatShortcut($activeShortcuts.settings)})</span>
@@ -617,7 +618,7 @@
       <div class="grid-wrapper">
         <div class="view-container">
           {#if $activeViewStore === 'table'}
-            <DataGrid on:edit={handleEditBookClick} />
+            <DataGrid on:edit={handleEditBookClick} on:openSettings={(e) => { settingsTab = e.detail; showSettingsModal = true; }} />
           {:else if $activeViewStore === 'mosaic'}
             <MosaicGrid on:edit={handleEditBookClick} />
           {/if}
@@ -850,7 +851,7 @@
 {/if}
 
 {#if showSettingsModal}
-  <SettingsModal onClose={() => showSettingsModal = false} />
+  <SettingsModal initialTab={settingsTab} onClose={() => showSettingsModal = false} />
 {/if}
 
 {#if showUserGuideModal}
@@ -1359,6 +1360,14 @@
     display: flex;
     gap: 8px;
     align-items: center;
+    flex-wrap: nowrap;
+  }
+  .rule-controls :global(.rule-select) {
+    flex: 1 1 0;
+    min-width: 0;
+  }
+  .rule-controls .btn-remove-rule {
+    flex: 0 0 auto;
   }
 
   .rule-input-row {
