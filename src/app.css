@@ -150,3 +150,18 @@ input[type="checkbox"], input[type="radio"] {
         display: none !important;
     }
 }
+
+/* Fix filter overflow */
+.rule-controls {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+    flex-wrap: nowrap;
+}
+.rule-controls > :global(.rule-select) {
+    flex: 1 1 0;
+    min-width: 0;
+}
+.btn-remove-rule {
+    flex: 0 0 auto;
+}
