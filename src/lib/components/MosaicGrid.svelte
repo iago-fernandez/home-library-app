@@ -2,11 +2,11 @@
     import { bookStore } from '$lib/stores/book';
     import { activeMosaicAttributes, zoomLevel } from '$lib/stores/preferences';
     import BookCover from './BookCover.svelte';
-    import { Search, ChevronUp, ChevronDown, X, CaseSensitive } from 'lucide-svelte';
+    import { Search, ChevronUp, ChevronDown, X, CaseSensitive, Settings2, ArrowDownAZ, ArrowUpAZ } from 'lucide-svelte';
     import DropdownSelect from './DropdownSelect.svelte';
     import { t, locale } from '$lib/i18n';
     import { activeColumns, availableColumns, activeDateFormat } from '$lib/stores/preferences';
-    import { tick, onMount } from 'svelte';
+    import { tick, onMount, createEventDispatcher } from 'svelte';
     import { createVirtualizer } from '@tanstack/svelte-virtual';
     import { dialogStore } from '$lib/stores/dialog';
     import { formatDate } from '$lib/utils/date';
@@ -15,9 +15,125 @@
     const selectedIds = bookStore.selectedIds;
     const multiSelectMode = bookStore.multiSelectMode;
 
+
+    const dispatch = createEventDispatcher();
+    const sortConfig = bookStore.sortConfig;
+    const orderConfig = bookStore.orderConfig;
+
+    $: sortOptions = [{ value: 'none', label: $t.grid.defaultSort || '-' }, ...availableColumns.filter(col => $activeMosaicAttributes.includes(col.id) || col.id === 'title' || col.id === 'authors').map(col => ({ value: col.id, label: ($t.grid as Record<string, string>)['col_' + col.id] || col.label }))];
+    let currentSort = 'none';
+    let currentOrder: 'asc' | 'desc' = 'asc';
+
+    $: {
+        if ($sortConfig) currentSort = $sortConfig;
+        if ($orderConfig) currentOrder = $orderConfig;
+    }
+
+
+    
+    function toggleSortOrder() {
+        const newOrder = currentOrder === 'asc' ? 'desc' : 'asc';
+        bookStore.applySort(currentSort, newOrder);
+    }
+
+    let editingCellId: string | null = null;
+    let editValue: any = '';
+    let justFinishedEditing = false;
+
+    function getInputType(colId: string) {
+        if (['volume_in_collection', 'volume_in_series', 'page_count', 'purchase_price', 'location_position', 'rating', 'edition_number'].includes(colId)) return 'number';
+        if (['purchase_date', 'date_started', 'date_finished', 'loan_date', 'expected_return_date'].includes(colId)) return 'date';
+        if (['publish_date', 'original_publish_date'].includes(colId)) return 'text';
+        if (['is_first_edition', 'is_loaned'].includes(colId)) return 'checkbox';
+        return 'text';
+    }
+
+    function startEdit(bookId: string, colId: string, value: any) {
+        if (['cover_url', 'catalog_number', 'created_at', 'updated_at'].includes(colId)) return;
+        editingCellId = `${bookId}-${colId}`;
+        
+        const type = getInputType(colId);
+
+        if (colId === 'publish_date' || colId === 'original_publish_date') {
+            if (value && !isNaN(new Date(value).getTime())) {
+                const d = new Date(value);
+                const isPureDate = !String(value).includes('T');
+                editValue = (isPureDate ? d.getUTCFullYear() : d.getFullYear()).toString();
+            } else {
+                editValue = value !== null && value !== undefined ? String(value) : '';
+            }
+        } else if (Array.isArray(value)) {
+            editValue = value.join(', ');
+        } else if (type === 'checkbox') {
+            editValue = !!value;
+        } else if (type === 'date' && value) {
+            try { editValue = new Date(value).toISOString().split('T')[0]; }
+            catch(e) { editValue = ''; }
+        } else if (type === 'number') {
+            editValue = value !== null && value !== undefined ? Number(value) : null;
+        } else {
+            editValue = value !== null && value !== undefined ? String(value) : '';
+        }
+    }
+
+    async function saveEdit(bookId: string, colId: string) {
+        if (!editingCellId) return;
+        editingCellId = null;
+        justFinishedEditing = true;
+        setTimeout(() => { justFinishedEditing = false; }, 150);
+        
+        const book = books.find(b => b.id === bookId);
+        if (!book) return;
+        const rawValue = book[colId as keyof typeof book];
+        const type = getInputType(colId);
+        
+        let finalValue: any = editValue;
+        if (colId === 'publish_date' || colId === 'original_publish_date') {
+            if (/^\d{4}$/.test(editValue)) {
+                finalValue = `${editValue}-01-01`;
+            } else {
+                finalValue = editValue;
+            }
+        } else if (type === 'number') {
+            finalValue = editValue === '' ? null : Number(editValue);
+        } else if (type === 'date') {
+            finalValue = editValue === '' ? null : new Date(editValue).toISOString();
+        } else if (type === 'checkbox') {
+            finalValue = !!editValue;
+        } else if (colId === 'authors' || colId === 'tags') {
+            finalValue = editValue.split(',').map((s: string) => s.trim()).filter(Boolean);
+        }
+
+        if (JSON.stringify(rawValue) !== JSON.stringify(finalValue)) {
+            try {
+                await bookStore.updateBooksBatch([bookId], { [colId]: finalValue } as any);
+            } catch (error) {
+                console.error("Failed to update book", error);
+            }
+        }
+    }
+
+    function cancelEdit() {
+        editingCellId = null;
+        justFinishedEditing = true;
+        setTimeout(() => { justFinishedEditing = false; }, 150);
+    }
+
+    function focusInput(node: HTMLElement) {
+        setTimeout(() => {
+            if (node instanceof HTMLInputElement && node.type !== 'checkbox') {
+                node.focus();
+                node.select();
+            } else {
+                node.focus();
+            }
+        }, 10);
+    }
+
     let lastSelectedIndex = -1;
 
     function handleSelect(event: MouseEvent | KeyboardEvent, id: string, index: number) {
+        if (editingCellId || justFinishedEditing) return;
         const isCtrl = event.ctrlKey || event.metaKey || $multiSelectMode;
         const isShift = event.shiftKey;
         let newSelection = [...$selectedIds];
@@ -184,6 +300,30 @@ $: searchColumns = [
 <!-- svelte-ignore a11y_no_static_element_interactions -->
 <div class="mosaic-wrapper" on:click={handleEmptySpaceClick}>
     
+    
+    <div class="mosaic-header-container">
+        <div class="sort-controls">
+            <span class="sort-label">{$t.grid.sortBy || 'Sort by'}:</span>
+            <div style="width: 180px;">
+                <DropdownSelect
+                    options={sortOptions}
+                    bind:value={currentSort}
+                    on:change={(e) => bookStore.applySort(e.detail.value === 'none' ? undefined : e.detail.value, currentOrder)}
+                />
+            </div>
+            <button class="icon-btn-small" on:click={toggleSortOrder} title={$t.grid.sortOrder || 'Toggle Order'}>
+                {#if currentOrder === 'asc'}
+                    <ArrowDownAZ size={16} />
+                {:else}
+                    <ArrowUpAZ size={16} />
+                {/if}
+            </button>
+        </div>
+        <button class="icon-btn-small" on:click={() => dispatch('openSettings', 'workspace')} style="height: 100%; padding: 0 12px; border-radius: 0; display: flex; align-items: center; justify-content: center; background: transparent; border: none; border-left: 1px solid var(--border-color); cursor: pointer; color: var(--text-muted);" title="{$t.menu.settings}">
+            <Settings2 size={16} />
+        </button>
+    </div>
+
     <div class="mosaic-container" bind:this={scrollContainer} bind:clientWidth={containerWidth} style="zoom: {$zoomLevel / 100}">
         {#if books.length === 0}
             <div class="empty-state">
@@ -214,14 +354,34 @@ $: searchColumns = [
                                     <BookCover src={book.cover_url} alt={book.title} />
                                 </div>
                                 <div class="info">
-                                    <h4>{book.title}</h4>
-                                    {#if book.authors}
-                                        <p class="attr-text authors-text" title={formatAttribute(book, 'authors')}>{formatAttribute(book, 'authors')}</p>
+                                    {#if editingCellId === `${book.id}-title`}
+                                        <input type="text" class="inline-edit-input title-edit" bind:value={editValue} on:blur={() => saveEdit(book.id, 'title')} on:keydown={(e) => { if (e.key === 'Enter') { e.stopPropagation(); e.preventDefault(); e.currentTarget.blur(); } else if (e.key === 'Escape') { e.stopPropagation(); e.preventDefault(); cancelEdit(); } }} on:click={(e) => e.stopPropagation()} on:click={(e) => e.stopPropagation()} use:focusInput />
+                                    {:else}
+                                        <h4 on:dblclick={(e) => { e.stopPropagation(); startEdit(book.id, 'title', book.title); }}>{book.title}</h4>
                                     {/if}
+
+                                    {#if book.authors || editingCellId === `${book.id}-authors`}
+                                        {#if editingCellId === `${book.id}-authors`}
+                                            <input type="text" class="inline-edit-input author-edit" bind:value={editValue} on:blur={() => saveEdit(book.id, 'authors')} on:keydown={(e) => { if (e.key === 'Enter') { e.stopPropagation(); e.preventDefault(); e.currentTarget.blur(); } else if (e.key === 'Escape') { e.stopPropagation(); e.preventDefault(); cancelEdit(); } }} on:click={(e) => e.stopPropagation()} on:click={(e) => e.stopPropagation()} use:focusInput />
+                                        {:else}
+                                            <p class="attr-text authors-text" title={formatAttribute(book, 'authors')} on:dblclick={(e) => { e.stopPropagation(); startEdit(book.id, 'authors', book.authors); }}>{formatAttribute(book, 'authors')}</p>
+                                        {/if}
+                                    {/if}
+
                                     <div class="attributes-list">
                                         {#each $activeMosaicAttributes.filter(id => id !== 'title' && id !== 'authors') as attrId}
-                                            {#if formatAttribute(book, attrId)}
-                                                <p class="attr-text" title={formatAttribute(book, attrId)}>{formatAttribute(book, attrId)}</p>
+                                            {#if formatAttribute(book, attrId) || editingCellId === `${book.id}-${attrId}`}
+                                                {#if editingCellId === `${book.id}-${attrId}`}
+                                                    {#if getInputType(attrId) === 'checkbox'}
+                                                        <div class="inline-edit-checkbox-wrapper" on:click={(e) => e.stopPropagation()}>
+                                                            <input type="checkbox" bind:checked={editValue} on:blur={() => saveEdit(book.id, attrId)} on:keydown={(e) => { if (e.key === 'Enter') { e.stopPropagation(); e.preventDefault(); e.currentTarget.blur(); } else if (e.key === 'Escape') { e.stopPropagation(); e.preventDefault(); cancelEdit(); } }} on:click={(e) => e.stopPropagation()} use:focusInput />
+                                                        </div>
+                                                    {:else}
+                                                        <input type={getInputType(attrId)} class="inline-edit-input" bind:value={editValue} on:blur={() => saveEdit(book.id, attrId)} on:keydown={(e) => { if (e.key === 'Enter') { e.stopPropagation(); e.preventDefault(); e.currentTarget.blur(); } else if (e.key === 'Escape') { e.stopPropagation(); e.preventDefault(); cancelEdit(); } }} on:click={(e) => e.stopPropagation()} on:click={(e) => e.stopPropagation()} use:focusInput />
+                                                    {/if}
+                                                {:else}
+                                                    <p class="attr-text" title={formatAttribute(book, attrId)} on:dblclick={(e) => { e.stopPropagation(); startEdit(book.id, attrId, book[attrId]); }}>{formatAttribute(book, attrId)}</p>
+                                                {/if}
                                             {/if}
                                         {/each}
                                     </div>
@@ -370,4 +530,63 @@ $: searchColumns = [
         overflow: hidden;
         text-overflow: ellipsis;
     }
+
+    .mosaic-header-container {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        background-color: var(--bg-color);
+        border-bottom: 1px solid var(--border-color);
+        padding-left: 12px;
+        padding-right: 0;
+        flex-shrink: 0;
+        height: 40px;
+        box-sizing: border-box;
+        z-index: 10;
+    }
+    .sort-controls {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+    .sort-label {
+        font-size: 13px;
+        color: var(--text-muted);
+        font-weight: 500;
+        margin-left: 4px;
+    }
+    
+    .inline-edit-input {
+        width: 100%;
+        background: var(--bg-color);
+        border: none;
+        color: var(--text-main);
+        font-family: inherit;
+        font-size: 13px;
+        outline: none !important;
+        box-shadow: inset 0 0 0 2px var(--primary-color), 0 2px 5px rgba(0,0,0,0.1);
+        border-radius: 4px;
+        padding: 4px 6px;
+        margin: -4px -6px;
+        box-sizing: border-box;
+    }
+    .inline-edit-input.title-edit {
+        font-size: 14px;
+        font-weight: 600;
+        margin: 0 0 4px 0;
+    }
+    .inline-edit-input.author-edit {
+        font-size: 11px;
+        font-weight: 500;
+        color: var(--primary-color);
+        margin-bottom: 8px;
+    }
+    .inline-edit-checkbox-wrapper {
+        display: flex;
+        align-items: center;
+        justify-content: flex-start;
+        height: 18px;
+        padding-left: 4px;
+    }
+
 </style>
