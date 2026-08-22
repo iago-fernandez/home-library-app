@@ -278,20 +278,18 @@
                 <input type="text" id="isbn_13" bind:value={formData.isbn_13} />
                 {#if errors.isbn_13}<span class="error-text">{errors.isbn_13}</span>{/if}
             </div>
-            <div class="input-grid">
-                <div class="input-row" class:error={!!errors.isbn_10}>
-                    <label for="isbn_10">{$t.form.isbn10}</label>
-                    <input type="text" id="isbn_10" bind:value={formData.isbn_10} />
-                    {#if errors.isbn_10}<span class="error-text">{errors.isbn_10}</span>{/if}
-                </div>
-                <div class="input-row">
-                    <label for="open_library_id">{$t.form.openLibraryId}</label>
-                    <input type="text" id="open_library_id" bind:value={formData.open_library_id} />
-                </div>
-                <div class="input-row">
-                    <label for="oclc_number">{$t.form.oclcNumber}</label>
-                    <input type="text" id="oclc_number" bind:value={formData.oclc_number} />
-                </div>
+            <div class="input-row" class:error={!!errors.isbn_10}>
+                <label for="isbn_10">{$t.form.isbn10}</label>
+                <input type="text" id="isbn_10" bind:value={formData.isbn_10} />
+                {#if errors.isbn_10}<span class="error-text">{errors.isbn_10}</span>{/if}
+            </div>
+            <div class="input-row">
+                <label for="open_library_id">{$t.form.openLibraryId}</label>
+                <input type="text" id="open_library_id" bind:value={formData.open_library_id} />
+            </div>
+            <div class="input-row">
+                <label for="oclc_number">{$t.form.oclcNumber}</label>
+                <input type="text" id="oclc_number" bind:value={formData.oclc_number} />
             </div>
         </CollapsibleFieldset>
 
@@ -372,12 +370,12 @@
                     {#if errors.original_publish_date}<span class="error-text">{errors.original_publish_date}</span>{/if}
                 </div>
             </div>
+            <div class="input-row" class:error={!!errors.edition}>
+                <label for="edition">{$t.form.edition}</label>
+                <input type="text" id="edition" bind:value={formData.edition} />
+                {#if errors.edition}<span class="error-text">{errors.edition}</span>{/if}
+            </div>
             <div class="input-grid">
-                <div class="input-row" class:error={!!errors.edition}>
-                    <label for="edition">{$t.form.edition}</label>
-                    <input type="text" id="edition" bind:value={formData.edition} />
-                    {#if errors.edition}<span class="error-text">{errors.edition}</span>{/if}
-                </div>
                 <div class="input-row" class:error={!!errors.edition_number}>
                     <label for="edition_number">{$t.form.editionNumber}</label>
                     <input type="number" id="edition_number" bind:value={formData.edition_number} min="1" />
@@ -396,61 +394,51 @@
                 <input type="checkbox" id="is_first_edition" bind:checked={formData.is_first_edition} />
                 <label for="is_first_edition">{$t.form.isFirstEdition}</label>
             </div>
-            <div class="input-grid">
-                <div class="input-row">
-                    <label for="collection_name">{$t.form.collectionName}</label>
-                    <AutoExpandTextarea id="collection_name" bind:value={formData.collection_name} autocompleteField="collection_name" />
-                </div>
-                <div class="input-row" class:error={!!errors.volume_in_collection}>
-                    <label for="volume_in_collection">{$t.form.volInCollection}</label>
-                    <input type="number" id="volume_in_collection" bind:value={formData.volume_in_collection} min="0" />
-                    {#if errors.volume_in_collection}<span class="error-text">{errors.volume_in_collection}</span>{/if}
-                </div>
+            <div class="input-row">
+                <label for="collection_name">{$t.form.collectionName}</label>
+                <AutoExpandTextarea id="collection_name" bind:value={formData.collection_name} autocompleteField="collection_name" />
             </div>
-            <div class="input-grid">
-                <div class="input-row">
-                    <label for="series_name">{$t.form.seriesName}</label>
-                    <AutoExpandTextarea id="series_name" bind:value={formData.series_name} autocompleteField="series_name" />
-                </div>
-                <div class="input-row" class:error={!!errors.volume_in_series}>
-                    <label for="volume_in_series">{$t.form.volInSeries}</label>
-                    <input type="number" id="volume_in_series" bind:value={formData.volume_in_series} min="0" />
-                    {#if errors.volume_in_series}<span class="error-text">{errors.volume_in_series}</span>{/if}
-                </div>
+            <div class="input-row" class:error={!!errors.volume_in_collection}>
+                <label for="volume_in_collection">{$t.form.volInCollection}</label>
+                <input type="number" id="volume_in_collection" bind:value={formData.volume_in_collection} min="0" />
+                {#if errors.volume_in_collection}<span class="error-text">{errors.volume_in_collection}</span>{/if}
+            </div>
+            <div class="input-row">
+                <label for="series_name">{$t.form.seriesName}</label>
+                <AutoExpandTextarea id="series_name" bind:value={formData.series_name} autocompleteField="series_name" />
+            </div>
+            <div class="input-row" class:error={!!errors.volume_in_series}>
+                <label for="volume_in_series">{$t.form.volInSeries}</label>
+                <input type="number" id="volume_in_series" bind:value={formData.volume_in_series} min="0" />
+                {#if errors.volume_in_series}<span class="error-text">{errors.volume_in_series}</span>{/if}
             </div>
         </CollapsibleFieldset>
 
         <CollapsibleFieldset id="physical_props" sectionTitle={$t.form.physicalProps}>
-            <div class="input-grid">
-                <div class="input-row">
-                    <label for="book_format">{$t.form.bookFormat}</label>
-                    <input type="text" id="book_format" bind:value={formData.book_format} />
-                </div>
-                <div class="input-row" class:error={!!errors.page_count}>
-                    <label for="page_count">{$t.form.pageCount}</label>
-                    <input type="number" id="page_count" bind:value={formData.page_count} min="0" />
-                    {#if errors.page_count}<span class="error-text">{errors.page_count}</span>{/if}
-                </div>
+            <div class="input-row">
+                <label for="book_format">{$t.form.bookFormat}</label>
+                <input type="text" id="book_format" bind:value={formData.book_format} />
             </div>
-            <div class="input-grid">
-                <div class="input-row">
-                    <label for="dimensions">{$t.form.dimensions}</label>
-                    <input type="text" id="dimensions" bind:value={formData.dimensions} />
-                </div>
-                <div class="input-row">
-                    <label for="weight">{$t.form.weight}</label>
-                    <input type="text" id="weight" bind:value={formData.weight} />
-                </div>
+            <div class="input-row" class:error={!!errors.page_count}>
+                <label for="page_count">{$t.form.pageCount}</label>
+                <input type="number" id="page_count" bind:value={formData.page_count} min="0" />
+                {#if errors.page_count}<span class="error-text">{errors.page_count}</span>{/if}
             </div>
-            <div class="input-grid">
-                <div class="input-row">
-                    <label for="language">{$t.form.language}</label>
-                    <AutoExpandTextarea id="language" bind:value={formData.language} autocompleteField="language" />
-                </div>
-                <div class="input-row">
-                    <label for="original_language">{$t.form.origLanguage}</label>
-                    <AutoExpandTextarea id="original_language" bind:value={formData.original_language} autocompleteField="original_language" />
-                </div>
+            <div class="input-row">
+                <label for="dimensions">{$t.form.dimensions}</label>
+                <input type="text" id="dimensions" bind:value={formData.dimensions} />
+            </div>
+            <div class="input-row">
+                <label for="weight">{$t.form.weight}</label>
+                <input type="text" id="weight" bind:value={formData.weight} />
+            </div>
+            <div class="input-row">
+                <label for="language">{$t.form.language}</label>
+                <AutoExpandTextarea id="language" bind:value={formData.language} autocompleteField="language" />
+            </div>
+            <div class="input-row">
+                <label for="original_language">{$t.form.origLanguage}</label>
+                <AutoExpandTextarea id="original_language" bind:value={formData.original_language} autocompleteField="original_language" />
             </div>
         </CollapsibleFieldset>
 
@@ -489,43 +477,37 @@
                     <input type="number" step="0.01" id="purchase_price" bind:value={formData.purchase_price} />
                 </div>
             </div>
-            <div class="input-grid">
-                <div class="input-row">
-                    <label for="store_or_vendor">{$t.form.storeOrVendor}</label>
-                    <AutoExpandTextarea id="store_or_vendor" bind:value={formData.store_or_vendor} autocompleteField="store_or_vendor" />
-                </div>
-                <div class="input-row">
-                    <label for="acquisition_type">{$t.form.acquisitionType}</label>
-                    <input type="text" id="acquisition_type" bind:value={formData.acquisition_type} />
-                </div>
+            <div class="input-row">
+                <label for="store_or_vendor">{$t.form.storeOrVendor}</label>
+                <AutoExpandTextarea id="store_or_vendor" bind:value={formData.store_or_vendor} autocompleteField="store_or_vendor" />
+            </div>
+            <div class="input-row">
+                <label for="acquisition_type">{$t.form.acquisitionType}</label>
+                <input type="text" id="acquisition_type" bind:value={formData.acquisition_type} />
             </div>
         </CollapsibleFieldset>
 
         <CollapsibleFieldset id="location" sectionTitle={$t.form.physicalLoc}>
-            <div class="input-grid">
-                <div class="input-row">
-                    <label for="location_property">{$t.form.locationProperty}</label>
-                    <AutoExpandTextarea id="location_property" bind:value={formData.location_property} autocompleteField="location_property" />
-                </div>
-                <div class="input-row">
-                    <label for="room">{$t.form.room}</label>
-                    <AutoExpandTextarea id="room" bind:value={formData.location_room} autocompleteField="room" />
-                </div>
+            <div class="input-row">
+                <label for="location_property">{$t.form.locationProperty}</label>
+                <AutoExpandTextarea id="location_property" bind:value={formData.location_property} autocompleteField="location_property" />
             </div>
-            <div class="input-grid">
-                <div class="input-row">
-                    <label for="bookcase">{$t.form.bookcase}</label>
-                    <AutoExpandTextarea id="bookcase" bind:value={formData.location_bookcase} autocompleteField="bookcase" />
-                </div>
-                <div class="input-row">
-                    <label for="location_shelf">{$t.form.shelf}</label>
-                    <AutoExpandTextarea id="location_shelf" bind:value={formData.location_shelf} autocompleteField="shelf" />
-                </div>
-                <div class="input-row" class:error={!!errors.location_position}>
-                    <label for="location_position">{$t.form.position}</label>
-                    <input type="number" id="location_position" bind:value={formData.location_position} />
-                    {#if errors.location_position}<span class="error-text">{errors.location_position}</span>{/if}
-                </div>
+            <div class="input-row">
+                <label for="room">{$t.form.room}</label>
+                <AutoExpandTextarea id="room" bind:value={formData.location_room} autocompleteField="room" />
+            </div>
+            <div class="input-row">
+                <label for="bookcase">{$t.form.bookcase}</label>
+                <AutoExpandTextarea id="bookcase" bind:value={formData.location_bookcase} autocompleteField="bookcase" />
+            </div>
+            <div class="input-row">
+                <label for="location_shelf">{$t.form.shelf}</label>
+                <AutoExpandTextarea id="location_shelf" bind:value={formData.location_shelf} autocompleteField="shelf" />
+            </div>
+            <div class="input-row" class:error={!!errors.location_position}>
+                <label for="location_position">{$t.form.position}</label>
+                <input type="number" id="location_position" bind:value={formData.location_position} />
+                {#if errors.location_position}<span class="error-text">{errors.location_position}</span>{/if}
             </div>
         </CollapsibleFieldset>
 
@@ -744,6 +726,8 @@
     }
 
     .btn-autofill {
+        flex: 1;
+        justify-content: center;
         display: flex;
         align-items: center;
         gap: 6px;
@@ -841,14 +825,17 @@
     }
 
     .input-grid {
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        display: flex;
         gap: 12px;
+    }
+    .input-grid > * {
+        flex: 1;
+        min-width: 0;
     }
 
     @media (max-width: 768px) {
         .input-grid {
-            grid-template-columns: 1fr !important;
+            flex-direction: column !important;
         }
     }
 

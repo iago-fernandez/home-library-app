@@ -269,11 +269,11 @@
                     <input type="date" id="original_publish_date" bind:value={formData.original_publish_date} />
                 </div>
             </div>
+            <div class="input-row" class:modified={isModified['edition']}>
+                <label for="edition">{$t.form.edition}</label>
+                <input type="text" id="edition" bind:value={formData.edition} />
+            </div>
             <div class="input-grid">
-                <div class="input-row" class:modified={isModified['edition']}>
-                    <label for="edition">{$t.form.edition}</label>
-                    <input type="text" id="edition" bind:value={formData.edition} />
-                </div>
                 <div class="input-row" class:modified={isModified['edition_number']}>
                     <label for="edition_number">{$t.form.editionNumber}</label>
                     <input type="number" id="edition_number" bind:value={formData.edition_number} min="1" />
@@ -291,58 +291,48 @@
                 <input type="checkbox" id="is_first_edition" bind:checked={formData.is_first_edition} indeterminate={isMixed['is_first_edition']} />
                 <label for="is_first_edition">{$t.form.isFirstEdition}</label>
             </div>
-            <div class="input-grid">
-                <div class="input-row" class:modified={isModified['collection_name']}>
-                    <label for="collection_name">{$t.form.collectionName}</label>
-                    <AutoExpandTextarea id="collection_name" bind:value={formData.collection_name} autocompleteField="collection_name" />
-                </div>
-                <div class="input-row" class:modified={isModified['volume_in_collection']}>
-                    <label for="volume_in_collection">{$t.form.volInCollection}</label>
-                    <input type="number" id="volume_in_collection" bind:value={formData.volume_in_collection} />
-                </div>
+            <div class="input-row" class:modified={isModified['collection_name']}>
+                <label for="collection_name">{$t.form.collectionName}</label>
+                <AutoExpandTextarea id="collection_name" bind:value={formData.collection_name} autocompleteField="collection_name" />
             </div>
-            <div class="input-grid">
-                <div class="input-row" class:modified={isModified['series_name']}>
-                    <label for="series_name">{$t.form.seriesName}</label>
-                    <AutoExpandTextarea id="series_name" bind:value={formData.series_name} autocompleteField="series_name" />
-                </div>
-                <div class="input-row" class:modified={isModified['volume_in_series']}>
-                    <label for="volume_in_series">{$t.form.volInSeries}</label>
-                    <input type="number" id="volume_in_series" bind:value={formData.volume_in_series} />
-                </div>
+            <div class="input-row" class:modified={isModified['volume_in_collection']}>
+                <label for="volume_in_collection">{$t.form.volInCollection}</label>
+                <input type="number" id="volume_in_collection" bind:value={formData.volume_in_collection} />
+            </div>
+            <div class="input-row" class:modified={isModified['series_name']}>
+                <label for="series_name">{$t.form.seriesName}</label>
+                <AutoExpandTextarea id="series_name" bind:value={formData.series_name} autocompleteField="series_name" />
+            </div>
+            <div class="input-row" class:modified={isModified['volume_in_series']}>
+                <label for="volume_in_series">{$t.form.volInSeries}</label>
+                <input type="number" id="volume_in_series" bind:value={formData.volume_in_series} />
             </div>
         </CollapsibleFieldset>
 
         <CollapsibleFieldset id="physical_props" sectionTitle={$t.form.physicalProps}>
-            <div class="input-grid">
-                <div class="input-row" class:modified={isModified['book_format']}>
-                    <label for="book_format">{$t.form.bookFormat}</label>
-                    <input type="text" id="book_format" bind:value={formData.book_format} />
-                </div>
-                <div class="input-row" class:modified={isModified['page_count']}>
-                    <label for="page_count">{$t.form.pageCount}</label>
-                    <input type="number" id="page_count" bind:value={formData.page_count} />
-                </div>
+            <div class="input-row" class:modified={isModified['book_format']}>
+                <label for="book_format">{$t.form.bookFormat}</label>
+                <input type="text" id="book_format" bind:value={formData.book_format} />
             </div>
-            <div class="input-grid">
-                <div class="input-row" class:modified={isModified['dimensions']}>
-                    <label for="dimensions">{$t.form.dimensions}</label>
-                    <input type="text" id="dimensions" bind:value={formData.dimensions} />
-                </div>
-                <div class="input-row" class:modified={isModified['weight']}>
-                    <label for="weight">{$t.form.weight}</label>
-                    <input type="text" id="weight" bind:value={formData.weight} />
-                </div>
+            <div class="input-row" class:modified={isModified['page_count']}>
+                <label for="page_count">{$t.form.pageCount}</label>
+                <input type="number" id="page_count" bind:value={formData.page_count} />
             </div>
-            <div class="input-grid">
-                <div class="input-row" class:modified={isModified['language']}>
-                    <label for="language">{$t.form.language}</label>
-                    <AutoExpandTextarea id="language" bind:value={formData.language} autocompleteField="language" />
-                </div>
-                <div class="input-row" class:modified={isModified['original_language']}>
-                    <label for="original_language">{$t.form.origLanguage}</label>
-                    <AutoExpandTextarea id="original_language" bind:value={formData.original_language} autocompleteField="original_language" />
-                </div>
+            <div class="input-row" class:modified={isModified['dimensions']}>
+                <label for="dimensions">{$t.form.dimensions}</label>
+                <input type="text" id="dimensions" bind:value={formData.dimensions} />
+            </div>
+            <div class="input-row" class:modified={isModified['weight']}>
+                <label for="weight">{$t.form.weight}</label>
+                <input type="text" id="weight" bind:value={formData.weight} />
+            </div>
+            <div class="input-row" class:modified={isModified['language']}>
+                <label for="language">{$t.form.language}</label>
+                <AutoExpandTextarea id="language" bind:value={formData.language} autocompleteField="language" />
+            </div>
+            <div class="input-row" class:modified={isModified['original_language']}>
+                <label for="original_language">{$t.form.origLanguage}</label>
+                <AutoExpandTextarea id="original_language" bind:value={formData.original_language} autocompleteField="original_language" />
             </div>
         </CollapsibleFieldset>
 
@@ -380,43 +370,37 @@
                     <input type="number" step="0.01" id="purchase_price" bind:value={formData.purchase_price} />
                 </div>
             </div>
-            <div class="input-grid">
-                <div class="input-row" class:modified={isModified['store_or_vendor']}>
-                    <label for="store_or_vendor">{$t.form.storeOrVendor}</label>
-                    <AutoExpandTextarea id="store_or_vendor" bind:value={formData.store_or_vendor} autocompleteField="store_or_vendor" />
-                </div>
-                <div class="input-row" class:modified={isModified['acquisition_type']}>
-                    <label for="acquisition_type">{$t.form.acquisitionType}</label>
-                    <input type="text" id="acquisition_type" bind:value={formData.acquisition_type} />
-                </div>
+            <div class="input-row" class:modified={isModified['store_or_vendor']}>
+                <label for="store_or_vendor">{$t.form.storeOrVendor}</label>
+                <AutoExpandTextarea id="store_or_vendor" bind:value={formData.store_or_vendor} autocompleteField="store_or_vendor" />
+            </div>
+            <div class="input-row" class:modified={isModified['acquisition_type']}>
+                <label for="acquisition_type">{$t.form.acquisitionType}</label>
+                <input type="text" id="acquisition_type" bind:value={formData.acquisition_type} />
             </div>
         </CollapsibleFieldset>
 
         <CollapsibleFieldset id="location" sectionTitle={$t.form.physicalLoc}>
-            <div class="input-grid">
-                <div class="input-row" class:modified={isModified['location_property']}>
-                    <label for="location_property">{$t.form.locationProperty}</label>
-                    <input type="text" id="location_property" bind:value={formData.location_property} />
-                </div>
-                <div class="input-row" class:modified={isModified['location_room']}>
-                    <label for="room">{$t.form.room}</label>
-                    <input type="text" id="room" bind:value={formData.location_room} />
-                </div>
+            <div class="input-row" class:modified={isModified['location_property']}>
+                <label for="location_property">{$t.form.locationProperty}</label>
+                <input type="text" id="location_property" bind:value={formData.location_property} />
             </div>
-            <div class="input-grid">
-                <div class="input-row" class:modified={isModified['location_bookcase']}>
-                    <label for="bookcase">{$t.form.bookcase}</label>
-                    <input type="text" id="bookcase" bind:value={formData.location_bookcase} />
-                </div>
-                <div class="input-row" class:modified={isModified['location_shelf']}>
-                    <label for="location_shelf">{$t.form.shelf}</label>
-                    <input type="text" id="location_shelf" bind:value={formData.location_shelf} />
-                </div>
-                <div class="input-row" class:modified={isModified['location_position']} class:error={errors['location_position']}>
-                    <label for="location_position">{$t.form.position}</label>
-                    <input type="number" id="location_position" bind:value={formData.location_position} />
-                    {#if errors['location_position']}<span class="error-text">{errors['location_position']}</span>{/if}
-                </div>
+            <div class="input-row" class:modified={isModified['location_room']}>
+                <label for="room">{$t.form.room}</label>
+                <input type="text" id="room" bind:value={formData.location_room} />
+            </div>
+            <div class="input-row" class:modified={isModified['location_bookcase']}>
+                <label for="bookcase">{$t.form.bookcase}</label>
+                <input type="text" id="bookcase" bind:value={formData.location_bookcase} />
+            </div>
+            <div class="input-row" class:modified={isModified['location_shelf']}>
+                <label for="location_shelf">{$t.form.shelf}</label>
+                <input type="text" id="location_shelf" bind:value={formData.location_shelf} />
+            </div>
+            <div class="input-row" class:modified={isModified['location_position']} class:error={errors['location_position']}>
+                <label for="location_position">{$t.form.position}</label>
+                <input type="number" id="location_position" bind:value={formData.location_position} />
+                {#if errors['location_position']}<span class="error-text">{errors['location_position']}</span>{/if}
             </div>
         </CollapsibleFieldset>
 
@@ -588,14 +572,17 @@
     }
 
     .input-grid {
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+        display: flex;
         gap: 12px;
+    }
+    .input-grid > * {
+        flex: 1;
+        min-width: 0;
     }
 
     @media (max-width: 768px) {
         .input-grid {
-            grid-template-columns: 1fr !important;
+            flex-direction: column !important;
         }
     }
 

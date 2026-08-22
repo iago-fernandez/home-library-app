@@ -13,7 +13,7 @@
   import LibraryManagerModal from '$lib/components/LibraryManagerModal.svelte';
   import MoveToLibraryModal from '$lib/components/MoveToLibraryModal.svelte';
   import UserGuideModal from '$lib/components/UserGuideModal.svelte';
-  import { zoomLevel, activeShortcuts, activeViewStore } from '$lib/stores/preferences';
+  import { zoomLevel, activeShortcuts, activeViewStore, sidePanelWidth } from '$lib/stores/preferences';
   import { libraryStore } from '$lib/stores/library';
   import { dialogStore } from '$lib/stores/dialog';
   import type { CreateBookPayload } from '$lib/types/book';
@@ -28,6 +28,43 @@
   let showMoveToLibraryModal = false;
   let showUserGuideModal = false;
   let isSubmitting = false;
+
+  let isResizingPanel = false;
+  
+  function startPanelResize(e: MouseEvent | TouchEvent) {
+    isResizingPanel = true;
+    document.body.style.cursor = 'col-resize';
+    document.body.style.userSelect = 'none';
+  }
+  
+  function onWindowMouseMove(e: MouseEvent | TouchEvent) {
+    if (!isResizingPanel) return;
+    
+    let clientX = 0;
+    if (e instanceof MouseEvent) {
+        clientX = e.clientX;
+    } else if (e.touches && e.touches.length > 0) {
+        clientX = e.touches[0].clientX;
+    } else {
+        return;
+    }
+    
+    // Panel is on the right. Width = window.innerWidth - clientX
+    const newWidth = window.innerWidth - clientX;
+    
+    // Constraints (e.g., min 250, max 800)
+    if (newWidth >= 450 && newWidth < Math.min(800, window.innerWidth - 100)) {
+        sidePanelWidth.set(newWidth);
+    }
+  }
+  
+  function onWindowMouseUp() {
+    if (isResizingPanel) {
+        isResizingPanel = false;
+        document.body.style.cursor = '';
+        document.body.style.userSelect = '';
+    }
+  }
 
   type FieldType = 'text' | 'numeric';
   type InputHTMLType = 'text' | 'number' | 'date';
@@ -460,7 +497,7 @@
   }
 </script>
 
-<svelte:window on:click={handleWindowClick} on:keydown|capture={handleGlobalKeydown} />
+<svelte:window on:click={handleWindowClick} on:keydown|capture={handleGlobalKeydown} on:mousemove={onWindowMouseMove} on:mouseup={onWindowMouseUp} on:touchmove={onWindowMouseMove} on:touchend={onWindowMouseUp} />
 
 <div class="app-container">
   <header class="top-bar" style="background-color: var(--topbar-bg);">
@@ -664,7 +701,11 @@
       <div class="drawer-backdrop hidden-desktop" on:click={() => activePanel = 'actions'}></div>
     {/if}
 
-    <aside class="side-panel" class:drawer-open={activePanel !== 'actions'} class:wide-panel={activePanel === 'addBook' || activePanel === 'editBook' || activePanel === 'filter' || activePanel === 'batchEdit'} class:toolbar-mode={activePanel === 'actions'}>
+    <aside class="side-panel" class:drawer-open={activePanel !== 'actions'} class:wide-panel={activePanel === 'addBook' || activePanel === 'editBook' || activePanel === 'filter' || activePanel === 'batchEdit'} class:toolbar-mode={activePanel === 'actions'} class:is-resizing={isResizingPanel} style={activePanel !== 'actions' && typeof window !== 'undefined' && window.innerWidth >= 769 ? `width: ${$sidePanelWidth}px` : ''}>
+      {#if activePanel !== 'actions'}
+          <!-- svelte-ignore a11y-no-static-element-interactions -->
+          <div class="panel-resizer hidden-mobile" on:mousedown={startPanelResize} on:touchstart={startPanelResize}></div>
+      {/if}
       <div class="drawer-header hidden-desktop">
         <span>{activePanel === 'addBook' ? $t.menu.addBook : activePanel === 'editBook' ? $t.menu.editBook : activePanel === 'filter' ? $t.menu.advancedFilter : activePanel === 'batchEdit' ? $t.menu.editBooks : ''}</span>
         <button class="drawer-close-btn" on:click={() => activePanel = 'actions'}><X size={20} /></button>
@@ -1200,6 +1241,7 @@
     background-color: var(--panel-bg);
     border-left: 1px solid var(--border-color);
     transition: width 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    position: relative;
     display: flex;
     flex-direction: column;
     overflow-x: hidden;
@@ -1211,8 +1253,27 @@
     padding: 12px 0;
   }
 
+  
+  .side-panel.is-resizing {
+    transition: none !important;
+  }
+  .panel-resizer {
+    position: absolute;
+    top: 0;
+    left: -4px;
+    width: 8px;
+    height: 100%;
+    cursor: col-resize;
+    z-index: 50;
+    background: transparent;
+  }
+  .panel-resizer:hover, .side-panel.is-resizing .panel-resizer {
+    background: var(--primary-color);
+    opacity: 0.5;
+  }
+
   .side-panel.wide-panel {
-    width: 380px;
+    width: 500px; /* Fallback */
   }
 
   .panel-content {
