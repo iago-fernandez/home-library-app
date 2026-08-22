@@ -23,6 +23,7 @@
   let showExportModal = false;
   let showSettingsModal = false;
   let settingsTab: 'account' | 'preferences' | 'workspace' = 'preferences';
+    let initialWorkspaceTab: 'table' | 'mosaic' = 'table';
   let showLibraryManager = false;
   let showMoveToLibraryModal = false;
   let showUserGuideModal = false;
@@ -618,9 +619,9 @@
       <div class="grid-wrapper">
         <div class="view-container">
           {#if $activeViewStore === 'table'}
-            <DataGrid on:edit={handleEditBookClick} on:openSettings={(e) => { settingsTab = e.detail; showSettingsModal = true; }} />
+            <DataGrid on:edit={handleEditBookClick} on:openSettings={(e) => { settingsTab = e.detail; initialWorkspaceTab = 'table'; showSettingsModal = true; }} />
           {:else if $activeViewStore === 'mosaic'}
-            <MosaicGrid on:edit={handleEditBookClick} />
+            <MosaicGrid on:edit={handleEditBookClick} on:openSettings={(e) => { settingsTab = e.detail; initialWorkspaceTab = 'mosaic'; showSettingsModal = true; }} />
           {/if}
         </div>
 
@@ -851,7 +852,7 @@
 {/if}
 
 {#if showSettingsModal}
-  <SettingsModal initialTab={settingsTab} onClose={() => showSettingsModal = false} />
+  <SettingsModal initialTab={settingsTab} initialWorkspaceTab={initialWorkspaceTab} onClose={() => showSettingsModal = false} />
 {/if}
 
 {#if showUserGuideModal}

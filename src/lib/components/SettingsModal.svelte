@@ -12,6 +12,7 @@
 
     export let onClose: () => void;
 
+    export let initialWorkspaceTab: 'table' | 'mosaic' = 'table';
     export let initialTab: 'account' | 'preferences' | 'workspace' = 'preferences';
     let activeTab: 'account' | 'preferences' | 'workspace' = initialTab;
 
@@ -367,7 +368,7 @@
 
                     {#if activeTab === 'workspace'}
                         <div class="workspace-wrapper">
-                            <ColumnSettings />
+                            <ColumnSettings activeTab={initialWorkspaceTab} />
                         </div>
                     {/if}
                 {/if}

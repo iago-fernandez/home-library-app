@@ -64,6 +64,8 @@ export const es: TranslationDictionary = {
         zoomReset: 'Restablecer zoom'
     },
     grid: {
+        sortBy: 'Ordenar por',
+        defaultSort: '-',
         allColumns: 'Todas las columnas',
         title: 'Título',
         authors: 'Autores',

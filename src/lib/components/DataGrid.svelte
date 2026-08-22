@@ -89,7 +89,15 @@
         
         const type = getInputType(colId);
 
-        if (Array.isArray(value)) {
+        if (colId === 'publish_date' || colId === 'original_publish_date') {
+            if (value && !isNaN(new Date(value).getTime())) {
+                const d = new Date(value);
+                const isPureDate = !String(value).includes('T');
+                editValue = (isPureDate ? d.getUTCFullYear() : d.getFullYear()).toString();
+            } else {
+                editValue = value !== null && value !== undefined ? String(value) : '';
+            }
+        } else if (Array.isArray(value)) {
             editValue = value.join(', ');
         } else if (type === 'checkbox') {
             editValue = !!value;
@@ -131,7 +139,13 @@
         let finalValue: any = editValue;
         const arrayFields = ['authors', 'translators', 'illustrators', 'subjects', 'genres'];
 
-        if (arrayFields.includes(colId)) {
+        if (colId === 'publish_date' || colId === 'original_publish_date') {
+            if (/^\d{4}$/.test(editValue)) {
+                finalValue = `${editValue}-01-01`;
+            } else {
+                finalValue = editValue;
+            }
+        } else if (arrayFields.includes(colId)) {
             finalValue = typeof editValue === 'string' ? editValue.split(',').map(s => s.trim()).filter(s => s) : [];
         } else if (type === 'date') {
             finalValue = editValue ? new Date(editValue).toISOString() : null;
@@ -405,14 +419,14 @@
 </script>
 
 <div class="table-wrapper" style="zoom: {$zoomLevel / 100}">
-    <div class="column-menu-wrapper" style="position: absolute; right: 0; top: 0; height: 33px; z-index: 50; background: var(--bg-color); border-left: 1px solid var(--border-color); border-bottom: 1px solid var(--border-color); display: flex; align-items: center;">
-        <button class="icon-btn-small" on:click={() => dispatch('openSettings', 'workspace')} style="height: 100%; padding: 0 12px; border-radius: 0; display: flex; align-items: center; justify-content: center; background: transparent; border: none; cursor: pointer; color: var(--text-muted);" title="{$t.menu.settings}">
+    <div class="column-menu-wrapper" style="position: absolute; right: 0; top: 0; height: 40px; z-index: 50; background: var(--bg-color); border-left: 1px solid var(--border-color); display: flex; align-items: center; box-shadow: none; box-sizing: border-box;">
+        <button class="icon-btn-small" on:click={() => dispatch('openSettings', 'workspace')} style="height: 100%; padding: 0 12px; border-radius: 0; display: flex; align-items: center; justify-content: center; background: transparent; border: none; cursor: pointer; color: var(--text-muted); box-shadow: none;" title="{$t.menu.settings}">
             <Settings2 size={16} />
         </button>
     </div>
 
     <div bind:this={headerContainer} class="grid-header-container">
-        <div class="grid-table-inner" style="min-width: 100%; width: {$table.getTotalSize()}px">
+        <div class="grid-table-inner" style="min-width: 100%; width: {$table.getTotalSize()}px; padding-right: 36px; box-sizing: content-box;">
             <div class="grid-header">
                 {#each $table.getHeaderGroups() as headerGroup}
                     <div class="header-row">
@@ -492,7 +506,7 @@
             </div>
         {/if}
         <div bind:this={scrollContainer} class="scroll-container" on:scroll={handleScroll} on:click={handleEmptySpaceClick}>
-            <div class="grid-table-inner" style="min-width: 100%; width: {$table.getTotalSize()}px">
+            <div class="grid-table-inner" style="min-width: 100%; width: {$table.getTotalSize()}px; padding-right: 36px; box-sizing: content-box;">
                 {#if $bookStore.length > 0}
                     <div class="virtual-inner" style="height: {$virtualizer.getTotalSize()}px; position: relative;">
                         {#each virtualItems as virtualRow (virtualRow.index)}
@@ -717,7 +731,7 @@
         z-index: 10;
     }
 
-    .header-cell { user-select: none; }
+    .header-cell { user-select: none; height: 40px; box-sizing: border-box; }
     .header-cell:focus-visible { box-shadow: inset 0 0 0 2px var(--primary-color); outline: none; border-radius: 2px; }
 
     .sortable { cursor: pointer; transition: background-color 0.1s; }

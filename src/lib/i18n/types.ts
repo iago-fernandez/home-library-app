@@ -62,6 +62,8 @@ export interface TranslationDictionary {
         zoomReset: string;
     };
     grid: {
+        sortBy: string;
+        defaultSort: string;
         allColumns: string;
         title: string;
         authors: string;
