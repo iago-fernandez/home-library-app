@@ -3,7 +3,7 @@
     import { activeColumns, availableColumns, activeMosaicAttributes } from '$lib/stores/preferences';
     import { GripVertical, RotateCcw, Table, LayoutGrid } from 'lucide-svelte';
 
-    let activeTab: 'table' | 'mosaic' = 'table';
+    export let activeTab: 'table' | 'mosaic' = 'table';
 
     function initLocalList(activeIds: string[], forceTop: string[] = []) {
         const activeCols = activeIds.map(id => availableColumns.find(c => c.id === id)).filter(Boolean) as any[];
