@@ -163,7 +163,17 @@
     }
   }
 
+  let initialized = false;
+  let prevLibraryId: string | null = null;
+  $: if ($libraryStore.activeLibraryId !== prevLibraryId) {
+      if (initialized) {
+          bookStore.loadBooks(true);
+      }
+      prevLibraryId = $libraryStore.activeLibraryId;
+  }
+
   onMount(() => {
+    initialized = true;
     bookStore.loadBooks();
   });
 
