@@ -196,4 +196,4 @@ export const defaultShortcuts = {
     zoomOut: 'ctrl+-',
     zoomReset: 'ctrl+0'
 };
-export const activeShortcuts = createGenericStore<Record<string, string>>('library_shortcuts', defaultShortcuts);
+export const activeShortcuts = createGenericStore<Record<string, string>>('library_shortcuts', defaultShortcuts);export const sidePanelWidth = createGenericStore<number>('library_side_panel_width', 500);
