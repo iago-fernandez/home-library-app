@@ -206,7 +206,7 @@
 
     function autoSizeColumn(colId: string) {
         const headerText = ($t.grid as Record<string, string>)['col_' + colId] || availableColumns.find(c => c.id === colId)?.label || colId;
-        let maxWidth = getTextWidth(headerText, '600 13px Inter, sans-serif');
+        let maxWidth = getTextWidth(headerText, '500 13px Inter, sans-serif');
 
         for (const book of $bookStore) {
             const val = getCellData(book, colId);
@@ -219,7 +219,7 @@
         }
 
         // Add padding (12px on each side + sort icon space)
-        const calculatedWidth = Math.min(Math.max(Math.ceil(maxWidth) + 32, 100), 500);
+        const calculatedWidth = Math.min(Math.max(Math.ceil(maxWidth) + 32, 40), 500);
         columnSizing = { ...columnSizing, [colId]: calculatedWidth };
 
         if (typeof window !== 'undefined') {
@@ -234,7 +234,7 @@
             accessorKey: id,
             header: ($t.grid as Record<string, string>)['col_' + id] || (colDef ? colDef.label : id),
             cell: info => getCellData(info.row.original, id),
-            minSize: 100,
+            minSize: 40,
             size: 150,
         } as ColumnDef<any>;
     });
