@@ -118,6 +118,7 @@ const defaultColumns = [
 ];
 
 const defaultMosaicAttributes = [
+    'title',
     'authors',
     'publish_date'
 ];

@@ -20,7 +20,7 @@
     const sortConfig = bookStore.sortConfig;
     const orderConfig = bookStore.orderConfig;
 
-    $: sortOptions = [{ value: 'none', label: $t.grid.defaultSort || '-' }, ...availableColumns.filter(col => $activeMosaicAttributes.includes(col.id) || col.id === 'title' || col.id === 'authors').map(col => ({ value: col.id, label: ($t.grid as Record<string, string>)['col_' + col.id] || col.label }))];
+    $: sortOptions = [{ value: 'none', label: $t.grid.defaultSort || '-' }, ...availableColumns.filter(col => $activeMosaicAttributes.includes(col.id)).map(col => ({ value: col.id, label: ($t.grid as Record<string, string>)['col_' + col.id] || col.label }))];
     let currentSort = 'none';
     let currentOrder: 'asc' | 'desc' = 'asc';
 
@@ -207,7 +207,7 @@
         return resultArray;
     }, [] as any[][]);
 
-    $: rowHeight = 270 + ($activeMosaicAttributes.length * 24);
+    $: rowHeight = 220 + ($activeMosaicAttributes.length * 24);
     
     let virtualizerOptions: any;
     $: virtualizerOptions = {
@@ -354,33 +354,31 @@ $: searchColumns = [
                                     <BookCover src={book.cover_url} alt={book.title} />
                                 </div>
                                 <div class="info">
-                                    {#if editingCellId === `${book.id}-title`}
-                                        <input type="text" class="inline-edit-input title-edit" bind:value={editValue} on:blur={() => saveEdit(book.id, 'title')} on:keydown={(e) => { if (e.key === 'Enter') { e.stopPropagation(); e.preventDefault(); e.currentTarget.blur(); } else if (e.key === 'Escape') { e.stopPropagation(); e.preventDefault(); cancelEdit(); } }} on:click={(e) => e.stopPropagation()} on:click={(e) => e.stopPropagation()} use:focusInput />
-                                    {:else}
-                                        <h4 on:dblclick={(e) => { e.stopPropagation(); startEdit(book.id, 'title', book.title); }}>{book.title}</h4>
-                                    {/if}
-
-                                    {#if book.authors || editingCellId === `${book.id}-authors`}
-                                        {#if editingCellId === `${book.id}-authors`}
-                                            <input type="text" class="inline-edit-input author-edit" bind:value={editValue} on:blur={() => saveEdit(book.id, 'authors')} on:keydown={(e) => { if (e.key === 'Enter') { e.stopPropagation(); e.preventDefault(); e.currentTarget.blur(); } else if (e.key === 'Escape') { e.stopPropagation(); e.preventDefault(); cancelEdit(); } }} on:click={(e) => e.stopPropagation()} on:click={(e) => e.stopPropagation()} use:focusInput />
-                                        {:else}
-                                            <p class="attr-text authors-text" title={formatAttribute(book, 'authors')} on:dblclick={(e) => { e.stopPropagation(); startEdit(book.id, 'authors', book.authors); }}>{formatAttribute(book, 'authors')}</p>
-                                        {/if}
-                                    {/if}
-
                                     <div class="attributes-list">
-                                        {#each $activeMosaicAttributes.filter(id => id !== 'title' && id !== 'authors') as attrId}
-                                            {#if formatAttribute(book, attrId) || editingCellId === `${book.id}-${attrId}`}
+                                        {#each $activeMosaicAttributes as attrId}
+                                            {#if attrId === 'title'}
+                                                {#if editingCellId === `${book.id}-title`}
+                                                    <input type="text" class="inline-edit-input title-edit" bind:value={editValue} on:blur={() => saveEdit(book.id, 'title')} on:keydown={(e) => { if (e.key === 'Enter') { e.stopPropagation(); e.preventDefault(); e.currentTarget.blur(); } else if (e.key === 'Escape') { e.stopPropagation(); e.preventDefault(); cancelEdit(); } }} on:click={(e) => e.stopPropagation()} use:focusInput />
+                                                {:else}
+                                                    <h4 title={book.title || ''} on:dblclick={(e) => { e.stopPropagation(); startEdit(book.id, 'title', book.title); }}>{book.title || '\u00A0'}</h4>
+                                                {/if}
+                                            {:else if attrId === 'authors'}
+                                                {#if editingCellId === `${book.id}-authors`}
+                                                    <input type="text" class="inline-edit-input author-edit" bind:value={editValue} on:blur={() => saveEdit(book.id, 'authors')} on:keydown={(e) => { if (e.key === 'Enter') { e.stopPropagation(); e.preventDefault(); e.currentTarget.blur(); } else if (e.key === 'Escape') { e.stopPropagation(); e.preventDefault(); cancelEdit(); } }} on:click={(e) => e.stopPropagation()} use:focusInput />
+                                                {:else}
+                                                    <p class="attr-text authors-text" title={formatAttribute(book, 'authors')} on:dblclick={(e) => { e.stopPropagation(); startEdit(book.id, 'authors', book.authors); }}>{formatAttribute(book, 'authors') || '\u00A0'}</p>
+                                                {/if}
+                                            {:else}
                                                 {#if editingCellId === `${book.id}-${attrId}`}
                                                     {#if getInputType(attrId) === 'checkbox'}
                                                         <div class="inline-edit-checkbox-wrapper" on:click={(e) => e.stopPropagation()}>
                                                             <input type="checkbox" bind:checked={editValue} on:blur={() => saveEdit(book.id, attrId)} on:keydown={(e) => { if (e.key === 'Enter') { e.stopPropagation(); e.preventDefault(); e.currentTarget.blur(); } else if (e.key === 'Escape') { e.stopPropagation(); e.preventDefault(); cancelEdit(); } }} on:click={(e) => e.stopPropagation()} use:focusInput />
                                                         </div>
                                                     {:else}
-                                                        <input type={getInputType(attrId)} class="inline-edit-input" bind:value={editValue} on:blur={() => saveEdit(book.id, attrId)} on:keydown={(e) => { if (e.key === 'Enter') { e.stopPropagation(); e.preventDefault(); e.currentTarget.blur(); } else if (e.key === 'Escape') { e.stopPropagation(); e.preventDefault(); cancelEdit(); } }} on:click={(e) => e.stopPropagation()} on:click={(e) => e.stopPropagation()} use:focusInput />
+                                                        <input type={getInputType(attrId)} class="inline-edit-input" bind:value={editValue} on:blur={() => saveEdit(book.id, attrId)} on:keydown={(e) => { if (e.key === 'Enter') { e.stopPropagation(); e.preventDefault(); e.currentTarget.blur(); } else if (e.key === 'Escape') { e.stopPropagation(); e.preventDefault(); cancelEdit(); } }} on:click={(e) => e.stopPropagation()} use:focusInput />
                                                     {/if}
                                                 {:else}
-                                                    <p class="attr-text" title={formatAttribute(book, attrId)} on:dblclick={(e) => { e.stopPropagation(); startEdit(book.id, attrId, book[attrId]); }}>{formatAttribute(book, attrId)}</p>
+                                                    <p class="attr-text" title={formatAttribute(book, attrId)} on:dblclick={(e) => { e.stopPropagation(); startEdit(book.id, attrId, book[attrId]); }}>{formatAttribute(book, attrId) || '\u00A0'}</p>
                                                 {/if}
                                             {/if}
                                         {/each}
@@ -504,7 +502,7 @@ $: searchColumns = [
         overflow: hidden;
     }
     .info h4 {
-        margin: 0 0 4px 0;
+        margin: 0;
         font-size: 14px;
         font-weight: 600;
         color: var(--text-main);
@@ -515,7 +513,7 @@ $: searchColumns = [
     .authors-text {
         font-weight: 500;
         color: var(--primary-color) !important;
-        margin-bottom: 8px !important;
+        margin-bottom: 0 !important;
     }
     .attributes-list {
         display: flex;
@@ -573,7 +571,7 @@ $: searchColumns = [
     .inline-edit-input.title-edit {
         font-size: 14px;
         font-weight: 600;
-        margin: 0 0 4px 0;
+        margin: 0;
     }
     .inline-edit-input.author-edit {
         font-size: 11px;

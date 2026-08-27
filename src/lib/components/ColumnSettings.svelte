@@ -20,7 +20,7 @@
     }
 
     let localColumns = initLocalList($activeColumns);
-    let localAttributes = initLocalList($activeMosaicAttributes, ['title', 'authors']);
+    let localAttributes = initLocalList($activeMosaicAttributes);
 
     $: isColumnActive = (colId: string) => $activeColumns.includes(colId);
     $: isAttributeActive = (attrId: string) => $activeMosaicAttributes.includes(attrId);
@@ -139,7 +139,7 @@
                             type="checkbox"
                             checked={(item.id === 'title' || item.id === 'authors') || (activeTab === 'table' ? isColumnActive(item.id) : isAttributeActive(item.id))}
                             on:change={() => toggleItem(item.id)}
-                            disabled={(item.id === 'title' || item.id === 'authors') || (activeTab === 'table' ? $activeColumns.length === 1 && isColumnActive(item.id) : $activeMosaicAttributes.length === 1 && isAttributeActive(item.id))}
+                            disabled={(activeTab === 'table' ? $activeColumns.length === 1 && isColumnActive(item.id) : $activeMosaicAttributes.length === 1 && isAttributeActive(item.id))}
                     />
                     <span>{($t.grid as Record<string, string>)['col_' + item.id] || item.label}</span>
                 </label>
