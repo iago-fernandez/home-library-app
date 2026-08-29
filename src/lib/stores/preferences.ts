@@ -118,11 +118,12 @@ const defaultColumns = [
 ];
 
 const defaultMosaicAttributes = [
+    'title',
     'authors',
     'publish_date'
 ];
 
-function createStore(storageKey: string, defaultValues: string[], validKeys?: string[]) {
+function createStore(storageKey: string, defaultValues: string[], validKeys?: string[], alwaysInclude: string[] = []) {
     let initial = defaultValues;
 
     if (typeof window !== 'undefined') {
@@ -133,6 +134,11 @@ function createStore(storageKey: string, defaultValues: string[], validKeys?: st
                 if (Array.isArray(parsed)) {
                     const allowedKeys = validKeys || defaultValues;
                     initial = parsed.filter(item => allowedKeys.includes(item));
+                    alwaysInclude.reverse().forEach(key => {
+                        if (!initial.includes(key)) {
+                            initial.unshift(key);
+                        }
+                    });
                     if (initial.length === 0) initial = defaultValues;
                 }
             } catch (e) {
@@ -162,7 +168,7 @@ function createStore(storageKey: string, defaultValues: string[], validKeys?: st
 
 const validColumnIds = availableColumns.map(c => c.id);
 export const activeColumns = createStore(PREF_KEY, defaultColumns, validColumnIds);
-export const activeMosaicAttributes = createStore(MOSAIC_PREF_KEY, defaultMosaicAttributes, validColumnIds);
+export const activeMosaicAttributes = createStore(MOSAIC_PREF_KEY, defaultMosaicAttributes, validColumnIds, ['title', 'authors']);
 
 // Appearance & Zoom
 export const zoomLevel = createGenericStore<number>('library_zoom', 100);
