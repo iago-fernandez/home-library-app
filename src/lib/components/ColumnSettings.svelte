@@ -124,22 +124,22 @@
         {#each (activeTab === 'table' ? localColumns : localAttributes) as item, index (item.id)}
             <li
                     class="column-item"
-                    draggable={!(activeTab === 'mosaic' && (item.id === 'title' || item.id === 'authors'))}
-                    on:dragstart={(e) => { if(!(activeTab === 'mosaic' && (item.id === 'title' || item.id === 'authors'))) handleDragStart(e, index); }}
+                    draggable={true}
+                    on:dragstart={(e) => handleDragStart(e, index)}
                     on:dragover={handleDragOver}
                     on:drop={(e) => handleDrop(e, index)}
                     class:dragging={draggedIndex === index}
-                    class:fixed-item={activeTab === 'mosaic' && (item.id === 'title' || item.id === 'authors')}
+                    
             >
-                <div class="drag-handle" title={$t.grid.dragToReorder} style="opacity: {activeTab === 'mosaic' && (item.id === 'title' || item.id === 'authors') ? '0' : '1'}">
+                <div class="drag-handle" title={$t.grid.dragToReorder} style="opacity: 1">
                     <GripVertical size={16} color="#999" />
                 </div>
                 <label class="checkbox-label">
                     <input
                             type="checkbox"
-                            checked={(item.id === 'title' || item.id === 'authors') || (activeTab === 'table' ? isColumnActive(item.id) : isAttributeActive(item.id))}
+                            checked={(activeTab === 'mosaic' && (item.id === 'title' || item.id === 'authors')) || (activeTab === 'table' ? isColumnActive(item.id) : isAttributeActive(item.id))}
                             on:change={() => toggleItem(item.id)}
-                            disabled={(activeTab === 'table' ? $activeColumns.length === 1 && isColumnActive(item.id) : $activeMosaicAttributes.length === 1 && isAttributeActive(item.id))}
+                            disabled={(activeTab === 'mosaic' && (item.id === 'title' || item.id === 'authors')) || (activeTab === 'table' ? $activeColumns.length === 1 && isColumnActive(item.id) : $activeMosaicAttributes.length === 1 && isAttributeActive(item.id))}
                     />
                     <span>{($t.grid as Record<string, string>)['col_' + item.id] || item.label}</span>
                 </label>
@@ -305,11 +305,6 @@
     .column-item.dragging {
         opacity: 0.5;
         background-color: var(--hover-color);
-    }
-    .column-item.fixed-item {
-        background-color: var(--bg-color);
-        border-color: var(--border-color);
-        cursor: default;
     }
 
     .drag-handle {
