@@ -5,12 +5,11 @@ export function sanitizeBookPayload(payload: any): any {
 
     const stringFields = [
         'library_id', 'isbn_13', 'isbn_10', 'open_library_id', 'oclc_number', 'title', 'subtitle',
-        'original_title', 'publisher', 'edition', 'edition_number', 'printing_number',
-        'original_edition', 'collection_name', 'series_name', 'book_format',
-        'dimensions', 'weight', 'language', 'original_language', 'target_audience',
+        'original_title', 'publisher', 'edition', 'edition_number', 'original_edition', 'collection_name', 'series_name', 'book_format',
+        'language', 'original_language', 'target_audience',
         'description', 'table_of_contents', 'cover_url', 'store_or_vendor',
         'acquisition_type', 'location_property', 'location_room', 'location_bookcase',
-        'location_shelf', 'condition_state', 'personal_notes', 'read_status',
+        'location_shelf', 'condition_state', 'public_notes', 'personal_notes', 'read_status',
         'reading_notes', 'loaned_to'
     ];
 
@@ -21,7 +20,7 @@ export function sanitizeBookPayload(payload: any): any {
 
     const numberFields = [
         'volume_in_collection', 'volume_in_series', 'page_count',
-        'purchase_price', 'location_position', 'rating'
+        'purchase_price', 'location_position', 'rating', 'printing_number', 'weight', 'dimension_length', 'dimension_width', 'dimension_depth'
     ];
 
     const arrayFields = ['authors', 'translators', 'illustrators', 'subjects', 'genres'];

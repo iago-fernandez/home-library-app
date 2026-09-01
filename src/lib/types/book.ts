@@ -17,7 +17,7 @@ export interface Book {
     original_publish_date?: string;
     edition?: string;
     edition_number?: number;
-    printing_number?: string;
+    printing_number?: number;
     original_edition?: string;
     is_first_edition?: boolean;
     collection_name?: string;
@@ -26,8 +26,10 @@ export interface Book {
     volume_in_series?: number;
     book_format?: string;
     page_count?: number;
-    dimensions?: string;
-    weight?: string;
+    dimension_length?: number;
+    dimension_width?: number;
+    dimension_depth?: number;
+    weight?: number;
     language?: string;
     original_language?: string;
     subjects?: string[];
@@ -46,6 +48,7 @@ export interface Book {
     location_shelf?: string;
     location_position?: number;
     condition_state?: string;
+    public_notes?: string;
     personal_notes?: string;
     read_status?: string;
     rating?: number;
@@ -79,8 +82,10 @@ export interface BookMetadataResponse {
     subtitle?: string;
     publishers?: string[];
     physical_format?: string;
-    weight?: string;
-    dimensions?: string;
+    weight?: number;
+    dimension_length?: number;
+    dimension_width?: number;
+    dimension_depth?: number;
     subjects?: string[];
     languages?: string[];
 }
