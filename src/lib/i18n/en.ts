@@ -111,7 +111,10 @@ export const en: TranslationDictionary = {
         col_volume_in_series: 'Volume in Series',
         col_book_format: 'Format',
         col_page_count: 'Pages',
-        col_dimensions: 'Dimensions',
+        col_dimension_length: 'Length',
+        col_dimension_width: 'Width',
+        col_dimension_depth: 'Depth',
+        col_public_notes: 'Public Notes',
         col_weight: 'Weight',
         col_language: 'Language',
         col_original_language: 'Original Language',
@@ -145,6 +148,8 @@ export const en: TranslationDictionary = {
     },
     filters: {
         activeFilters: 'Active Filters',
+        any: '(Any)',
+        all: '(All)',
         clearAll: 'Clear All',
         addRule: 'Add Rule',
         matchAll: 'All rules (AND)',
@@ -364,7 +369,7 @@ export const en: TranslationDictionary = {
         moveToLibrary: {
             title: 'Move to Library',
             selectDestinationSingular: 'Select destination library for this book:',
-            selectDestinationPlural: 'Select destination library for {count} books:',
+            selectDestinationPlural: (count) => `Select destination library for ${count} books:`,
             moveBtn: 'Move',
             moveError: 'Failed to move books. Please verify data and try again.',
             noLibraries: 'No other libraries available.'

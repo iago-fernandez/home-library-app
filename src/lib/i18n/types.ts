@@ -88,6 +88,8 @@ export interface TranslationDictionary {
     };
     filters: {
         activeFilters: string;
+        any: string;
+        all: string;
         clearAll: string;
         addRule: string;
         matchAll: string;
@@ -307,7 +309,7 @@ export interface TranslationDictionary {
         moveToLibrary: {
             title: string;
             selectDestinationSingular: string;
-            selectDestinationPlural: string;
+            selectDestinationPlural: (count: number) => string;
             moveBtn: string;
             moveError: string;
             noLibraries: string;

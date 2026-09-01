@@ -674,7 +674,7 @@
 
         {#if activeFilters.filter(r => String(r.value).trim() !== '').length > 0}
           <div class="active-filters-bar">
-            <span class="active-filters-label">{$t.filters.activeFilters} {matchType === 'OR' ? '(Any)' : '(All)'}:</span>
+            <span class="active-filters-label">{$t.filters.activeFilters} {matchType === 'OR' ? $t.filters.any : $t.filters.all}:</span>
             <div class="filter-chips">
               {#each activeFilters.filter(r => String(r.value).trim() !== '') as rule (rule.id)}
                 <div class="filter-chip">
