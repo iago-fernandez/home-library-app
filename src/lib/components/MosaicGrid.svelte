@@ -41,7 +41,7 @@
     let justFinishedEditing = false;
 
     function getInputType(colId: string) {
-        if (['volume_in_collection', 'volume_in_series', 'page_count', 'purchase_price', 'location_position', 'rating', 'edition_number'].includes(colId)) return 'number';
+        if (['volume_in_collection', 'volume_in_series', 'page_count', 'purchase_price', 'location_position', 'rating', 'edition_number', 'printing_number', 'weight', 'dimension_length', 'dimension_width', 'dimension_depth'].includes(colId)) return 'number';
         if (['purchase_date', 'date_started', 'date_finished', 'loan_date', 'expected_return_date'].includes(colId)) return 'date';
         if (['publish_date', 'original_publish_date'].includes(colId)) return 'text';
         if (['is_first_edition', 'is_loaned'].includes(colId)) return 'checkbox';
