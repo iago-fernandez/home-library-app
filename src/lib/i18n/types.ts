@@ -179,6 +179,10 @@ export interface TranslationDictionary {
         shelf: string;
         position: string;
         conditionState: string;
+    publicNotes: string;
+    length: string;
+    width: string;
+    depth: string;
         personalNotes: string;
         readStatus: string;
         rating: string;

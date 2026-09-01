@@ -93,15 +93,15 @@
             authors: [], translators: [], illustrators: [],
             publisher: '', publish_date: '', original_publish_date: '',
             isbn_13: '', isbn_10: '', open_library_id: '', oclc_number: '',
-            edition: '', edition_number: undefined, printing_number: '', original_edition: '', is_first_edition: false,
+            edition: '', edition_number: undefined, printing_number: undefined, original_edition: '', is_first_edition: false,
             collection_name: '', volume_in_collection: undefined, series_name: '', volume_in_series: undefined,
-            book_format: '', page_count: undefined, dimensions: '', weight: '',
+            book_format: '', page_count: undefined, dimension_length: undefined, dimension_width: undefined, dimension_depth: undefined, weight: undefined,
             language: '', original_language: '',
             subjects: [], genres: [], target_audience: '', description: '', table_of_contents: '',
             cover_url: '',
             purchase_date: '', purchase_price: undefined, store_or_vendor: '', acquisition_type: '',
             location_property: '', location_room: '', location_bookcase: '', location_shelf: '', location_position: undefined,
-            condition_state: '', personal_notes: '',
+            condition_state: '', public_notes: '', personal_notes: '',
             read_status: 'unread', rating: undefined, date_started: '', date_finished: '', reading_notes: '',
             is_loaned: false, loaned_to: '', loan_date: '', expected_return_date: ''
         };
@@ -128,8 +128,12 @@
             formData.subtitle = metadata.subtitle || '';
             formData.page_count = metadata.page_count || undefined;
             formData.book_format = metadata.physical_format || '';
-            formData.weight = metadata.weight || '';
-            formData.dimensions = metadata.dimensions || '';
+            if (metadata.weight) {
+                formData.weight = metadata.weight;
+            }
+            if (metadata.dimension_length) formData.dimension_length = metadata.dimension_length;
+            if (metadata.dimension_width) formData.dimension_width = metadata.dimension_width;
+            if (metadata.dimension_depth) formData.dimension_depth = metadata.dimension_depth;
 
             if (metadata.publish_date) {
                 const parsedDate = new Date(metadata.publish_date);
@@ -383,7 +387,7 @@
                 </div>
                 <div class="input-row">
                     <label for="printing_number">{$t.form.printingNumber}</label>
-                    <input type="text" id="printing_number" bind:value={formData.printing_number} />
+                    <input type="number" id="printing_number" bind:value={formData.printing_number} min="1" step="1" />
                 </div>
             </div>
             <div class="input-row">
@@ -426,11 +430,16 @@
             </div>
             <div class="input-row">
                 <label for="dimensions">{$t.form.dimensions}</label>
-                <input type="text" id="dimensions" bind:value={formData.dimensions} />
+                <div style="display: flex; gap: 8px;">
+                    <input type="number" id="dimension_length" placeholder="{$t.form.length}" bind:value={formData.dimension_length} step="0.1" min="0" />
+                    <input type="number" id="dimension_width" placeholder="{$t.form.width}" bind:value={formData.dimension_width} step="0.1" min="0" />
+                    <input type="number" id="dimension_depth" placeholder="{$t.form.depth}" bind:value={formData.dimension_depth} step="0.1" min="0" />
+                    <span style="align-self: center; font-size: 13px; color: var(--text-muted);">cm</span>
+                </div>
             </div>
             <div class="input-row">
-                <label for="weight">{$t.form.weight}</label>
-                <input type="text" id="weight" bind:value={formData.weight} />
+                <label for="weight">{$t.form.weight} (g)</label>
+                <input type="number" id="weight" bind:value={formData.weight} step="0.1" min="0" />
             </div>
             <div class="input-row">
                 <label for="language">{$t.form.language}</label>
@@ -515,6 +524,10 @@
             <div class="input-row">
                 <label for="condition_state">{$t.form.conditionState}</label>
                 <input type="text" id="condition_state" bind:value={formData.condition_state} />
+            </div>
+            <div class="input-row">
+                <label for="public_notes">{$t.form.publicNotes}</label>
+                <AutoExpandTextarea id="public_notes" bind:value={formData.public_notes} />
             </div>
             <div class="input-row">
                 <label for="personal_notes">{$t.form.personalNotes}</label>

@@ -36,7 +36,7 @@
         { id: 'volume_in_series', type: 'number' },
         { id: 'book_format', type: 'text' },
         { id: 'page_count', type: 'number' },
-        { id: 'dimensions', type: 'text' },
+        { id: 'dimension_length', type: 'number' }, { id: 'dimension_width', type: 'number' }, { id: 'dimension_depth', type: 'number' },
         { id: 'weight', type: 'text' },
         { id: 'language', type: 'text' },
         { id: 'original_language', type: 'text' },
@@ -54,7 +54,7 @@
         { id: 'location_bookcase', type: 'text' },
         { id: 'location_shelf', type: 'text' },
         { id: 'location_position', type: 'number' },
-        { id: 'condition_state', type: 'text' },
+        { id: 'condition_state', type: 'text' }, { id: 'public_notes', type: 'text' },
         { id: 'personal_notes', type: 'text' },
         { id: 'read_status', type: 'text' },
         { id: 'rating', type: 'number' },
@@ -318,9 +318,17 @@
                 <label for="page_count">{$t.form.pageCount}</label>
                 <input type="number" id="page_count" bind:value={formData.page_count} />
             </div>
-            <div class="input-row" class:modified={isModified['dimensions']}>
-                <label for="dimensions">{$t.form.dimensions}</label>
-                <input type="text" id="dimensions" bind:value={formData.dimensions} />
+            <div class="input-row" class:modified={isModified['dimension_length']}>
+                <label for="dimension_length">{$t.form.length}</label>
+                <input type="number" id="dimension_length" bind:value={formData.dimension_length} step="0.1" />
+            </div>
+            <div class="input-row" class:modified={isModified['dimension_width']}>
+                <label for="dimension_width">{$t.form.width}</label>
+                <input type="number" id="dimension_width" bind:value={formData.dimension_width} step="0.1" />
+            </div>
+            <div class="input-row" class:modified={isModified['dimension_depth']}>
+                <label for="dimension_depth">{$t.form.depth}</label>
+                <input type="number" id="dimension_depth" bind:value={formData.dimension_depth} step="0.1" />
             </div>
             <div class="input-row" class:modified={isModified['weight']}>
                 <label for="weight">{$t.form.weight}</label>
@@ -408,6 +416,10 @@
             <div class="input-row" class:modified={isModified['condition_state']}>
                 <label for="condition_state">{$t.form.conditionState}</label>
                 <input type="text" id="condition_state" bind:value={formData.condition_state} />
+            </div>
+            <div class="input-row" class:modified={isModified['public_notes']}>
+                <label for="public_notes">{$t.form.publicNotes}</label>
+                <input type="text" id="public_notes" bind:value={formData.public_notes} />
             </div>
             <div class="input-row" class:modified={isModified['personal_notes']}>
                 <label for="personal_notes">{$t.form.personalNotes}</label>
