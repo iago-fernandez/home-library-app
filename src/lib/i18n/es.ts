@@ -111,7 +111,10 @@ export const es: TranslationDictionary = {
         col_volume_in_series: 'Volumen en serie',
         col_book_format: 'Formato',
         col_page_count: 'Páginas',
-        col_dimensions: 'Dimensiones',
+        col_dimension_length: 'Longitud',
+        col_dimension_width: 'Anchura',
+        col_dimension_depth: 'Grosor',
+        col_public_notes: 'Notas Públicas',
         col_weight: 'Peso',
         col_language: 'Idioma',
         col_original_language: 'Idioma original',
@@ -364,7 +367,7 @@ export const es: TranslationDictionary = {
         moveToLibrary: {
             title: 'Mover de biblioteca',
             selectDestinationSingular: 'Elige la biblioteca de destino para este libro:',
-            selectDestinationPlural: 'Elige la biblioteca de destino para los {count} libros:',
+            selectDestinationPlural: (count) => `Elige la biblioteca de destino para los ${count} libros:`,
             moveBtn: 'Mover',
             moveError: 'No se han podido mover los libros. Por favor, inténtalo de nuevo.',
             noLibraries: 'No tienes otras bibliotecas disponibles.'

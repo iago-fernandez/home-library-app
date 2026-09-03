@@ -88,6 +88,8 @@ export interface TranslationDictionary {
     };
     filters: {
         activeFilters: string;
+        any: string;
+        all: string;
         clearAll: string;
         addRule: string;
         matchAll: string;
@@ -205,6 +207,8 @@ export interface TranslationDictionary {
         coverPreviewAlt: string;
         selectFileOrCamera: string;
         takePhoto: string;
+        capturing: string;
+        passwordPlaceholder: string;
         scanBarcode: string;
         externalUrl: string;
         statusUnread: string;
@@ -266,6 +270,9 @@ export interface TranslationDictionary {
         themeTeal: string;
         themeAmber: string;
         zoomLevel: string;
+        notLoggedIn: string;
+        resetToDefaults: string;
+        togglePassword: string;
         autocompleteSuggestions: string;
         disabled: string;
         keyboardShortcuts: string;
@@ -281,6 +288,9 @@ export interface TranslationDictionary {
     libraryManager: {
         title: string;
         myLibraries: string;
+        editLibrary: string;
+        manageLibraries: string;
+        selectLibrary: string;
         sharedLibraries: string;
         createNew: string;
         libraryName: string;
@@ -307,7 +317,7 @@ export interface TranslationDictionary {
         moveToLibrary: {
             title: string;
             selectDestinationSingular: string;
-            selectDestinationPlural: string;
+            selectDestinationPlural: (count: number) => string;
             moveBtn: string;
             moveError: string;
             noLibraries: string;

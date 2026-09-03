@@ -58,7 +58,7 @@
                     {#if selectedBookIds.length === 1}
                         {$t.modals.moveToLibrary.selectDestinationSingular}
                     {:else}
-                        {$t.modals.moveToLibrary.selectDestinationPlural.replace('{count}', selectedBookIds.length.toString())}
+                        {$t.modals.moveToLibrary.selectDestinationPlural(selectedBookIds.length)}
                     {/if}
                 </p>
                 <div class="library-grid">

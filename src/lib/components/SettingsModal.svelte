@@ -190,7 +190,7 @@
                             </div>
                             
                         {:else}
-                            <p>Not logged in.</p>
+                            <p>{$t.settings.notLoggedIn}</p>
                         {/if}
                     </div>
                 {:else}
@@ -300,7 +300,7 @@
                             <div id="sec-shortcuts" class="setting-group">
                                 <div class="group-header">
                                     <h3 class="section-title" style="margin-bottom: 12px;">{$t.settings.keyboardShortcuts}</h3>
-                                    <button class="reset-btn" style="margin-left:auto" on:click={() => activeShortcuts.reset()} title="Reset to Defaults">
+                                    <button class="reset-btn" style="margin-left:auto" on:click={() => activeShortcuts.reset()} title={$t.settings.resetToDefaults}>
                                         <RotateCcw size={16} />
                                     </button>
                                 </div>
@@ -351,7 +351,7 @@
                                                 }}
                                             >
                                                 {#if capturingKey === action}
-                                                    <span class="capturing-text">CAPTURING...</span>
+                                                    <span class="capturing-text">{$t.form.capturing}</span>
                                                 {:else}
                                                     {#each parseShortcut(keyCombo) as key, i}
                                                         {#if i > 0}<span class="plus-sep">+</span>{/if}

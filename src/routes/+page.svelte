@@ -577,7 +577,7 @@
         {#if openMenu === 'View'}
           <div class="dropdown-menu">
             <div class="dropdown-item zoom-control" style="display:flex; justify-content:space-between; align-items:center; cursor: default; padding-top: 6px; padding-bottom: 6px;">
-              <span>Zoom</span>
+              <span>{$t.settings.zoomLevel}</span>
               <div style="display:flex; align-items:center; gap: 4px;">
                 <button class="zoom-btn" on:click|stopPropagation={() => $zoomLevel = Math.max($zoomLevel - 10, 50)} title="{$t.menu.zoomOut}"><Minus size={14}/></button>
                 <input 
@@ -651,11 +651,11 @@
                 value={$libraryStore.activeLibraryId || ''}
                 on:change={(e) => libraryStore.setActiveLibrary(e.detail.value)}
                 customClass="library-dropdown"
-                placeholder="Select Library"
+                placeholder={$t.libraryManager.selectLibrary}
                 align="right"
             />
         {/if}
-        <button class="icon-btn" title="Manage Libraries" on:click={() => showLibraryManager = true} style="background: transparent; border: none; cursor: pointer; color: var(--text-muted); display:flex; padding: 4px; border-radius:4px;">
+        <button class="icon-btn" title={$t.libraryManager.manageLibraries} on:click={() => showLibraryManager = true} style="background: transparent; border: none; cursor: pointer; color: var(--text-muted); display:flex; padding: 4px; border-radius:4px;">
             <Settings size={18} />
         </button>
     </div>
@@ -674,7 +674,7 @@
 
         {#if activeFilters.filter(r => String(r.value).trim() !== '').length > 0}
           <div class="active-filters-bar">
-            <span class="active-filters-label">{$t.filters.activeFilters} {matchType === 'OR' ? '(Any)' : '(All)'}:</span>
+            <span class="active-filters-label">{$t.filters.activeFilters} {matchType === 'OR' ? $t.filters.any : $t.filters.all}:</span>
             <div class="filter-chips">
               {#each activeFilters.filter(r => String(r.value).trim() !== '') as rule (rule.id)}
                 <div class="filter-chip">
