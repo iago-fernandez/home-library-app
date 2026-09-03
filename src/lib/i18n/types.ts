@@ -207,6 +207,8 @@ export interface TranslationDictionary {
         coverPreviewAlt: string;
         selectFileOrCamera: string;
         takePhoto: string;
+        capturing: string;
+        passwordPlaceholder: string;
         scanBarcode: string;
         externalUrl: string;
         statusUnread: string;
@@ -268,6 +270,9 @@ export interface TranslationDictionary {
         themeTeal: string;
         themeAmber: string;
         zoomLevel: string;
+        notLoggedIn: string;
+        resetToDefaults: string;
+        togglePassword: string;
         autocompleteSuggestions: string;
         disabled: string;
         keyboardShortcuts: string;
@@ -283,6 +288,9 @@ export interface TranslationDictionary {
     libraryManager: {
         title: string;
         myLibraries: string;
+        editLibrary: string;
+        manageLibraries: string;
+        selectLibrary: string;
         sharedLibraries: string;
         createNew: string;
         libraryName: string;

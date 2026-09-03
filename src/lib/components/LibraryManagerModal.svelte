@@ -249,7 +249,7 @@
                                     {:else}
                                         <h3 style="font-size: 1.5rem; color: var(--text-main); margin: 0; flex-grow: 1; padding: 8px 12px; border: 1px solid transparent; height: 48px; line-height: 30px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">{activeLib.name}</h3>
                                         {#if activeLib.owner_id === $authStore.user?.id}
-                                            <button class="btn-icon" on:click={() => isEditing = true} title="Edit Library" style="padding: 8px;">
+                                            <button class="btn-icon" on:click={() => isEditing = true} title={$t.libraryManager.editLibrary} style="padding: 8px;">
                                                 <Pencil size={18} />
                                             </button>
                                         {/if}

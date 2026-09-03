@@ -49,7 +49,7 @@
                 bind:this={inputRef}
                 bind:value={password} 
                 class="password-input" 
-                placeholder="Password..."
+                placeholder={$t.form.passwordPlaceholder}
                 on:keydown={(e) => e.key === 'Enter' && handleConfirm()}
             />
             {#if error}

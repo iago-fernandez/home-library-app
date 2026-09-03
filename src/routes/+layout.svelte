@@ -151,7 +151,7 @@
                             type="button" 
                             class="pwd-toggle-btn" 
                             on:click={() => showPassword = !showPassword}
-                            title="Toggle Password Visibility"
+                            title={$t.settings.togglePassword}
                         >
                             {#if showPassword}
                                 <EyeOff size={18} />
