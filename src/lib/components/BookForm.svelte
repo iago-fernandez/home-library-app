@@ -429,13 +429,12 @@
                 {#if errors.page_count}<span class="error-text">{errors.page_count}</span>{/if}
             </div>
             <div class="input-row">
-                <label for="dimensions">{$t.form.dimensions}</label>
+                <label for="dimensions">{$t.form.dimensions} (cm)</label>
                 <div style="display: flex; gap: 8px;">
                     <input type="number" id="dimension_length" placeholder="{$t.form.length}" bind:value={formData.dimension_length} step="0.1" min="0" />
                     <input type="number" id="dimension_width" placeholder="{$t.form.width}" bind:value={formData.dimension_width} step="0.1" min="0" />
                     <input type="number" id="dimension_depth" placeholder="{$t.form.depth}" bind:value={formData.dimension_depth} step="0.1" min="0" />
-                    <span style="align-self: center; font-size: 13px; color: var(--text-muted);">cm</span>
-                </div>
+                                    </div>
             </div>
             <div class="input-row">
                 <label for="weight">{$t.form.weight} (g)</label>
