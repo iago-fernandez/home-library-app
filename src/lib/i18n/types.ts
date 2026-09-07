@@ -1,4 +1,5 @@
 export interface TranslationDictionary {
+    genres: Record<string, string>;
     appTitle: string;
     auth: {
         createWorkspace: string;
@@ -202,6 +203,12 @@ export interface TranslationDictionary {
         fetchErrorEmpty: string;
         fetchErrorNetwork: string;
         fetchSuccess: string;
+        autofillConflictsTitle: string;
+        autofillConflictsDesc: string;
+        colField: string;
+        colCurrent: string;
+        colFetched: string;
+        applySelected: string;
         fetchPlaceholder: string;
         coverImage: string;
         coverPreviewAlt: string;

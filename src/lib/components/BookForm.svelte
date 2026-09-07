@@ -9,6 +9,8 @@
     import DropdownSelect from './DropdownSelect.svelte';
     import BarcodeScannerModal from './BarcodeScannerModal.svelte';
     import CameraCaptureModal from './CameraCaptureModal.svelte';
+    import AutofillCollisionModal from './AutofillCollisionModal.svelte';
+    import { translateGenres } from '../utils/genreTranslator';
     import { Search, DownloadCloud, UploadCloud, Camera } from 'lucide-svelte';
 
     export let initialData: Book | null = null;
@@ -21,6 +23,9 @@
     let fetchSuccess = '';
     let showBarcodeScanner = false;
     let showCameraCapture = false;
+    let showCollisionModal = false;
+    let currentConflicts: any[] = [];
+    let autoFilledFields = new Set<string>();
 
     let formData: Partial<CreateBookPayload> = getInitialFormData(initialData);
     let selectedImageFile: File | undefined = undefined;
@@ -107,6 +112,18 @@
         };
     }
 
+    function addHighlight(field: string) {
+        autoFilledFields.add(field);
+        autoFilledFields = autoFilledFields; // trigger reactivity
+    }
+
+    function removeHighlight(field: string) {
+        if (autoFilledFields.has(field)) {
+            autoFilledFields.delete(field);
+            autoFilledFields = autoFilledFields;
+        }
+    }
+
     async function handleAutoFill() {
         if (!fetchId) return;
 
@@ -124,47 +141,96 @@
                 return;
             }
 
-            formData.title = metadata.title || '';
-            formData.subtitle = metadata.subtitle || '';
-            formData.page_count = metadata.page_count || undefined;
-            formData.book_format = metadata.physical_format || '';
-            if (metadata.weight) {
-                formData.weight = metadata.weight;
-            }
-            if (metadata.dimension_length) formData.dimension_length = metadata.dimension_length;
-            if (metadata.dimension_width) formData.dimension_width = metadata.dimension_width;
-            if (metadata.dimension_depth) formData.dimension_depth = metadata.dimension_depth;
+            // Map standard fields for collision
+            const proposed: Record<string, any> = {};
+            const labels: Record<string, string> = {
+                title: $t.form.title,
+                subtitle: $t.form.subtitle,
+                page_count: $t.form.pageCount,
+                book_format: $t.form.bookFormat,
+                weight: $t.form.weight,
+                dimension_length: $t.form.length,
+                dimension_width: $t.form.width,
+                dimension_depth: $t.form.depth,
+                publish_date: $t.form.pubDate,
+                cover_url: $t.form.coverImage || 'Cover Image',
+                authors: $t.form.authors,
+                publisher: $t.form.publisher,
+                subjects: $t.form.subjects,
+                language: $t.form.language,
+                open_library_id: 'OpenLibrary ID',
+                oclc_number: 'OCLC Number',
+                isbn_10: 'ISBN-10',
+                isbn_13: 'ISBN-13'
+            };
 
+            if (metadata.title) proposed.title = metadata.title;
+            if (metadata.subtitle) proposed.subtitle = metadata.subtitle;
+            if (metadata.page_count) proposed.page_count = metadata.page_count;
+            if (metadata.physical_format) proposed.book_format = metadata.physical_format;
+            if (metadata.weight) proposed.weight = metadata.weight;
+            if (metadata.dimension_length) proposed.dimension_length = metadata.dimension_length;
+            if (metadata.dimension_width) proposed.dimension_width = metadata.dimension_width;
+            if (metadata.dimension_depth) proposed.dimension_depth = metadata.dimension_depth;
+            
             if (metadata.publish_date) {
                 const parsedDate = new Date(metadata.publish_date);
-                if (!isNaN(parsedDate.getTime())) {
-                    formData.publish_date = parsedDate.getUTCFullYear().toString();
+                if (!isNaN(parsedDate.getTime())) proposed.publish_date = parsedDate.getUTCFullYear().toString();
+            }
+            if (metadata.cover_url) proposed.cover_url = metadata.cover_url;
+            if (metadata.authors) proposed.authors = [...new Set([...metadata.authors])];
+            if (metadata.publishers && metadata.publishers.length > 0) proposed.publisher = metadata.publishers[0];
+            if (metadata.subjects) proposed.subjects = translateGenres([...new Set([...metadata.subjects])]);
+            if (metadata.languages && metadata.languages.length > 0) proposed.language = metadata.languages[0];
+
+            const upperQuery = cleanQuery.toUpperCase();
+            if (upperQuery.startsWith('OL')) proposed.open_library_id = queryParam;
+            else if (upperQuery.startsWith('OCLC') || (cleanQuery.length !== 10 && cleanQuery.length !== 13)) proposed.oclc_number = queryParam.replace(/oclc/i, '');
+            else if (cleanQuery.length === 10) proposed.isbn_10 = queryParam;
+            else if (cleanQuery.length === 13) proposed.isbn_13 = queryParam;
+
+            const conflicts: any[] = [];
+            
+            // Process proposed fields
+            for (const [field, val] of Object.entries(proposed)) {
+                const currentVal = formData[field as keyof typeof formData];
+                const isEmpty = Array.isArray(currentVal) ? currentVal.length === 0 : !currentVal;
+                
+                let isDifferent = false;
+                if (!isEmpty) {
+                    if (Array.isArray(currentVal) && Array.isArray(val)) {
+                        isDifferent = JSON.stringify(currentVal) !== JSON.stringify(val);
+                    } else {
+                        isDifferent = currentVal !== val;
+                    }
+                }
+
+                if (isEmpty) {
+                    // Auto apply if empty
+                    (formData as any)[field] = val;
+                    if (field === 'cover_url') {
+                        imagePreviewUrl = val;
+                        selectedImageFile = undefined;
+                    }
+                    addHighlight(field);
+                } else if (isDifferent) {
+                    // It's a conflict
+                    conflicts.push({
+                        field,
+                        label: labels[field] || field,
+                        current: currentVal,
+                        fetched: val,
+                        apply: false
+                    });
                 }
             }
 
-            if (metadata.cover_url) {
-                formData.cover_url = metadata.cover_url;
-                imagePreviewUrl = metadata.cover_url;
-                selectedImageFile = undefined;
+            if (conflicts.length > 0) {
+                currentConflicts = conflicts;
+                showCollisionModal = true;
+            } else {
+                fetchSuccess = $t.form.fetchSuccess;
             }
-
-            if (metadata.authors) formData.authors = [...new Set([...metadata.authors])];
-            if (metadata.publishers && metadata.publishers.length > 0) formData.publisher = metadata.publishers[0];
-            if (metadata.subjects) formData.subjects = [...new Set([...metadata.subjects])];
-            if (metadata.languages && metadata.languages.length > 0) formData.language = metadata.languages[0];
-
-            const upperQuery = cleanQuery.toUpperCase();
-            if (upperQuery.startsWith('OL')) {
-                formData.open_library_id = queryParam;
-            } else if (upperQuery.startsWith('OCLC') || (cleanQuery.length !== 10 && cleanQuery.length !== 13)) {
-                formData.oclc_number = queryParam.replace(/oclc/i, '');
-            } else if (cleanQuery.length === 10) {
-                formData.isbn_10 = queryParam;
-            } else if (cleanQuery.length === 13) {
-                formData.isbn_13 = queryParam;
-            }
-
-            fetchSuccess = $t.form.fetchSuccess;
 
         } catch (error) {
             console.error(error);
@@ -172,6 +238,19 @@
         } finally {
             isLookingUp = false;
         }
+    }
+
+    function handleApplyConflicts(event: CustomEvent<any[]>) {
+        const updates = event.detail;
+        for (const update of updates) {
+            (formData as any)[update.field] = update.value;
+            if (update.field === 'cover_url') {
+                imagePreviewUrl = update.value;
+                selectedImageFile = undefined;
+            }
+            addHighlight(update.field);
+        }
+        fetchSuccess = $t.form.fetchSuccess;
     }
 
     function handleBarcodeScanned(event: CustomEvent<string>) {
@@ -233,8 +312,9 @@
 
 <BarcodeScannerModal bind:isOpen={showBarcodeScanner} on:scan={handleBarcodeScanned} />
 <CameraCaptureModal bind:isOpen={showCameraCapture} on:capture={handleCameraCapture} />
+<AutofillCollisionModal bind:isOpen={showCollisionModal} conflicts={currentConflicts} on:apply={handleApplyConflicts} />
 
-<form class="book-form" novalidate on:submit|preventDefault={handleSubmit} on:input={handleInput}>
+<form class="book-form" novalidate on:submit|preventDefault={handleSubmit} on:input={handleInput} on:focusin={(e) => { const el = e.target as HTMLElement; if(el && el.id) removeHighlight(el.id); }} on:click={(e) => { const el = e.target as HTMLElement; if(el && el.id) removeHighlight(el.id); }}>
     <div class="form-header">
         <h3>{initialData ? $t.form.editBook : $t.form.addNewBook}</h3>
         <div class="header-actions">
@@ -277,21 +357,21 @@
         </div>
 
         <CollapsibleFieldset id="identifiers" sectionTitle={$t.form.identifiers}>
-            <div class="input-row" class:error={!!errors.isbn_13}>
+            <div class="input-row" class:error={!!errors.isbn_13} class:highlight-autofill={autoFilledFields.has('isbn_13')}>
                 <label for="isbn_13">{$t.form.isbn13}</label>
                 <input type="text" id="isbn_13" bind:value={formData.isbn_13} />
                 {#if errors.isbn_13}<span class="error-text">{errors.isbn_13}</span>{/if}
             </div>
-            <div class="input-row" class:error={!!errors.isbn_10}>
+            <div class="input-row" class:error={!!errors.isbn_10} class:highlight-autofill={autoFilledFields.has('isbn_10')}>
                 <label for="isbn_10">{$t.form.isbn10}</label>
                 <input type="text" id="isbn_10" bind:value={formData.isbn_10} />
                 {#if errors.isbn_10}<span class="error-text">{errors.isbn_10}</span>{/if}
             </div>
-            <div class="input-row">
+            <div class="input-row" class:highlight-autofill={autoFilledFields.has('open_library_id')}>
                 <label for="open_library_id">{$t.form.openLibraryId}</label>
                 <input type="text" id="open_library_id" bind:value={formData.open_library_id} />
             </div>
-            <div class="input-row">
+            <div class="input-row" class:highlight-autofill={autoFilledFields.has('oclc_number')}>
                 <label for="oclc_number">{$t.form.oclcNumber}</label>
                 <input type="text" id="oclc_number" bind:value={formData.oclc_number} />
             </div>
@@ -320,7 +400,7 @@
                             <Camera size={16} /> {$t.form.takePhoto}
                         </button>
                     </div>
-                    <div class="input-row" style="width: 100%;">
+                    <div class="input-row" style="width: 100%;" class:highlight-autofill={autoFilledFields.has('cover_url')}>
                         <label for="cover_url_manual">{$t.form.externalUrl}</label>
                         <input type="url" id="cover_url_manual" bind:value={formData.cover_url} on:input={() => { imagePreviewUrl = formData.cover_url || ''; selectedImageFile = undefined; }} />
                     </div>
@@ -329,12 +409,12 @@
         </CollapsibleFieldset>
 
         <CollapsibleFieldset id="core_metadata" sectionTitle={$t.form.coreMetadata}>
-            <div class="input-row" class:error={!!errors.title}>
+            <div class="input-row" class:error={!!errors.title} class:highlight-autofill={autoFilledFields.has('title')}>
                 <label for="title">{$t.form.title} <span class="required">*</span></label>
                 <AutoExpandTextarea id="title" bind:value={formData.title} required={true} autocompleteField="title" />
                 {#if errors.title}<span class="error-text">{errors.title}</span>{/if}
             </div>
-            <div class="input-row">
+            <div class="input-row" class:highlight-autofill={autoFilledFields.has('subtitle')}>
                 <label for="subtitle">{$t.form.subtitle}</label>
                 <AutoExpandTextarea id="subtitle" bind:value={formData.subtitle} autocompleteField="subtitle" />
             </div>
@@ -342,7 +422,7 @@
                 <label for="original_title">{$t.form.originalTitle}</label>
                 <AutoExpandTextarea id="original_title" bind:value={formData.original_title} autocompleteField="original_title" />
             </div>
-            <div class="input-row" class:error={!!errors.authors}>
+            <div class="input-row" class:error={!!errors.authors} class:highlight-autofill={autoFilledFields.has('authors')}>
                 <label for="authors">{$t.form.authors} <span class="required">*</span></label>
                 <ChipInput id="authors" bind:values={formData.authors} placeholder="..." autocompleteField="authors" />
                 {#if errors.authors}<span class="error-text">{errors.authors}</span>{/if}
@@ -358,12 +438,12 @@
         </CollapsibleFieldset>
 
         <CollapsibleFieldset id="pub_details" sectionTitle={$t.form.pubDetails}>
-            <div class="input-row">
+            <div class="input-row" class:highlight-autofill={autoFilledFields.has('publisher')}>
                 <label for="publisher">{$t.form.publisher}</label>
                 <AutoExpandTextarea id="publisher" bind:value={formData.publisher} autocompleteField="publisher" />
             </div>
             <div class="input-grid">
-                <div class="input-row" class:error={!!errors.publish_date}>
+                <div class="input-row" class:error={!!errors.publish_date} class:highlight-autofill={autoFilledFields.has('publish_date')}>
                     <label for="publish_date">{$t.form.pubDate}</label>
                     <input type="number" id="publish_date" bind:value={formData.publish_date} min="1000" max="2100" />
                     {#if errors.publish_date}<span class="error-text">{errors.publish_date}</span>{/if}
@@ -419,16 +499,16 @@
         </CollapsibleFieldset>
 
         <CollapsibleFieldset id="physical_props" sectionTitle={$t.form.physicalProps}>
-            <div class="input-row">
+            <div class="input-row" class:highlight-autofill={autoFilledFields.has('book_format')}>
                 <label for="book_format">{$t.form.bookFormat}</label>
                 <input type="text" id="book_format" bind:value={formData.book_format} />
             </div>
-            <div class="input-row" class:error={!!errors.page_count}>
+            <div class="input-row" class:error={!!errors.page_count} class:highlight-autofill={autoFilledFields.has('page_count')}>
                 <label for="page_count">{$t.form.pageCount}</label>
                 <input type="number" id="page_count" bind:value={formData.page_count} min="0" />
                 {#if errors.page_count}<span class="error-text">{errors.page_count}</span>{/if}
             </div>
-            <div class="input-row">
+            <div class="input-row" class:highlight-autofill={autoFilledFields.has('dimension_length') || autoFilledFields.has('dimension_width') || autoFilledFields.has('dimension_depth')}>
                 <label for="dimensions">{$t.form.dimensions} (cm)</label>
                 <div style="display: flex; gap: 8px;">
                     <input type="number" id="dimension_length" placeholder="{$t.form.length}" bind:value={formData.dimension_length} step="0.1" min="0" />
@@ -436,11 +516,11 @@
                     <input type="number" id="dimension_depth" placeholder="{$t.form.depth}" bind:value={formData.dimension_depth} step="0.1" min="0" />
                                     </div>
             </div>
-            <div class="input-row">
+            <div class="input-row" class:highlight-autofill={autoFilledFields.has('weight')}>
                 <label for="weight">{$t.form.weight} (g)</label>
                 <input type="number" id="weight" bind:value={formData.weight} step="0.1" min="0" />
             </div>
-            <div class="input-row">
+            <div class="input-row" class:highlight-autofill={autoFilledFields.has('language')}>
                 <label for="language">{$t.form.language}</label>
                 <AutoExpandTextarea id="language" bind:value={formData.language} autocompleteField="language" />
             </div>
@@ -451,7 +531,7 @@
         </CollapsibleFieldset>
 
         <CollapsibleFieldset id="classification" sectionTitle={$t.form.classification}>
-            <div class="input-row">
+            <div class="input-row" class:highlight-autofill={autoFilledFields.has('subjects')}>
                 <label for="subjects">{$t.form.subjects}</label>
                 <ChipInput id="subjects" bind:values={formData.subjects} placeholder="..." autocompleteField="subjects" />
             </div>
@@ -938,4 +1018,23 @@
         background-color: color-mix(in srgb, #10b981 10%, transparent);
         border: 1px solid color-mix(in srgb, #10b981 30%, transparent);
     }
+
+    /* Perfectly targeted highlight that avoids double-borders on nested inputs like ChipInput */
+    .input-row.highlight-autofill > :global(input), 
+    .input-row.highlight-autofill > :global(select), 
+    .input-row.highlight-autofill :global(textarea),
+    .input-row.highlight-autofill > :global(.tags-container),
+    .input-row.highlight-autofill > :global(.chip-input-container) {
+        border: 1px solid var(--primary-color) !important;
+        background-color: var(--secondary-color) !important;
+        transition: all 0.3s ease;
+    }
+    
+    /* Explicitly prevent inner inputs inside chips from receiving the highlight */
+    .input-row.highlight-autofill :global(.chip-input-container input) {
+        background-color: transparent !important;
+        border: none !important;
+    }
+    
+
 </style>
