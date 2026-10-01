@@ -27,7 +27,7 @@
         { id: 'original_publish_date', type: 'date' },
         { id: 'edition', type: 'text' },
         { id: 'edition_number', type: 'number' },
-        { id: 'printing_number', type: 'text' },
+        { id: 'printing_number', type: 'number' },
         { id: 'original_edition', type: 'text' },
         { id: 'is_first_edition', type: 'boolean' },
         { id: 'collection_name', type: 'text' },
@@ -37,7 +37,7 @@
         { id: 'book_format', type: 'text' },
         { id: 'page_count', type: 'number' },
         { id: 'dimension_length', type: 'number' }, { id: 'dimension_width', type: 'number' }, { id: 'dimension_depth', type: 'number' },
-        { id: 'weight', type: 'text' },
+        { id: 'weight', type: 'number' },
         { id: 'language', type: 'text' },
         { id: 'original_language', type: 'text' },
         { id: 'subjects', type: 'array' },
@@ -280,7 +280,7 @@
                 </div>
                 <div class="input-row" class:modified={isModified['printing_number']}>
                     <label for="printing_number">{$t.form.printingNumber}</label>
-                    <input type="text" id="printing_number" bind:value={formData.printing_number} />
+                    <input type="number" id="printing_number" bind:value={formData.printing_number} min="1" step="1" />
                 </div>
             </div>
             <div class="input-row" class:modified={isModified['original_edition']}>
@@ -332,7 +332,7 @@
             </div>
             <div class="input-row" class:modified={isModified['weight']}>
                 <label for="weight">{$t.form.weight}</label>
-                <input type="text" id="weight" bind:value={formData.weight} />
+                <input type="number" id="weight" bind:value={formData.weight} min="0" step="0.1" />
             </div>
             <div class="input-row" class:modified={isModified['language']}>
                 <label for="language">{$t.form.language}</label>
