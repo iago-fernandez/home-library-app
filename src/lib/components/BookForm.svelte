@@ -124,6 +124,21 @@
         }
     }
 
+    function clearHighlightOnInteraction(node: HTMLElement) {
+        const handleInteraction = (e: Event) => {
+            const el = e.target as HTMLElement;
+            if (el && el.id) removeHighlight(el.id);
+        };
+        node.addEventListener('focusin', handleInteraction);
+        node.addEventListener('click', handleInteraction);
+        return {
+            destroy() {
+                node.removeEventListener('focusin', handleInteraction);
+                node.removeEventListener('click', handleInteraction);
+            }
+        };
+    }
+
     async function handleAutoFill() {
         if (!fetchId) return;
 
@@ -314,7 +329,7 @@
 <CameraCaptureModal bind:isOpen={showCameraCapture} on:capture={handleCameraCapture} />
 <AutofillCollisionModal bind:isOpen={showCollisionModal} conflicts={currentConflicts} on:apply={handleApplyConflicts} />
 
-<form class="book-form" novalidate on:submit|preventDefault={handleSubmit} on:input={handleInput} on:focusin={(e) => { const el = e.target as HTMLElement; if(el && el.id) removeHighlight(el.id); }} on:click={(e) => { const el = e.target as HTMLElement; if(el && el.id) removeHighlight(el.id); }}>
+<form class="book-form" novalidate on:submit|preventDefault={handleSubmit} on:input={handleInput} use:clearHighlightOnInteraction>
     <div class="form-header">
         <h3>{initialData ? $t.form.editBook : $t.form.addNewBook}</h3>
         <div class="header-actions">
